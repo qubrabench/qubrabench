@@ -77,5 +77,22 @@ def generate_differing_arrays(array, num_changes):
     return arrays
 
 
+def generate_problem(k_sat, clause_count, var_count_min, var_count_max, weight_min, weight_max):
+    var_count = random.randint(var_count_min, var_count_max)
+    # TODO: paper uses value r out {3, 6} * var_count for clause count, possibly implement like this later on?
+    clauses = [[] for _ in range(clause_count)]
+    for i in range(clause_count):
+        clause = [0 for _ in range(k_sat)]
+        for j in range(k_sat):
+            fak = random.randint(0, 1)
+            val = random.randint(1, var_count)
+            clause[j] = val if fak == 0 else -val
+        clauses[i] = clause
+    weights = [random.randint(weight_min, weight_max) for _ in range(clause_count)]
+    return clauses, weights, var_count
+
+
 if __name__ == "__main__":
+    #             Clauses with variables (1 - 6, - means "not") | Weights | Vars | Deviating tolerance (d)
     print(climb_hill_sat([[1, 1, 1], [-4, -4, -4], [-1, -1, -1]], [4, 5, 6], 6, 1))
+    print(generate_problem(3, 5, 5, 10, 1, 6))
