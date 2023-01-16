@@ -4,12 +4,12 @@ import random
 class HillClimberProblemGenerator:
     def __init__(self, k=3, r=3, var_count_bound=(10, 10), weight_bound=(1, 5), hamming_distance=1):
         """
-
-        :param k:
-        :param r:
-        :param var_count_bound:
-        :param weight_bound:
-        :param hamming_distance:
+        Constructor for problem generator instance
+        :param k: number of literals per clause (k-sat)
+        :param r: factor by which var count is multiplied to determine the amount of clauses per instance
+        :param var_count_bound: tuple containing min and max bound for var count of the problem instance
+        :param weight_bound: tuple containing min and max bound for weight per clause
+        :param hamming_distance: hamming distance d determining neighbours (solution with hamming distance d to current)
         """
         self.k = k
         self.r = r
@@ -19,8 +19,8 @@ class HillClimberProblemGenerator:
 
     def generateInstance(self):
         """
-
-        :return:
+        Generates a problem instance using values given to constructor
+        :return: tuple containing: array of clauses, array of weights, number of variables, hamming distance
         """
         var_count_min, var_count_max = self.var_count_bound
         weight_min, weight_max = self.weight_bound

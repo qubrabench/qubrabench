@@ -30,7 +30,7 @@ if __name__ == "__main__":
     plt.yscale('log')
     plt.ylabel("Queries")
 
-    plt.plot((10, 100, 1000, 10000), (val10, val100, val1000, 95000),
+    plt.plot((10, 100, 1000, 10000), (val10, val100, val1000, 67812),
              **{'color': 'red', 'marker': 'o', 'label': 'our data'})
     plt.plot((100, 1000, 10000), (400, 6500, 90000), **{'color': 'green', 'marker': 'o', 'label': 'paper'})
     plt.plot((100, 1000, 10000), (2000, 10200, 80000), **{'color': 'green', 'marker': 'x', 'label': 'paper (quantum)'})

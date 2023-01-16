@@ -82,6 +82,15 @@ sys.setprofile(trace_func)
 
 
 def calc_average_call_count(iterations, k_sat, var_range, weight_range, dist):
+    """
+    Calculates the average amount of calls necessary to solve a problem instance with the given parameters
+    :param iterations: the number of instances to be generated and solved to determine the average call cost
+    :param k_sat: number of literals per clause (k-sat)
+    :param var_range: tuple containing min and max bound for var count of the problem instance
+    :param weight_range: tuple containing min and max bound for weight per clause
+    :param dist: hamming distance d determining neighbours (solution with hamming distance d to current)
+    :return: number of average calls necessary to solve a problem instance with the given parameters
+    """
     val_sum = 0
     val_count = 0
     for i in range(1, iterations):
@@ -93,6 +102,14 @@ def calc_average_call_count(iterations, k_sat, var_range, weight_range, dist):
 
 
 def calc_solution_with_call_count(k_sat, var_range, weight_range, dist):
+    """
+    Calculates the solution (array) to a randomly generated problem using the given parameters
+    :param k_sat: number of literals per clause (k-sat)
+    :param var_range: tuple containing min and max bound for var count of the problem instance
+    :param weight_range: tuple containing min and max bound for weight per clause
+    :param dist: hamming distance d determining neighbours (solution with hamming distance d to current)
+    :return: tuple containing: number of calls to solve instance, the solution (array), the weight of the solution
+    """
     r = 3
     generator = ProblemGenerator(k_sat, r, var_range, weight_range, dist)
     clauses, weights, varc, d = generator.generateInstance()
@@ -150,6 +167,7 @@ def get_better_neighbour(solution, weight, clauses_array, weights_array, dist, c
     :return: Tuple of better neighbour and the current weight
     """
     neighbours = get_neighbours(solution, dist)
+    # TODO
     # print("Neighbour size: " + str(len(neighbours)))
     # for nb in neighbours:
     #     sol, nw = get_weight_for_solution(nb, clauses_array, weights_array)
