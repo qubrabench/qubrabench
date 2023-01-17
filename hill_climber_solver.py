@@ -59,7 +59,6 @@ def trace_func(frame, event, arg, data=None):
     """
     if data is None:
         data = dataArray
-    data = dataArray
     if event == "call":
         data[0] += 2
         if frame.f_code.co_name == 'wrapper':
@@ -93,7 +92,7 @@ def calc_average_call_count(iterations, k_sat, var_range, weight_range, dist):
     """
     val_sum = 0
     val_count = 0
-    for i in range(1, iterations):
+    for i in range(0, iterations):
         val_count += 1
         val, s, w = calc_solution_with_call_count(k_sat, var_range, weight_range, dist)
         val_sum += val
@@ -112,6 +111,7 @@ def calc_solution_with_call_count(k_sat, var_range, weight_range, dist):
     """
     r = 3
     generator = ProblemGenerator(k_sat, r, var_range, weight_range, dist)
+    # [[1, -5, 4], ...]   [0, 1, ]
     clauses, weights, varc, d = generator.generateInstance()
     dprint("\nRandom problem: " + str((clauses, weights, varc, d)))
 
@@ -155,6 +155,14 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, counter_l
     return better_solution, better_weight
 
 
+def calcQQ(N, T):
+    # for n = 100: T = 6999999999999999999999999 (0.00055220263%)
+    K = 130
+    F = (9 / 4) * (N / (math.sqrt((N - T) * T))) + math.log((N / (2 * math.sqrt((N - T) * T))), (6 / 5)) - 3
+    print(str(F))
+    return pow((1 - (T / N)), K) * F * (1 + (1 / (1 - (F / (9.2 * math.sqrt(N))))))
+
+
 @log_trace()
 def get_better_neighbour(solution, weight, clauses_array, weights_array, dist, counter_list):
     """
@@ -166,15 +174,20 @@ def get_better_neighbour(solution, weight, clauses_array, weights_array, dist, c
     :param dist: the problem's dist (hamming distance for neighbours)
     :return: Tuple of better neighbour and the current weight
     """
+    # N = get_neighbours size
     neighbours = get_neighbours(solution, dist)
-    # TODO
-    # print("Neighbour size: " + str(len(neighbours)))
-    # for nb in neighbours:
-    #     sol, nw = get_weight_for_solution(nb, clauses_array, weights_array)
-    #     if nw > weight:
-    #         counter_list[0] = counter_list[0] + 1
-    # print("bn counter: " + str(counter_list[0]))
+    # TODO: find out size of T by counting valid neighbours to current solution (value greater than current)
+    print("Neighbour size (N): " + str(len(neighbours)))
+    T_counter = 0
+    for nb in neighbours:
+        sol, nw = get_weight_for_solution(nb, clauses_array, weights_array)
+        if nw > weight:
+            T_counter = T_counter + 1
+    print("bn counter: " + str(T_counter))
+    if T_counter != 0:
+        print("calc-val: " + str(calcQQ(len(neighbours), T_counter)))
 
+    # avoid double count, maybe wrap in lambda expression and decorate that
     for neighbour in neighbours:
         n_solution, n_weight = get_weight_for_solution(neighbour, clauses_array, weights_array)
         if n_weight > weight:
