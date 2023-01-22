@@ -159,26 +159,31 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, counter_l
         better_solution, better_weight = get_better_neighbour(current_solution, weight, clauses_array,
                                                               weights_array, dist, counter_list)
     # TODO
-    print("T-Sum: " + str(counter_list[0]))
-    print("Normal-Sum: " + str(counter_list[1]))
-    if counter_list[0] != 0 and counter_list[1] != 0:
-        print("T-Sum / Normal Ratio: " + str(counter_list[0] / counter_list[1]))
-        print("Normal / T-Sum Ratio: " + str(counter_list[1] / counter_list[0]))
+    print("Quantum-Calls: " + str(counter_list[0]))
+    print("Conventional Calls: " + str(counter_list[1]))
+    print("Sum: " + str(2 * counter_list[0] + counter_list[1]))
+    # if counter_list[0] != 0 and counter_list[1] != 0:
+    #     print("T-Sum / Normal Ratio: " + str(counter_list[0] / counter_list[1]))
+    #     print("Normal / T-Sum Ratio: " + str(counter_list[1] / counter_list[0]))
     return better_solution, better_weight
 
 
-def calculateQuantumCalls(N, T):
+def calculate_quantum_calls(N, T):
     # for n = 100: T = 6999999999999999999999999 (0.00055220263%)
     F = 2.0344
     K = 130
     if 1 <= T < (N / 4):
-        F = (9 / 4) * (N / (math.sqrt((N - T) * T))) + math.log((N / (2 * math.sqrt((N - T) * T))), (6 / 5)) - 3
+        F = (9 / 4) * (N / (math.sqrt((N - T) * T))) + math.ceil(
+            math.log((N / (2 * math.sqrt((N - T) * T))), (6 / 5))) - 3
     # print(str(F))
     return pow((1 - (T / N)), K) * F * (1 + (1 / (1 - (F / (9.2 * math.sqrt(N))))))
+    # return 7.7 * math.sqrt(N / T)
 
 
 def calculateNormalCalls(N, T):
-    return (N / T) * (1 - pow((1 - (T / N)), 130))
+    K = 130
+    # return K
+    return (N / T) * (1 - pow((1 - (T / N)), K))
 
 
 @log_trace()
@@ -194,16 +199,19 @@ def get_better_neighbour(solution, weight, clauses_array, weights_array, dist, c
     """
     # N = get_neighbours size
     neighbours = get_neighbours(solution, dist)
-    # # TODO: find out size of T by counting valid neighbours to current solution (value greater than current)
-    # print("Neighbour size (N): " + str(len(neighbours)))
+    # TODO: find out size of T by counting valid neighbours to current solution (value greater than current)
+    print("Neighbour size (N): " + str(len(neighbours)))
     T_counter = 0
+    # TODO: rename variables
     for nb in neighbours:
         sol, nw = get_weight_for_solution(nb, clauses_array, weights_array)
         if nw > weight:
             T_counter = T_counter + 1
     # print("bn counter: " + str(T_counter))
+    print("nbs: " + str(len(neighbours)))
+    print("t: " + str(T_counter))
     if T_counter != 0:
-        ccval = calculateQuantumCalls(len(neighbours), T_counter)
+        ccval = calculate_quantum_calls(len(neighbours), T_counter)
         nval = calculateNormalCalls(len(neighbours), T_counter)
         counter_list[0] = counter_list[0] + ccval
         counter_list[1] = counter_list[1] + nval
