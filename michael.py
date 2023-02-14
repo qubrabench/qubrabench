@@ -60,7 +60,7 @@ def search(
     seq: Iterable[T],
     predicate: Callable[T, bool],
     *,
-    eps=10**-5,
+    eps,
     K=130,
     stats: SearchStats = None,
 ):
@@ -123,7 +123,9 @@ def simple_hill_climber(
         # better = np.flatnonzero(weights > w)
 
         # find improved directions
-        result = search(zip(neighbors, weights), lambda it: it[1] > w, stats=stats)
+        result = search(
+            zip(neighbors, weights), lambda it: it[1] > w, eps=eps / n, stats=stats
+        )
         if not result:
             return x
         x, w = result
@@ -229,7 +231,7 @@ def plot(src):
         ax.grid(which="both")
         first = ax == axs[0]
         for col, label in lines.items():
-            ax.plot(means.index, means[col], "-o", label=label if first else None)
+            ax.plot(means.index, means[col], "-x", label=label if first else None)
             ax.fill_between(
                 means.index,
                 means[col] + errors[col],
