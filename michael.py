@@ -78,7 +78,7 @@ def search(
         stats.classical_search_expected_queries += (N + 1) / (T + 1)
         if T == 0:
             C = K
-            Q = 9.2 * np.ceil(np.log(N / eps) / np.log(3)) * np.sqrt(N)
+            Q = 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
         else:
             F = (
                 (
