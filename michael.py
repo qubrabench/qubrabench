@@ -150,11 +150,15 @@ def cli():
 @click.option(
     "--save",
     "dest",
-    help="Save to JSON file (does not delete existing data).",
+    help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def record(k, r, n, runs, dest, verbose):
-    # run benchmarks
+def run(k, r, n, runs, dest, verbose):
+    """
+    Run simple hill simpler benchmark. Example:
+
+        michael.py run -k 2 -r 3 -n 100 --save results.json
+    """
     history = []
     for run in range(runs):
         if verbose:
