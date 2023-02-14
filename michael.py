@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 from dataclasses import dataclass, fields, asdict
 from enum import Enum
 from pathlib import Path
@@ -134,9 +135,14 @@ def cli():
 
 
 @cli.command()
-@click.option("-k", help="Number of literals per clause.", type=int)
-@click.option("-n", help="Number of variables.", type=int)
-@click.option("-r", help="Number of clauses divided by number of variables.", type=int)
+@click.option("-k", help="Number of literals per clause.", type=int, required=True)
+@click.option("-n", help="Number of variables.", type=int, required=True)
+@click.option(
+    "-r",
+    help="Number of clauses divided by number of variables.",
+    type=int,
+    required=True,
+)
 @click.option(
     "--runs", help="Number of runs (repetitions).", default=10, show_default=True
 )
@@ -147,7 +153,7 @@ def cli():
     help="Save to JSON file (does not delete existing data).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def run(k, r, n, runs, dest, verbose):
+def record(k, r, n, runs, dest, verbose):
     # run benchmarks
     history = []
     for run in range(runs):
