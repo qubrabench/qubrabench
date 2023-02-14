@@ -147,7 +147,7 @@ def cli():
     help="Save to JSON file (does not delete existing data).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def benchmark(k, r, n, runs, dest, verbose):
+def run(k, r, n, runs, dest, verbose):
     # run benchmarks
     history = []
     for run in range(runs):
@@ -184,7 +184,7 @@ def benchmark(k, r, n, runs, dest, verbose):
     "src",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
 )
-def analyze(src):
+def plot(src):
     history = pd.read_json(src, orient="split")
 
     # compute combined query costs of quantum search
@@ -192,13 +192,15 @@ def analyze(src):
     q = history["quantum_search_expected_quantum_queries"]
     history["quantum_search_cq"] = c + q
     history["quantum_search_cqq"] = c + 2 * q
+    history["quantum_search_qq"] = 2 * q
 
     # plot
     lines = {
         "classical_search_actual_queries": "classical search (actual)",
         "classical_search_expected_queries": "classical search (expected)",
-        "quantum_search_cq": "quantum search (classical + quantum)",
-        "quantum_search_cqq": "quantum search (classical + 2 quantum)",
+        "quantum_search_cq": "quantum search (expected classical + quantum)",
+        "quantum_search_cqq": "quantum search (expected classical + 2 quantum)",
+        "quantum_search_qq": "quantum search (2 quantum)",
     }
     groups = history.groupby(["k", "r"])
     fig, axs = plt.subplots(1, len(groups), sharey=True)
@@ -219,7 +221,10 @@ def analyze(src):
         for col, label in lines.items():
             ax.plot(means.index, means[col], "-o", label=label if first else None)
             ax.fill_between(
-                means.index, means[col] + errors[col], means[col] - errors[col]
+                means.index,
+                means[col] + errors[col],
+                means[col] - errors[col],
+                alpha=0.5,
             )
 
     fig.legend(loc="upper center")
