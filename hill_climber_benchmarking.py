@@ -5,16 +5,19 @@ from hill_climber_solver import calculate_average_call_count
 def main():
     k_sat = 3
     hamming_distance = 1
-    max_problem_size_exponent = 3   # determines the maximum size for a problem instance with 10^max_problem_size_exponent
+    max_problem_size_exponent = 4   # determines the maximum size for a problem instance with 10^max_problem_size_exponent
     weight_range = (0, 1)           # min-max of clause weight
     number_samples = 1              # number of problem instances to average per instance size (5 in Cade et al.)
 
     call_counts = {}
     for problem_exponent in range(1, max_problem_size_exponent+1):
-        problem_size_bounds = (10**problem_exponent, 10**problem_exponent)  # we want problems exactly the size of 10^problem_exponent
-        instance_call_counts = calculate_average_call_count(number_samples, k_sat, problem_size_bounds, weight_range, hamming_distance)
+        try:  # wrap this in try-except to be able to abort prematurely
+            problem_size_bounds = (10**problem_exponent, 10**problem_exponent)  # we want problems exactly the size of 10^problem_exponent
+            instance_call_counts = calculate_average_call_count(number_samples, k_sat, problem_size_bounds, weight_range, hamming_distance)
 
-        call_counts[problem_size_bounds[-1]] = instance_call_counts # Store result object with the max instance size as key
+            call_counts[problem_size_bounds[-1]] = instance_call_counts # Store result object with the max instance size as key
+        except KeyboardInterrupt:
+            print("Cancelled Benchmarking run for exponent", problem_exponent)
 
     # Generate plot using the average data
     pyplot.xscale('log')
@@ -34,8 +37,10 @@ def main():
          **{'color': 'green', 'marker': 'x', 'label': 'Estimated Quantum Cost'})
 
     # Comparative parameters from Cade et al.
-    pyplot.plot((100, 1000, 10000), (400, 6500, 90000), **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
-    pyplot.plot((100, 1000, 10000), (2000, 10200, 80000), **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
+    pyplot.plot((100, 300, 1000, 3000, 10000), (400, 1.9e3, 7.5e3, 2.8e4, 1e5),
+        **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
+    pyplot.plot((100, 300, 1000, 3000, 10000), (2e3, 4.5e3, 1.2e4, 3.0e4, 8e4), 
+        **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
 
     pyplot.legend()
     pyplot.title("Query cost comparison for Max-k-SAT\nk = " + str(k_sat) + ", r = 3")

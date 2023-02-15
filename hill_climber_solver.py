@@ -7,9 +7,12 @@ from functools import wraps
 from hill_climber_problem_generator import HillClimberProblemGenerator as ProblemGenerator
 
 # ============================================================================================================
-# Debug Settings
+# Settings
 # ============================================================================================================
 verbose = True
+exact_T = False # determines whether to brute force T or or sample and extrapolate
+sample_size_T = 130 # number of samples when determining T approximately, higher values take more time but provide higher approximation rate
+K = 130 # number of samples to classically perform, influences quantum estimation 
 
 dprint = print if verbose else lambda *a, **k: None
 
@@ -187,6 +190,33 @@ def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_d
     trace_system_data["call_count"] = 0
     return instance_call_data, solution, solution_weight
 
+
+def determine_T(neighbours, clauses_array, weights_array, weight):
+    def evaluate_one_solution(solution):
+        """Increases T if the given solution is a valid candidate improving the weight"""
+        _, new_weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
+        return new_weight > weight
+   
+    T = 0
+    # brute force T, might take a long Time
+    if exact_T:
+        for neighbour in neighbours:
+            _, new_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
+            if evaluate_one_solution(neighbour):
+                T += 1
+
+    # approximate T based on an amount of samples
+    else:
+        for _ in range(K):
+            sample = random.choice(list(neighbours))
+            if evaluate_one_solution(sample):
+                T += 1
+        # extrapolate from the sampling hit-rate
+        T = math.floor((T/K) * len(neighbours))
+
+
+    return T
+
 def estimate_quantum_calls(N, T, epsilon=None):
     if T == 0:
         # approximate epsilon if it isn't provided
@@ -194,17 +224,14 @@ def estimate_quantum_calls(N, T, epsilon=None):
         return 9.2 * math.ceil(math.log(1/epsilon, 3)) * math.sqrt(N)
     
     F = 2.0344
-    K = 130
     if 1 <= T < (N / 4):
         F = (9 / 4) * (N / (math.sqrt((N - T) * T))) + math.ceil(
             math.log((N / (2 * math.sqrt((N - T) * T))), (6 / 5))) - 3
-
 
     return pow((1 - (T / N)), K) * F * (1 + (1 / (1 - (F / (9.2 * math.sqrt(N))))))
 
 
 def estimate_classical_calls(N, T):
-    K = 130
     if T == 0:
         return K 
     else:
@@ -257,14 +284,9 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
 
     # Determine inputs for call estimation
     N = len(neighbours)
-    # find out T by counting valid neighbours to current solution (value greater than current)
-    T = 0
-    for neighbour in neighbours:
-        _, new_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
-        if new_weight > weight:
-            T += 1
-
     dprint("Neighbourhood Size: ", N)
+    # find out T by counting valid neighbours to current solution (value greater than current)
+    T = determine_T(neighbours, clauses_array, weights_array, weight)
     dprint("Valid Neighbours: ", T)
 
     # TODO determine epsilon using number of traced qsearch calls
