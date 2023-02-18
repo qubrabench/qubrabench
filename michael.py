@@ -8,6 +8,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import random
+import scipy
+
+from profile_decoration import profile
 
 
 @dataclass(frozen=True)
@@ -39,6 +42,8 @@ class MaxSatInstance:
         for i in range(m):
             vs = np.random.choice(n, k, replace=False)
             clauses[i][vs] = np.random.choice([-1, 1], k)
+        
+        clauses = scipy.sparse.csr_matrix(clauses)
 
         # generate random weights in [0,1]
         weights = np.random.random(m)
@@ -67,7 +72,6 @@ def search(
     """
     Search a list by random sampling (and keep track of classical and quantum stats).
 
-    TODO: Please check my formulas @Tim.
     TODO: Think about how to interpret eps for the classical algorithm.
     """
     seq = list(seq)
@@ -76,7 +80,7 @@ def search(
     if stats:
         N = len(seq)
         T = sum(1 for x in seq if predicate(x))
-        stats.classical_search_expected_queries += (N + 1) / (T + 1)
+        stats.classical_search_expected_queries += (N + 1) / (T + 1) # TODO why is this +1
         if T == 0:
             C = K
             Q = 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
@@ -90,7 +94,7 @@ def search(
                 if T < N / 4
                 else 2.0344
             )
-            C = N / T * (1 - (1 - T / N) ** K)
+            C = N / T * (1 - (1 - T / N) ** K) # Note: checked until here
             Q = (1 - T / N) ** K * F * (1 + 1 / (1 - F / (9.2 * np.sqrt(N))))
         stats.quantum_search_expected_classical_queries += C
         stats.quantum_search_expected_quantum_queries += Q
@@ -103,7 +107,7 @@ def search(
         if predicate(x):
             return x
 
-
+@profile()
 def simple_hill_climber(
     inst: MaxSatInstance, *, eps=10**-5, stats: SearchStats = None
 ):
