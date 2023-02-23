@@ -10,7 +10,7 @@ from hill_climber_problem_generator import HillClimberProblemGenerator as Proble
 # Settings
 # ============================================================================================================
 verbose = True
-exact_T = False # determines whether to brute force T or or sample and extrapolate
+exact_T = True # determines whether to brute force T or or sample and extrapolate
 sample_size_T = 130 # number of samples when determining T approximately, higher values take more time but provide higher approximation rate
 K = 130 # number of samples to classically perform, influences quantum estimation 
 
@@ -295,10 +295,15 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     call_data.increase_estimated_classical_calls(
         estimate_classical_calls(N, T))
 
-    return find_better_neighbour(current_solution, weight, clauses_array, weights_array, dist)
+    better_neighbour, better_weight = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
+    if better_neighbour is None:
+        better_neighbour = current_solution
+        better_weight = weight
+
+    return better_neighbour, better_weight
 
 @log_trace()
-def find_better_neighbour(current_solution, weight, clauses_array, weights_array, dist):
+def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
     """
     Function searching for better neighbour given a current solution
     :param solution: current solution
@@ -308,20 +313,18 @@ def find_better_neighbour(current_solution, weight, clauses_array, weights_array
     :param dist: the problem's dist (hamming distance for neighbours)
     :return: Tuple of better neighbour and the current weight
     """
-    neighbours = get_neighbours(current_solution, dist)
-
     for neighbour in neighbours:
         n_solution, n_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
         if n_weight > weight:
             return n_solution, n_weight
     
     # fallback
-    return current_solution, weight
+    return None, None
 
 
 def get_neighbours(solution, max_hamming_distance):
     """
-    Gets array of all neighbours with hamming distance 1 <= x <= max_hamming_distance
+    Gets shuffled list of all neighbours with hamming distance 1 <= x <= max_hamming_distance
     :param solution: solution to calculate the neighbours for
     :param max_hamming_distance: maximum hamming distance to consider
     :return: set of neighbours with hamming distance 1 <= x <= max_hamming_distance
@@ -329,6 +332,9 @@ def get_neighbours(solution, max_hamming_distance):
     neighbours = set()
     for i in range(1, max_hamming_distance + 1):
         neighbours.update(generate_differing_arrays(solution, i))
+    
+    neighbours = list(neighbours)
+    random.shuffle(neighbours)
     return neighbours
 
 
