@@ -3,6 +3,7 @@ import math
 import random
 import sys
 from functools import wraps
+from dataclasses import dataclass
 
 from hill_climber_problem_generator import HillClimberProblemGenerator as ProblemGenerator
 
@@ -19,38 +20,14 @@ dprint = print if verbose else lambda *a, **k: None
 # ============================================================================================================
 # Data Structures
 # ============================================================================================================
+@dataclass
 class CallData:
     """Structure that holds benchmarking data for an individual problem"""
-    def __init__(self) -> None:
-        self.traced_calls = -1
-        self.estimated_quantum_calls = -1
-        self.estimated_classical_calls = -1
+    traced_calls: int = 0
+    estimated_quantum_calls: int = 0
+    estimated_classical_calls: int = 0
 
-    def get_traced_calls(self):
-        return self.traced_calls
-
-    def get_estimated_quantum_calls(self):
-        return self.estimated_quantum_calls
-
-    def get_estimated_classical_calls(self):
-        return self.estimated_classical_calls
-
-    def set_traced_calls(self, value):
-        self.traced_calls = value
-
-    def set_estimated_quantum_calls(self, value):
-        self.estimated_quantum_calls = value
-
-    def increase_estimated_quantum_calls(self, value):
-        self.estimated_quantum_calls += value
-
-    def set_estimated_classical_calls(self, value):
-        self.estimated_classical_calls = value
-
-    def increase_estimated_classical_calls(self, value):
-        self.estimated_classical_calls += value
-
-    def get_estimated_calls(self, quantum_weight=2):
+    def calc_estimated_calls(self, quantum_weight=2):
         """returns the estimated classical and quantum parts multiplied by the quantum weight"""
         return self.estimated_classical_calls + quantum_weight * self.estimated_quantum_calls
 
@@ -71,7 +48,6 @@ def log_trace():
         :param func: decorated function
         :return: wrapper for calling function with corresponding parameters
         """
-        name = func.__name__
 
         @wraps(func)
         def wrapper(*args, **kwargs):
@@ -149,14 +125,14 @@ def calculate_average_call_count(iterations, k_sat, var_range, weight_range, ham
         instance_call_data.append(calculated_call_count)
     
     # average individual instance results
-    average_traced_calls = sum([instance.get_traced_calls() for instance in instance_call_data]) / iterations
-    average_estimated_quantum_calls = sum([instance.get_estimated_quantum_calls() for instance in instance_call_data]) / iterations
-    average_estimated_classical_calls = sum([instance.get_estimated_classical_calls() for instance in instance_call_data]) / iterations
+    average_traced_calls = sum([instance.traced_calls for instance in instance_call_data]) / iterations
+    average_estimated_quantum_calls = sum([instance.estimated_quantum_calls for instance in instance_call_data]) / iterations
+    average_estimated_classical_calls = sum([instance.estimated_classical_calls for instance in instance_call_data]) / iterations
 
     average_call_data = CallData()
-    average_call_data.set_traced_calls(average_traced_calls)
-    average_call_data.set_estimated_quantum_calls(average_estimated_quantum_calls)
-    average_call_data.set_estimated_classical_calls(average_estimated_classical_calls)
+    average_call_data.traced_calls = average_traced_calls
+    average_call_data.estimated_quantum_calls = average_estimated_quantum_calls
+    average_call_data.estimated_classical_calls = average_estimated_classical_calls
 
     return average_call_data
 
@@ -186,7 +162,7 @@ def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_d
     dprint("Max Quantum calls: " + str(7.7 * math.sqrt(trace_system_data["call_count"])))
 
     # Cache trace count and reset
-    instance_call_data.set_traced_calls(trace_system_data["call_count"])
+    instance_call_data.traced_calls = trace_system_data["call_count"]
     trace_system_data["call_count"] = 0
     return instance_call_data, solution, solution_weight
 
@@ -217,10 +193,9 @@ def determine_T(neighbours, clauses_array, weights_array, weight):
 
     return T
 
-def estimate_quantum_calls(N, T, epsilon=None):
+def estimate_quantum_calls(N, T, epsilon=10**-5):
     if T == 0:
         # approximate epsilon if it isn't provided
-        epsilon = epsilon=(10**-5)/N if epsilon is None else epsilon
         return 9.2 * math.ceil(math.log(1/epsilon, 3)) * math.sqrt(N)
     
     F = 2.0344
@@ -263,8 +238,8 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, call_data
         better_solution, better_weight = bench_wrap_find_better_neighbour(current_solution, weight, clauses_array,
                                                               weights_array, dist, call_data)
     
-    dprint("Quantum\tCalls: ", call_data.get_estimated_quantum_calls)
-    dprint("Classical\tCalls: ", call_data.get_estimated_classical_calls)
+    dprint("Quantum\tCalls: ", call_data.estimated_quantum_calls)
+    dprint("Classical\tCalls: ", call_data.estimated_classical_calls)
 
     return better_solution, better_weight
 
@@ -282,6 +257,11 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     """
     neighbours = get_neighbours(current_solution, dist)
 
+    better_neighbour, better_weight, num_searches = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
+    if better_neighbour is None:
+        better_neighbour = current_solution
+        better_weight = weight
+
     # Determine inputs for call estimation
     N = len(neighbours)
     dprint("Neighbourhood Size: ", N)
@@ -290,15 +270,10 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     dprint("Valid Neighbours: ", T)
 
     # TODO determine epsilon using number of traced qsearch calls
-    call_data.increase_estimated_quantum_calls(
-        estimate_quantum_calls(N, T))
-    call_data.increase_estimated_classical_calls(
-        estimate_classical_calls(N, T))
-
-    better_neighbour, better_weight = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
-    if better_neighbour is None:
-        better_neighbour = current_solution
-        better_weight = weight
+    dprint("Number of Searches: ", num_searches)
+    eps = 10**-5 / num_searches
+    call_data.estimated_quantum_calls += estimate_quantum_calls(N, T)
+    call_data.estimated_classical_calls += estimate_classical_calls(N, T)
 
     return better_neighbour, better_weight
 
@@ -313,13 +288,15 @@ def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
     :param dist: the problem's dist (hamming distance for neighbours)
     :return: Tuple of better neighbour and the current weight
     """
+    num_searches = 0 # TODO this somehow needs to be integrated into log_trace()
     for neighbour in neighbours:
         n_solution, n_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
+        num_searches += 1
         if n_weight > weight:
-            return n_solution, n_weight
+            return n_solution, n_weight, num_searches
     
     # fallback
-    return None, None
+    return None, None, num_searches
 
 
 def get_neighbours(solution, max_hamming_distance):
