@@ -94,7 +94,7 @@ def search(
                 if T < N / 4
                 else 2.0344
             )
-            C = N / T * (1 - (1 - T / N) ** K) # Note: checked until here
+            C = N / T * (1 - (1 - T / N) ** K)
             Q = (1 - T / N) ** K * F * (1 + 1 / (1 - F / (9.2 * np.sqrt(N))))
         stats.quantum_search_expected_classical_queries += C
         stats.quantum_search_expected_quantum_queries += Q
@@ -107,7 +107,7 @@ def search(
         if predicate(x):
             return x
 
-@profile()
+
 def simple_hill_climber(
     inst: MaxSatInstance, *, eps=10**-5, stats: SearchStats = None
 ):
@@ -128,7 +128,7 @@ def simple_hill_climber(
 
         # find improved directions
         result = search(
-            zip(neighbors, weights), lambda it: it[1] > w, eps=eps / n, stats=stats
+            zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
         )
         if not result:
             return x
@@ -206,17 +206,17 @@ def plot(src):
     # compute combined query costs of quantum search
     c = history["quantum_search_expected_classical_queries"]
     q = history["quantum_search_expected_quantum_queries"]
-    history["quantum_search_cq"] = c + q
+    # history["quantum_search_cq"] = c + q
     history["quantum_search_cqq"] = c + 2 * q
-    history["quantum_search_qq"] = 2 * q
+    # history["quantum_search_qq"] = 2 * q
 
     # plot
     lines = {
         "classical_search_actual_queries": "classical search (actual)",
-        "classical_search_expected_queries": "classical search (expected)",
-        "quantum_search_cq": "quantum search (expected classical + quantum)",
+        # "classical_search_expected_queries": "classical search (expected)",
+        # "quantum_search_cq": "quantum search (expected classical + quantum)",
         "quantum_search_cqq": "quantum search (expected classical + 2 quantum)",
-        "quantum_search_qq": "quantum search (2 quantum)",
+        # "quantum_search_qq": "quantum search (2 quantum)",
     }
     groups = history.groupby(["k", "r"])
     fig, axs = plt.subplots(1, len(groups), sharey=True)
@@ -235,13 +235,21 @@ def plot(src):
         ax.grid(which="both")
         first = ax == axs[0]
         for col, label in lines.items():
-            ax.plot(means.index, means[col], "-x", label=label if first else None)
+            ax.plot(means.index, means[col], "x" if "quantum" in label else "o", label=label if first else None, color="b")
             ax.fill_between(
                 means.index,
                 means[col] + errors[col],
                 means[col] - errors[col],
                 alpha=0.5,
+                color="b"
             )
+        
+        # Default data
+        # Comparative parameters from Cade et al.
+        ax.plot((100, 300, 1000, 3000, 10000), (400, 1.9e3, 7.5e3, 2.8e4, 1e5),
+            **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
+        ax.plot((100, 300, 1000, 3000, 10000), (2e3, 4.5e3, 1.2e4, 3.0e4, 8e4), 
+            **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
 
     fig.legend(loc="upper center")
     plt.subplots_adjust(top=0.7)
