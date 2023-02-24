@@ -2,40 +2,50 @@ from matplotlib import pyplot
 
 from hill_climber_solver import calculate_average_call_count
 
-if __name__ == "__main__":
-    # print(calcQQ())
-
-    sat = 3
+def main():
+    k_sat = 3
     hamming_distance = 1
+    max_problem_size_exponent = 3   # determines the maximum size for a problem instance with 10^max_problem_size_exponent
+    weight_range = (0, 1)           # min-max of clause weight
+    number_samples = 1              # number of problem instances to average per instance size (5 in Cade et al.)
 
-    # Calculate average values for var count of 10, 100 and 1000
-    val10 = calculate_average_call_count(5, sat, (10, 10), (0, 1), hamming_distance)
-    print("\n" + str(val10) + "\n")
+    call_counts = {}
+    for problem_size in [100, 300, 1000, 3000]:
+        try:  # wrap this in try-except to be able to abort prematurely
+            problem_size_bounds = (problem_size, problem_size) 
+            instance_call_counts = calculate_average_call_count(number_samples, k_sat, problem_size_bounds, weight_range, hamming_distance)
 
-    val100 = calculate_average_call_count(5, sat, (100, 100), (0, 1), hamming_distance)
-    print("\n" + str(val100) + "\n")
-
-    val1000 = calculate_average_call_count(5, sat, (1000, 1000), (0, 1), hamming_distance)
-    print("\n" + str(val1000) + "\n")
-
-    val10000 = calculate_average_call_count(1, sat, (10000, 10000), (0, 1), hamming_distance)
-    print("\n" + str(val10000) + "\n")
+            call_counts[problem_size_bounds[-1]] = instance_call_counts # Store result object with the max instance size as key
+        except KeyboardInterrupt:
+            print("Cancelled Benchmarking run for exponent", problem_size)
 
     # Generate plot using the average data
     pyplot.xscale('log')
-    pyplot.xlabel("Variable count")
+    pyplot.xlabel("Problem instance size (#variables)")
     pyplot.yscale('log')
-    pyplot.ylabel("Queries")
+    pyplot.ylabel("#Queries")
     pyplot.grid()
 
-    # Use value 67812 for var count of 10000 (for now) because computation takes very long
-    pyplot.plot((10, 100, 1000, 10000), (val10, val100, val1000, ((67812 + 81574) / 2)),
-                **{'color': 'red', 'marker': 'o', 'label': 'KIT data'})
-    pyplot.plot((100, 1000, 10000), (400, 6500, 90000), **{'color': 'green', 'marker': 'o', 'label': 'Jordi paper'})
-    pyplot.plot((100, 1000, 10000), (2000, 10200, 80000),
-                **{'color': 'green', 'marker': 'x', 'label': 'Jordi paper (quantum)'})
-    pyplot.plot((10, 100, 1000), (7.54, 227, 3875),
-                **{'color': 'green', 'marker': 'x', 'label': 'Conventional + Quantum Calls'})
+    # Plot collected Data
+    instance_sizes = call_counts.keys()
+    classical_calls = [call_counts[instance].traced_calls for instance in instance_sizes]
+    estimated_hybrid_calls = [call_counts[instance].calc_estimated_calls() for instance in instance_sizes]
+
+    pyplot.plot(instance_sizes, classical_calls,
+        **{'color': 'green', 'marker': 'o', 'label': 'Traced Classical Cost'})
+    pyplot.plot(instance_sizes, estimated_hybrid_calls,
+         **{'color': 'green', 'marker': 'x', 'label': 'Estimated Quantum Cost'})
+
+    # Comparative parameters from Cade et al.
+    pyplot.plot((100, 300, 1000, 3000, 10000), (400, 1.9e3, 7.5e3, 2.8e4, 1e5),
+        **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
+    pyplot.plot((100, 300, 1000, 3000, 10000), (2e3, 4.5e3, 1.2e4, 3.0e4, 8e4), 
+        **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
+
     pyplot.legend()
-    pyplot.title("k = " + str(sat) + ", r = 3")
+    pyplot.title("Query cost comparison for Max-k-SAT\nk = " + str(k_sat) + ", r = 3")
     pyplot.show()
+
+
+if __name__ == "__main__":
+    main()

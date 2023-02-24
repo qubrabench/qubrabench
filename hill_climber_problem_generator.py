@@ -41,5 +41,5 @@ class HillClimberProblemGenerator:
                 clause[j] = literal
                 used.add(literal)
             clauses[i] = clause
-        weights = [random.randint(weight_min, weight_max) for _ in range(calculated_clause_count)]
+        weights = [random.uniform(weight_min, weight_max) for _ in range(calculated_clause_count)]
         return clauses, weights, variable_count, self.hamming_distance
