@@ -1,16 +1,9 @@
-#!/usr/bin/env python
-from dataclasses import dataclass, fields, asdict
-from enum import Enum
-from pathlib import Path
+from dataclasses import dataclass, asdict
 from typing import Callable, Iterable, TypeVar
-import click
-import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import random
 import scipy
-
-from profile_decoration import profile
+import pandas as pd
 
 
 @dataclass(frozen=True)
@@ -49,9 +42,7 @@ class MaxSatInstance:
         weights = np.random.random(m)
         return MaxSatInstance(k, clauses, weights)
 
-
 T = TypeVar("T")
-
 
 @dataclass
 class SearchStats:
@@ -120,6 +111,9 @@ def simple_hill_climber(
     x = np.random.choice([-1, 1], n)
     w = inst.weight(x)
 
+    # DEBUG: Search Calls
+    number_search_calls = 0
+
     while True:
         # compute all Hamming neighbors (row by row) and their weights
         neighbors = flip_mat * np.outer(ones, x)
@@ -127,44 +121,16 @@ def simple_hill_climber(
         # better = np.flatnonzero(weights > w)
 
         # find improved directions
-        result = search(
+        number_search_calls += 1
+        result = search(  # TODO this is called too often!
             zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
         )
         if not result:
+            print(f"Search was called {number_search_calls} times for this instance")
             return x
         x, w = result
 
-
-@click.group()
-def cli():
-    pass
-
-
-@cli.command()
-@click.option("-k", help="Number of literals per clause.", type=int, required=True)
-@click.option("-n", help="Number of variables.", type=int, required=True)
-@click.option(
-    "-r",
-    help="Number of clauses divided by number of variables.",
-    type=int,
-    required=True,
-)
-@click.option(
-    "--runs", help="Number of runs (repetitions).", default=10, show_default=True
-)
-@click.option("--verbose/--no-verbose", help="Show more output.", default=True)
-@click.option(
-    "--save",
-    "dest",
-    help="Save to JSON file (preserves existing data!).",
-    type=click.Path(dir_okay=False, writable=True, path_type=Path),
-)
 def run(k, r, n, runs, dest, verbose):
-    """
-    Run simple hill simpler benchmark. Example:
-
-        michael.py run -k 2 -r 3 -n 100 --save results.json
-    """
     history = []
     for run in range(runs):
         if verbose:
@@ -194,67 +160,3 @@ def run(k, r, n, runs, dest, verbose):
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
 
-
-@cli.command()
-@click.argument(
-    "src",
-    type=click.Path(dir_okay=False, readable=True, path_type=Path),
-)
-def plot(src):
-    history = pd.read_json(src, orient="split")
-
-    # compute combined query costs of quantum search
-    c = history["quantum_search_expected_classical_queries"]
-    q = history["quantum_search_expected_quantum_queries"]
-    # history["quantum_search_cq"] = c + q
-    history["quantum_search_cqq"] = c + 2 * q
-    # history["quantum_search_qq"] = 2 * q
-
-    # plot
-    lines = {
-        "classical_search_actual_queries": "classical search (actual)",
-        # "classical_search_expected_queries": "classical search (expected)",
-        # "quantum_search_cq": "quantum search (expected classical + quantum)",
-        "quantum_search_cqq": "quantum search (expected classical + 2 quantum)",
-        # "quantum_search_qq": "quantum search (2 quantum)",
-    }
-    groups = history.groupby(["k", "r"])
-    fig, axs = plt.subplots(1, len(groups), sharey=True)
-    if len(groups) == 1:
-        axs = [axs]
-    for ax, ((k, r), group) in zip(axs, groups):
-        means = group.groupby("n").mean()
-        errors = group.groupby("n").sem()
-        ax.set_title(f"k = {k}, r = {r}")
-        ax.set_xlim(10**2, 10**4)
-        ax.set_ylim(300, 10**5)
-        ax.set_xscale("log")
-        ax.set_yscale("log")
-        ax.set_xlabel("$n$")
-        ax.set_ylabel("Queries")
-        ax.grid(which="both")
-        first = ax == axs[0]
-        for col, label in lines.items():
-            ax.plot(means.index, means[col], "x" if "quantum" in label else "o", label=label if first else None, color="b")
-            ax.fill_between(
-                means.index,
-                means[col] + errors[col],
-                means[col] - errors[col],
-                alpha=0.5,
-                color="b"
-            )
-        
-        # Default data
-        # Comparative parameters from Cade et al.
-        ax.plot((100, 300, 1000, 3000, 10000), (400, 1.9e3, 7.5e3, 2.8e4, 1e5),
-            **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
-        ax.plot((100, 300, 1000, 3000, 10000), (2e3, 4.5e3, 1.2e4, 3.0e4, 8e4), 
-            **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
-
-    fig.legend(loc="upper center")
-    plt.subplots_adjust(top=0.7)
-    plt.show()
-
-
-if __name__ == "__main__":
-    cli()
