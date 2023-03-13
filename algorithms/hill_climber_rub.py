@@ -5,6 +5,9 @@ import random
 import scipy
 import pandas as pd
 
+from bench.stats import QueryStats
+import bench.qsearch as qsearch
+
 
 @dataclass(frozen=True)
 class MaxSatInstance:
@@ -44,21 +47,14 @@ class MaxSatInstance:
 
 T = TypeVar("T")
 
-@dataclass
-class SearchStats:
-    classical_search_actual_queries: int = 0
-    classical_search_expected_queries: int = 0
-    quantum_search_expected_classical_queries: int = 0
-    quantum_search_expected_quantum_queries: int = 0
-
 
 def search(
     seq: Iterable[T],
-    predicate: Callable[T, bool],
+    predicate: Callable[[T], bool],
     *,
     eps,
     K=130,
-    stats: SearchStats = None,
+    stats: QueryStats = None,
 ):
     """
     Search a list by random sampling (and keep track of classical and quantum stats).
@@ -71,36 +67,21 @@ def search(
     if stats:
         N = len(seq)
         T = sum(1 for x in seq if predicate(x))
-        stats.classical_search_expected_queries += (N + 1) / (T + 1) # TODO why is this +1
-        if T == 0:
-            C = K
-            Q = 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
-        else:
-            F = (
-                (
-                    9 / 4 * N / np.sqrt((N - T) * T)
-                    + np.ceil(np.log(N / (2 * np.sqrt((N - T) * T))) / np.log(6 / 5))
-                    - 3
-                )
-                if T < N / 4
-                else 2.0344
-            )
-            C = N / T * (1 - (1 - T / N) ** K)
-            Q = (1 - T / N) ** K * F * (1 + 1 / (1 - F / (9.2 * np.sqrt(N))))
-        stats.quantum_search_expected_classical_queries += C
-        stats.quantum_search_expected_quantum_queries += Q
+        stats.classical_expected_queries += (N + 1) / (T + 1)
+        stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T, K)
+        stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T, eps, K)
 
     # run the classical sampling-without-replacement algorithms
     random.shuffle(seq)
     for x in seq:
         if stats:
-            stats.classical_search_actual_queries += 1
+            stats.classical_actual_queries += 1
         if predicate(x):
             return x
 
 
 def simple_hill_climber(
-    inst: MaxSatInstance, *, eps=10**-5, stats: SearchStats = None
+    inst: MaxSatInstance, *, eps=10**-5, stats: QueryStats = None
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
@@ -111,9 +92,6 @@ def simple_hill_climber(
     x = np.random.choice([-1, 1], n)
     w = inst.weight(x)
 
-    # DEBUG: Search Calls
-    number_search_calls = 0
-
     while True:
         # compute all Hamming neighbors (row by row) and their weights
         neighbors = flip_mat * np.outer(ones, x)
@@ -121,12 +99,11 @@ def simple_hill_climber(
         # better = np.flatnonzero(weights > w)
 
         # find improved directions
-        number_search_calls += 1
+        stats.classical_control_method_calls += 1
         result = search(  # TODO this is called too often!
             zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
         )
         if not result:
-            print(f"Search was called {number_search_calls} times for this instance")
             return x
         x, w = result
 
@@ -135,10 +112,11 @@ def run(k, r, n, runs, dest, verbose):
     for run in range(runs):
         if verbose:
             print(f"k={k}, r={r}, n={n}, #{run}")
-        stats = SearchStats()
+        stats = QueryStats()
         inst = MaxSatInstance.random(k=k, n=n, m=r * n)
         simple_hill_climber(inst, stats=stats)
         stats = asdict(stats)
+        stats["impl"] = "RUB"
         stats["n"] = n
         stats["k"] = k
         stats["r"] = r

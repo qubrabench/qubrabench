@@ -1,31 +1,54 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+import random
+import os.path as path
 
-def plot(src):
+def plot(src, quantum_factor=2):
+    colors = {
+        "KIT": "green",
+        "RUB": "blue",
+        "Cade": "orange"
+    }
+    def color_for_impl(impl):
+        """
+            Returns a color given a key. Does not duplicate colors so it might run
+            out of colors but who is going to print that much data :)
+        """
+        try:
+            return colors[impl]
+        except KeyError:
+            mcolor_names: list = [c for c in mcolors.CSS4_COLORS.keys() if c not in colors.values()]
+            new_color = random.choice(mcolor_names)
+            colors[impl] = new_color
+            return new_color
+
+    # read in data to plot
     history = pd.read_json(src, orient="split")
+    # read in references TODO: make this optional via additional arguments
+    ref_path = path.join(path.dirname(path.realpath(__file__)), 
+                         "reference_data/hill_climb_cade_ref.json")
+    reference = pd.read_json(ref_path, orient="split")
+    history = pd.concat([history, reference])
 
     # compute combined query costs of quantum search
-    c = history["quantum_search_expected_classical_queries"]
-    q = history["quantum_search_expected_quantum_queries"]
-    # history["quantum_search_cq"] = c + q
-    history["quantum_search_cqq"] = c + 2 * q
-    # history["quantum_search_qq"] = 2 * q
+    c = history["quantum_expected_classical_queries"]
+    q = history["quantum_expected_quantum_queries"]
+    history["quantum_cqq"] = c + quantum_factor * q  
 
-    # plot
+    # define lines to plot
     lines = {
-        "classical_search_actual_queries": "classical search (actual)",
-        # "classical_search_expected_queries": "classical search (expected)",
-        # "quantum_search_cq": "quantum search (expected classical + quantum)",
-        "quantum_search_cqq": "quantum search (expected classical + 2 quantum)",
-        # "quantum_search_qq": "quantum search (2 quantum)",
+        "classical_actual_queries": "Classical Queries",
+        "quantum_cqq": "Quantum Queries",
     }
+    seen_labels = [] # keep track to ensure proper legends
+
+    # group plots by combinations of k and r
     groups = history.groupby(["k", "r"])
     fig, axs = plt.subplots(1, len(groups), sharey=True)
     if len(groups) == 1:
         axs = [axs]
     for ax, ((k, r), group) in zip(axs, groups):
-        means = group.groupby("n").mean()
-        errors = group.groupby("n").sem()
         ax.set_title(f"k = {k}, r = {r}")
         ax.set_xlim(10**2, 10**4)
         ax.set_ylim(300, 10**5)
@@ -34,23 +57,34 @@ def plot(src):
         ax.set_xlabel("$n$")
         ax.set_ylabel("Queries")
         ax.grid(which="both")
-        first = ax == axs[0]
-        for col, label in lines.items():
-            ax.plot(means.index, means[col], "x" if "quantum" in label else "o", label=label if first else None, color="b")
-            ax.fill_between(
-                means.index,
-                means[col] + errors[col],
-                means[col] - errors[col],
-                alpha=0.5,
-                color="b"
-            )
+
+        # group lines by implementation
+        impls = group.groupby("impl")
+        for name, impl in impls:
+            means = impl.groupby("n").mean(numeric_only=True)
+            errors = impl.groupby("n").sem(numeric_only=True)
+            for col, label in lines.items():
+
+                text = f"{label} ({name})"
+                if text in seen_labels:
+                    text = "__nolabel__"
+                else:
+                    seen_labels.append(text)
+
+                ax.plot(
+                    means.index,
+                    means[col], 
+                    "x" if "Quantum" in label else "o", 
+                    label=text, 
+                    color=color_for_impl(name))
+                ax.fill_between(
+                    means.index,
+                    means[col] + errors[col],
+                    means[col] - errors[col],
+                    alpha=0.4,
+                    color=color_for_impl(name)
+                )
         
-        # Default data
-        # Comparative parameters from Cade et al.
-        ax.plot((100, 300, 1000, 3000, 10000), (400, 1.9e3, 7.5e3, 2.8e4, 1e5),
-            **{'color': 'orange', 'marker': 'o', 'label': 'Cade et al. (Classical)'})
-        ax.plot((100, 300, 1000, 3000, 10000), (2e3, 4.5e3, 1.2e4, 3.0e4, 8e4), 
-            **{'color': 'orange', 'marker': 'x', 'label': 'Cade et al. (Quantum)'})
 
     fig.legend(loc="upper center")
     plt.subplots_adjust(top=0.7)
