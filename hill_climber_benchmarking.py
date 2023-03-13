@@ -10,7 +10,7 @@ def main():
     number_samples = 1              # number of problem instances to average per instance size (5 in Cade et al.)
 
     call_counts = {}
-    for problem_size in [100, 300, 1000, 3000]:
+    for problem_size in [300]:
         try:  # wrap this in try-except to be able to abort prematurely
             problem_size_bounds = (problem_size, problem_size) 
             instance_call_counts = calculate_average_call_count(number_samples, k_sat, problem_size_bounds, weight_range, hamming_distance)
@@ -28,12 +28,16 @@ def main():
 
     # Plot collected Data
     instance_sizes = call_counts.keys()
-    classical_calls = [call_counts[instance].traced_calls for instance in instance_sizes]
-    estimated_hybrid_calls = [call_counts[instance].calc_estimated_calls() for instance in instance_sizes]
+    traced_queries = [call_counts[instance].traced_calls for instance in instance_sizes]
+    counted_queries = [call_counts[instance].counted_calls for instance in instance_sizes]
+    estimated_hybrid_queries = [call_counts[instance].calc_estimated_calls() for instance in instance_sizes]
 
-    pyplot.plot(instance_sizes, classical_calls,
+
+    pyplot.plot(instance_sizes, traced_queries,
         **{'color': 'green', 'marker': 'o', 'label': 'Traced Classical Cost'})
-    pyplot.plot(instance_sizes, estimated_hybrid_calls,
+    pyplot.plot(instance_sizes, counted_queries,
+        **{'color': 'lightgreen', 'marker': '1', 'label': 'Counted Classical Cost'})
+    pyplot.plot(instance_sizes, estimated_hybrid_queries,
          **{'color': 'green', 'marker': 'x', 'label': 'Estimated Quantum Cost'})
 
     # Comparative parameters from Cade et al.

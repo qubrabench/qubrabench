@@ -23,7 +23,9 @@ dprint = print if verbose else lambda *a, **k: None
 @dataclass
 class CallData:
     """Structure that holds benchmarking data for an individual problem"""
+    search_method_calls: int = 0
     traced_calls: int = 0
+    counted_calls: int = 0
     estimated_quantum_calls: int = 0
     estimated_classical_calls: int = 0
 
@@ -126,11 +128,13 @@ def calculate_average_call_count(iterations, k_sat, var_range, weight_range, ham
     
     # average individual instance results
     average_traced_calls = sum([instance.traced_calls for instance in instance_call_data]) / iterations
+    average_counted_calls = sum([instance.counted_calls for instance in instance_call_data]) / iterations
     average_estimated_quantum_calls = sum([instance.estimated_quantum_calls for instance in instance_call_data]) / iterations
     average_estimated_classical_calls = sum([instance.estimated_classical_calls for instance in instance_call_data]) / iterations
 
     average_call_data = CallData()
     average_call_data.traced_calls = average_traced_calls
+    average_call_data.counted_calls = average_counted_calls
     average_call_data.estimated_quantum_calls = average_estimated_quantum_calls
     average_call_data.estimated_classical_calls = average_estimated_classical_calls
 
@@ -157,9 +161,8 @@ def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_d
     solution, solution_weight = climb_hill_sat(clauses, weights, variable_count, hamming_distance_generated, instance_call_data)
 
     # Done solving, provide debug outputs
-    dprint("\nSolution: ", "".join(map(str, solution)), solution_weight)
-    dprint("Total function calls: " + str(trace_system_data["call_count"]))
-    dprint("Max Quantum calls: " + str(7.7 * math.sqrt(trace_system_data["call_count"])))
+    # dprint("\nSolution: ", "".join(map(str, solution)), solution_weight)
+    dprint("Traced Query Calls: " + str(trace_system_data["call_count"]))
 
     # Cache trace count and reset
     instance_call_data.traced_calls = trace_system_data["call_count"]
@@ -170,14 +173,14 @@ def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_d
 def determine_T(neighbours, clauses_array, weights_array, weight):
     def evaluate_one_solution(solution):
         """Increases T if the given solution is a valid candidate improving the weight"""
-        _, new_weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
+        new_weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
         return new_weight > weight
    
     T = 0
     # brute force T, might take a long Time
     if exact_T:
         for neighbour in neighbours:
-            _, new_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
+            new_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
             if evaluate_one_solution(neighbour):
                 T += 1
 
@@ -227,19 +230,24 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, call_data
     :param dist: hamming distance we search for in neighbours
     :return: solution tuple containing the best solution and weight, which is maximized
     """
-    current_solution = generate_random_solution(variable_count)
+    solution = generate_random_solution(variable_count)
+    weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
 
-    solution, weight = calculate_weight_for_solution(current_solution, clauses_array, weights_array)
-    better_solution, better_weight = bench_wrap_find_better_neighbour(solution, weight, clauses_array, weights_array, dist, call_data)
+    # better_solution, better_weight = bench_wrap_find_better_neighbour(
+    #     solution, weight, clauses_array, weights_array, dist, call_data)
 
-    while weight < better_weight:
-        current_solution = better_solution
-        weight = better_weight
-        better_solution, better_weight = bench_wrap_find_better_neighbour(current_solution, weight, clauses_array,
+    while True:
+        better_solution, better_weight = bench_wrap_find_better_neighbour(solution, weight, clauses_array,
                                                               weights_array, dist, call_data)
+        
+        if not better_solution:
+            break
+        solution = better_solution
+        weight = better_weight
     
     dprint("Quantum\tCalls: ", call_data.estimated_quantum_calls)
-    dprint("Classical\tCalls: ", call_data.estimated_classical_calls)
+    dprint("Classic\tCalls: ", call_data.estimated_classical_calls)
+    dprint("Search \tCalls: ", call_data.search_method_calls)
 
     return better_solution, better_weight
 
@@ -257,10 +265,10 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     """
     neighbours = get_neighbours(current_solution, dist)
 
-    better_neighbour, better_weight, num_searches = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
-    if better_neighbour is None:
-        better_neighbour = current_solution
-        better_weight = weight
+    better_neighbour, better_weight, num_queries = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
+    # if better_neighbour is None:
+    #     better_neighbour = current_solution
+    #     better_weight = weight
 
     # Determine inputs for call estimation
     N = len(neighbours)
@@ -270,8 +278,10 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     dprint("Valid Neighbours: ", T)
 
     # TODO determine epsilon using number of traced qsearch calls
-    dprint("Number of Searches: ", num_searches)
-    eps = 10**-5 / num_searches
+    dprint("Number of Queries: ", num_queries)
+    eps = 10**-5 / num_queries
+    call_data.search_method_calls += 1
+    call_data.counted_calls += num_queries
     call_data.estimated_quantum_calls += estimate_quantum_calls(N, T)
     call_data.estimated_classical_calls += estimate_classical_calls(N, T)
 
@@ -288,15 +298,15 @@ def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
     :param dist: the problem's dist (hamming distance for neighbours)
     :return: Tuple of better neighbour and the current weight
     """
-    num_searches = 0 # TODO this somehow needs to be integrated into log_trace()
+    num_queries = 0 # TODO this somehow needs to be integrated into log_trace()
     for neighbour in neighbours:
-        n_solution, n_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
-        num_searches += 1
+        n_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
+        num_queries += 1
         if n_weight > weight:
-            return n_solution, n_weight, num_searches
+            return neighbour, n_weight, num_queries
     
     # fallback
-    return None, None, num_searches
+    return None, None, num_queries
 
 
 def get_neighbours(solution, max_hamming_distance):
@@ -321,20 +331,23 @@ def calculate_weight_for_solution(solution, clauses_array, weights_array):
     :param solution: current solution
     :param clauses_array: the problems clauses array
     :param weights_array: the problems weights array
-    :return: a tuple containing the given solution and its calculated weight
+    :return: the weight of the given solution for the clauses array
     """
     weight = 0
-    for i in range(len(clauses_array)):
-        for value in clauses_array[i]:
-            if value > 0:
-                if solution[value - 1] == 1:
-                    weight += weights_array[i]
-                    break
-            elif value < 0:
-                if solution[abs(value) - 1] == 0:
-                    weight += weights_array[i]
-                    break
-    return solution, weight
+
+    for clause_idx, clause in enumerate(clauses_array):
+        num_literals = len(clause)
+        valid_literals = 0
+        for literal in clause:
+            if literal > 0 and solution[literal-1] == 1: # non negated literal is true in the solution vector
+                valid_literals += 1
+            elif literal < 0 and solution[abs(literal)-1] == 0: # negated literals is false in the solution vector
+                valid_literals += 1
+
+        if valid_literals == num_literals:
+            weight += weights_array[clause_idx]
+
+    return weight
 
 
 def generate_differing_arrays(array, num_changes):
