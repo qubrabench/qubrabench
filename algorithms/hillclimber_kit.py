@@ -2,74 +2,49 @@ import itertools
 import math
 import random
 import pandas as pd
+import numpy as np
 from dataclasses import asdict
 
 import bench.qsearch as qsearch
 from bench.stats import QueryStats
+from algorithms.maxsat import MaxSatInstance
 
 # ============================================================================================================
-# Instance Generation
+# Instance Adaptation
 # ============================================================================================================
-class HillClimberProblemGenerator:
-    def __init__(self, k_sat=3, r=3, variable_count_bound=(10, 10), weight_bound=(1, 5), hamming_distance=1):
-        """
-        Constructor for problem generator instance
-        :param k_sat: number of literals per clause (k-sat)
-        :param r: factor by which var count is multiplied to determine the amount of clauses per instance
-        :param variable_count_bound: tuple containing min and max bound for var count of the problem instance
-        :param weight_bound: tuple containing min and max bound for weight per clause
-        :param hamming_distance: hamming distance d determining neighbours (solution with hamming distance d to current)
-        """
-        self.k_sat = k_sat
-        self.r = r
-        self.variable_count_bound = variable_count_bound
-        self.weight_bound = weight_bound
-        self.hamming_distance = hamming_distance
+def maxsat_instance_to_lists(instance: MaxSatInstance):
+    """
+        Take a MaxSatInstance and transform it to a list of literals for the clauses and a list of
+        floats for the according weights.
+        This function acts as an adaptor between the general MaxSatInstance and the KIT hillclimber
+        implementation.
+    """
+    clauses = []
+    for row in instance.clauses.toarray().tolist():
+        clause = []
+        clauses.append(clause)
+        for col_idx, col in enumerate(row):
+            if not col == 0:
+                clause.append(col_idx*col) # negated variables will have -1 at their index
+            
+    weights = instance.weights.tolist()
 
-    def generateInstance(self):
-        """
-        Generates a problem instance using values given to constructor
-        :return: tuple containing: array of clauses, array of weights, number of variables, hamming distance
-        """
-        variable_count_min, variable_count_max = self.variable_count_bound
-        weight_min, weight_max = self.weight_bound
-        variable_count = random.randint(variable_count_min, variable_count_max)
-        calculated_clause_count = self.r * variable_count
-        clauses = [[] for _ in range(calculated_clause_count)]
-        for i in range(calculated_clause_count):
-            clause = [0 for _ in range(self.k_sat)]
-            used = set()
-            for j in range(self.k_sat):
-                invert_variable = random.randint(0, 1)
-                literal_value = random.randint(1, variable_count)
-                literal = literal_value if invert_variable == 0 else -literal_value
-                while literal in used:
-                    invert_variable = random.randint(0, 1)
-                    literal_value = random.randint(1, variable_count)
-                    literal = literal_value if invert_variable == 0 else -literal_value
-                clause[j] = literal
-                used.add(literal)
-            clauses[i] = clause
-        weights = [random.uniform(weight_min, weight_max) for _ in range(calculated_clause_count)]
-        return clauses, weights, variable_count, self.hamming_distance
+    return clauses, weights
+
 
 # ============================================================================================================
 # Main Control
 # ============================================================================================================ 
 def run(k, r, n, runs, dest, verbose):
     hamming_distance = 1
-    weight_range = (0, 1) # min-max of clause weight
 
     history = []
     for run in range(runs):
         if verbose:
             print(f"k={k}, r={r}, n={n}, #{run}")
         stats = QueryStats()
-        # inst = MaxSatInstance.random(k=k, n=n, m=r * n)
-        # simple_hill_climber(inst, stats=stats)
-        problem_size_bounds = (n, n)
-        # instance_call_counts = calculate_average_call_count(runs, k, problem_size_bounds, weight_range, hamming_distance)
-        calculate_solution_with_call_count(k, problem_size_bounds, weight_range, hamming_distance, stats)
+        inst = MaxSatInstance.random(k=k, n=n, m=r * n)
+        calculate_solution_with_call_count(inst, hamming_distance, stats)
 
         stats = asdict(stats)
         stats["impl"] = "KIT"
@@ -84,7 +59,7 @@ def run(k, r, n, runs, dest, verbose):
     )
 
     # print summary
-    print(history.groupby(["k", "r", "n"]).mean())
+    print(history.groupby(["k", "r", "n"]).mean(numeric_only=False))
 
     # save
     if dest is not None:
@@ -109,7 +84,7 @@ dprint = print if verbose else lambda *a, **k: None # TODO make this runtime adj
 # ============================================================================================================
 # Benchmarking
 # ============================================================================================================
-def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_distance, stats: QueryStats):
+def calculate_solution_with_call_count(instance: MaxSatInstance, hamming_distance, stats: QueryStats):
     """
     Calculates the solution (array) to a randomly generated problem using the given parameters
     :param k_sat: number of literals per clause (k-sat)
@@ -119,16 +94,13 @@ def calculate_solution_with_call_count(k_sat, var_range, weight_range, hamming_d
     :return: tuple containing: call data structure for this problem instance, the solution (array), the weight of the solution
     """
     # Problem instance setup
-    r = 3
-    generator = HillClimberProblemGenerator(k_sat, r, var_range, weight_range, hamming_distance)
-    clauses, weights, variable_count, hamming_distance_generated = generator.generateInstance()
-    # dprint("\nRandom problem instance: " + str((clauses, weights, variable_count, hamming_distance_generated)))
+    clauses, weights = maxsat_instance_to_lists(instance)
+
 
     # Solving the instance
-    solution, solution_weight = climb_hill_sat(clauses, weights, variable_count, hamming_distance_generated, stats)
+    solution, solution_weight = climb_hill_sat(clauses, weights, instance.n, hamming_distance, stats)
 
     # Done solving, provide debug outputs
-    # dprint("\nSolution: ", "".join(map(str, solution)), solution_weight)
     dprint("Traced Query Calls: " + str(qsearch.trace_system_data["call_count"]))
 
     # Cache trace count and reset
@@ -146,7 +118,6 @@ def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
     # brute force T, might take a long Time
     if exact_T:
         for neighbour in neighbours:
-            new_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
             if evaluate_one_solution(neighbour):
                 T += 1
 
@@ -159,7 +130,6 @@ def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
         # extrapolate from the sampling hit-rate
         T = math.floor((T/K) * len(neighbours))
 
-
     return T
 
 
@@ -170,7 +140,6 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, stats: Qu
     """
     Standard method for solving a hill climber problem.
     Directly estimates hybrid-quantum calls based on the assumptions by Cade et al.
-    :param counter_list:
     :param clauses_array: array containing clauses of same length (k)
     :param weights_array: array containing weights for clause at same index
     :param variable_count: number of variables for the clauses

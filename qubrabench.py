@@ -4,8 +4,8 @@ import click
 
 import util.plotting as plotting
 
-from algorithms.hill_climber_rub import run as rub_run
-from algorithms.hill_climber_kit import run as kit_run
+from algorithms.hillclimber_rub import run as rub_run
+from algorithms.hillclimber_kit import run as kit_run
 
 @click.group()
 def cli():
