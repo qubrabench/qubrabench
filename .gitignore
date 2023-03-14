@@ -1,2 +1,8 @@
 .idea
 __pycache__/
+
+# Ignore data artifacts, except for the folder itself and plotting references
+!data
+data/*
+!data/plot_reference
+!data/plot_reference/*

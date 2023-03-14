@@ -27,7 +27,7 @@ def plot(src, quantum_factor=2):
     history = pd.read_json(src, orient="split")
     # read in references TODO: make this optional via additional arguments
     ref_path = path.join(path.dirname(path.realpath(__file__)), 
-                         "reference_data/hill_climb_cade_ref.json")
+                         "../data/plot_reference/hill_climb_cade.json")
     reference = pd.read_json(ref_path, orient="split")
     history = pd.concat([history, reference])
 
