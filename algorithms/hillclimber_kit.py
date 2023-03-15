@@ -251,16 +251,12 @@ def calculate_weight_for_solution(solution, clauses_array, weights_array):
     weight = 0
 
     for clause_idx, clause in enumerate(clauses_array):
-        num_literals = len(clause)
-        valid_literals = 0
         for literal in clause:
-            if literal > 0 and solution[literal-1] == 1: # non negated literal is true in the solution vector
-                valid_literals += 1
-            elif literal < 0 and solution[abs(literal)-1] == 0: # negated literals is false in the solution vector
-                valid_literals += 1
-
-        if valid_literals == num_literals:
-            weight += weights_array[clause_idx]
+            # non negated literal is true in the solution vector
+            # or negated literals is false in the solution vector
+            if (literal > 0 and solution[literal-1] == 1 or literal < 0 and solution[abs(literal)-1] == 0):
+                weight += weights_array[clause_idx]
+                break # no need to check further literals
 
     return weight
 

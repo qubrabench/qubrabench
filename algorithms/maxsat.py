@@ -9,17 +9,18 @@ class MaxSatInstance:
     """
 
     k: int  # number of literals per clause
-    clauses: np.ndarray
-    weights: np.ndarray
+    clauses: np.ndarray # (clauses_no x literals_no) matrix
+    weights: np.ndarray # m vector
 
     @property
     def n(self):
         """Number of variables"""
         return self.clauses.shape[1]
 
-    def weight(self, assignment):
-        sat_clauses = (self.clauses @ assignment.T) == self.k
+    def weight(self, assignment): # TODO does this yield valid results for single variables that are fulfilled
+        sat_clauses = (self.clauses @ assignment.T) > -self.k
         return self.weights @ sat_clauses
+
 
     @staticmethod
     def random(k, n, m):
