@@ -9,7 +9,7 @@ from algorithms.hillclimber_kit import run as kit_run
 # TODO: andere zahlen?
 @pytest.mark.kit
 def test_kit_values_100():
-    stats = kit_run(3, 3, 100, 5, 12, None, False)
+    stats = kit_run(3, 3, 100, 5, 12, None)
     assert stats['k'] == 3
     assert stats['r'] == 3
     assert stats['n'] == 100
@@ -22,7 +22,7 @@ def test_kit_values_100():
 
 @pytest.mark.rub
 def test_rub_values_100():
-    stats = rub_run(3, 3, 100, 5, 12, None, False)
+    stats = rub_run(3, 3, 100, 5, 12, None)
     assert stats['k'] == 3
     assert stats['r'] == 3
     assert stats['n'] == 100
