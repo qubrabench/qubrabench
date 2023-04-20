@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+
 @dataclass
 class QueryStats:
     classical_control_method_calls: int = 0

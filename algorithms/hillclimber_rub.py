@@ -2,22 +2,22 @@ from dataclasses import asdict
 from typing import Callable, Iterable, TypeVar
 import numpy as np
 import random
+import logging
 import pandas as pd
 
 from algorithms.maxsat import MaxSatInstance
 from bench.stats import QueryStats
 import bench.qsearch as qsearch
 
-
 T = TypeVar("T")
 
 def search(
-    seq: Iterable[T],
-    predicate: Callable[[T], bool],
-    *,
-    eps,
-    K=130,
-    stats: QueryStats = None,
+        seq: Iterable[T],
+        predicate: Callable[[T], bool],
+        *,
+        eps,
+        K=130,
+        stats: QueryStats = None,
 ):
     """
     Search a list by random sampling (and keep track of classical and quantum stats).
@@ -44,7 +44,7 @@ def search(
 
 
 def simple_hill_climber(
-    inst: MaxSatInstance, *, eps=10**-5, stats: QueryStats = None
+        inst: MaxSatInstance, *, eps=10 ** -5, stats: QueryStats = None
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
@@ -70,13 +70,17 @@ def simple_hill_climber(
             return x
         x, w = result
 
-def run(k, r, n, runs, dest, verbose):
+
+def run(k, r, n, runs, seed, dest):
+    if seed is not None:
+        np.random.seed(seed)
+        random.seed(seed)
     history = []
     for run in range(runs):
-        if verbose:
-            print(f"k={k}, r={r}, n={n}, #{run}")
+        # if verbose:
+        logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
         stats = QueryStats()
-        inst = MaxSatInstance.random(k=k, n=n, m=r * n)
+        inst = MaxSatInstance.random(k=k, n=n, m=r * n, seed=seed)
         simple_hill_climber(inst, stats=stats)
         stats = asdict(stats)
         stats["impl"] = "RUB"
@@ -91,13 +95,14 @@ def run(k, r, n, runs, dest, verbose):
     )
 
     # print summary
-    print(history.groupby(["k", "r", "n"]).mean())
+    logging.info(history.groupby(["k", "r", "n"]).mean())
 
     # save
     if dest is not None:
-        print(f"saving to {dest}...")
+        logging.info(f"saving to {dest}...")
         orig = pd.read_json(dest, orient="split") if dest.exists() else None
         history = pd.concat([orig, history])
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
 
+    return stats
