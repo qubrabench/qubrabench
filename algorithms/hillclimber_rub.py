@@ -95,7 +95,7 @@ def run(k, r, n, runs, seed, dest):
     )
 
     # print summary
-    logging.info(history.groupby(["k", "r", "n"]).mean())
+    logging.info(history.groupby(["k", "r", "n"]).mean(numeric_only=True))
 
     # save
     if dest is not None:

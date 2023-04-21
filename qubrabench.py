@@ -73,7 +73,6 @@ def hill_climb(impl, k, r, seed, n, runs, dest, verbose):
 
 
 def setup_default_logger(verbose):
-    print("verbose: " + str(verbose))
     log_formatter = logging.Formatter("%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s")
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
