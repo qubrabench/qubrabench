@@ -105,4 +105,4 @@ def run(k, r, n, runs, seed, dest):
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
 
-    return stats
+    return history
