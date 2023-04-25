@@ -1,5 +1,7 @@
 #!/usr/bin/env python
+import time
 from pathlib import Path
+from datetime import datetime
 import click
 
 import util.plotting as plotting
@@ -7,9 +9,18 @@ import util.plotting as plotting
 from algorithms.hillclimber_rub import run as rub_run
 from algorithms.hillclimber_kit import run as kit_run
 
+import logging
+
+
+# logging.basicConfig(filename='logs/output.log', filemode='w', level=logging.DEBUG, format='%(levelname)s: %(message)s')
+
+
+# TODO: generell performance schlechter?
+
 @click.group()
 def cli():
     pass
+
 
 @cli.command()
 @click.argument(
@@ -30,6 +41,13 @@ def plot(src):
     type=int,
     required=True,
 )
+# TODO: so korrekt
+@click.option(
+    "-seed",
+    help="Seed for the random operations.",
+    type=int,
+    required=False
+)
 @click.option(
     "--runs", help="Number of runs (repetitions).", default=10, show_default=True
 )
@@ -40,16 +58,36 @@ def plot(src):
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def hill_climb(impl, k, r, n, runs, dest, verbose):
+def hill_climb(impl, k, r, seed, n, runs, dest, verbose):
     """
     Run simple hill simpler benchmark. Example:
 
-        qubrabench.py hill_climb kit -k 2 -r 3 -n 100 --save results.json
+        qubrabench.py hill-climb kit -k 2 -r 3 -n 100 --save results.json
     """
+    # print(seed)
+    setup_default_logger(verbose)
     if impl == "KIT":
-        kit_run(k, r, n, runs, dest, verbose)
+        kit_run(k, r, n, runs, seed, dest)
     elif impl == "RUB":
-        rub_run(k, r, n, runs, dest, verbose)
+        rub_run(k, r, n, runs, seed, dest)
+
+
+def setup_default_logger(verbose):
+    log_formatter = logging.Formatter("%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s")
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(log_formatter)
+    root_logger.addHandler(console_handler)
+
+    if verbose:
+        root_logger.setLevel(logging.DEBUG)
+
+        file_handler = logging.FileHandler("{0}/{1}.log".format("data/logs", "qubra-bench-" + datetime.now()
+                                                                .strftime("%Y-%m-%d-%H-%M-%S")))
+        file_handler.setFormatter(log_formatter)
+        root_logger.addHandler(file_handler)
 
 
 if __name__ == "__main__":

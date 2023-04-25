@@ -1,6 +1,7 @@
 import cProfile, pstats
 from functools import wraps
 
+
 def profile(output_file=None, sort_by='cumulative', lines_to_print=None, strip_dirs=False):
     """A time profiler decorator.
 

@@ -2,6 +2,7 @@ import itertools
 import math
 import random
 import pandas as pd
+import logging
 import numpy as np
 from dataclasses import asdict
 
@@ -25,8 +26,8 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
         clauses.append(clause)
         for col_idx, col in enumerate(row):
             if not col == 0:
-                clause.append(col_idx*col) # negated variables will have -1 at their index
-            
+                clause.append(col_idx * col)  # negated variables will have -1 at their index
+
     weights = instance.weights.tolist()
 
     return clauses, weights
@@ -34,16 +35,17 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
 
 # ============================================================================================================
 # Main Control
-# ============================================================================================================ 
-def run(k, r, n, runs, dest, verbose):
+# ============================================================================================================
+def run(k, r, n, runs, seed, dest):
     hamming_distance = 1
+    if seed is not None:
+        random.seed(seed)
 
     history = []
     for run in range(runs):
-        if verbose:
-            print(f"k={k}, r={r}, n={n}, #{run}")
+        logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
         stats = QueryStats()
-        inst = MaxSatInstance.random(k=k, n=n, m=r * n)
+        inst = MaxSatInstance.random(k=k, n=n, m=r * n, seed=seed)
         calculate_solution_with_call_count(inst, hamming_distance, stats)
 
         stats = asdict(stats)
@@ -59,15 +61,17 @@ def run(k, r, n, runs, dest, verbose):
     )
 
     # print summary
-    print(history.groupby(["k", "r", "n"]).mean(numeric_only=False))
+    logging.info(history.groupby(["k", "r", "n"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
-        print(f"saving to {dest}...")
+        logging.info(f"saving to {dest}...")
         orig = pd.read_json(dest, orient="split") if dest.exists() else None
         history = pd.concat([orig, history])
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
+
+    return history
 
 
 # ============================================================================================================
@@ -75,10 +79,14 @@ def run(k, r, n, runs, dest, verbose):
 # ============================================================================================================
 verbose = True
 
-exact_T = True # determines whether to brute force T or or sample and extrapolate TODO reenable the sampling approach
-sample_size_T = 130 # number of samples when determining T approximately, higher values take more time but provide higher approximation rate
+exact_T = True  # determines whether to brute force T or or sample and extrapolate TODO reenable the sampling approach
+sample_size_T = 130  # number of samples when determining T approximately, higher values take more time but provide higher approximation rate
 
-dprint = print if verbose else lambda *a, **k: None # TODO make this runtime adjustable
+
+# dprint = logging.info if verbose else lambda *a, **k: None  # TODO make this runtime adjustable
+def dprint(*args, **kwargs):
+    if verbose:
+        logging.debug(*args, **kwargs)
 
 
 # ============================================================================================================
@@ -96,7 +104,6 @@ def calculate_solution_with_call_count(instance: MaxSatInstance, hamming_distanc
     # Problem instance setup
     clauses, weights = maxsat_instance_to_lists(instance)
 
-
     # Solving the instance
     solution, solution_weight = climb_hill_sat(clauses, weights, instance.n, hamming_distance, stats)
 
@@ -113,7 +120,7 @@ def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
         """Increases T if the given solution is a valid candidate improving the weight"""
         new_weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
         return new_weight > weight
-   
+
     T = 0
     # brute force T, might take a long Time
     if exact_T:
@@ -124,11 +131,12 @@ def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
     # approximate T based on an amount of samples
     else:
         for _ in range(K):
+            # random.seed(current_seed)
             sample = random.choice(list(neighbours))
             if evaluate_one_solution(sample):
                 T += 1
         # extrapolate from the sampling hit-rate
-        T = math.floor((T/K) * len(neighbours))
+        T = math.floor((T / K) * len(neighbours))
 
     return T
 
@@ -154,16 +162,16 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, stats: Qu
 
     while True:
         better_solution, better_weight = bench_wrap_find_better_neighbour(solution, weight, clauses_array,
-                                                              weights_array, dist, stats)
-        
+                                                                          weights_array, dist, stats)
+
         if not better_solution:
             break
         solution = better_solution
         weight = better_weight
-    
-    dprint("Quantum\tCalls: ", stats.quantum_expected_quantum_queries)
-    dprint("Classic\tCalls: ", stats.quantum_expected_classical_queries)
-    dprint("Search \tCalls: ", stats.classical_control_method_calls)
+
+    dprint("Quantum\tCalls: " + str(stats.quantum_expected_quantum_queries))
+    dprint("Classic\tCalls: " + str(stats.quantum_expected_classical_queries))
+    dprint("Search \tCalls: " + str(stats.classical_control_method_calls))
 
     return better_solution, better_weight
 
@@ -181,26 +189,28 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     """
     neighbours = get_neighbours(current_solution, dist)
 
-    better_neighbour, better_weight, num_queries = find_better_neighbour(neighbours, weight, clauses_array, weights_array)
+    better_neighbour, better_weight, num_queries = find_better_neighbour(neighbours, weight, clauses_array,
+                                                                         weights_array)
     # if better_neighbour is None:
     #     better_neighbour = current_solution
     #     better_weight = weight
 
     # Determine inputs for call estimation
     N = len(neighbours)
-    dprint("Neighbourhood Size: ", N)
+    dprint("Neighbourhood Size: " + str(N))
     # find out T by counting valid neighbours to current solution (value greater than current)
     T = determine_T(neighbours, clauses_array, weights_array, weight)
-    dprint("Valid Neighbours: ", T)
+    dprint("Valid Neighbours: " + str(T))
 
     # TODO determine epsilon using number of traced qsearch calls
-    dprint("Number of Queries: ", num_queries)
-    eps = 10**-5 / num_queries
+    dprint("Number of Queries: " + str(num_queries))
+    eps = 10 ** -5 / num_queries
     stats.classical_control_method_calls += 1
     stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T)
     stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T)
 
     return better_neighbour, better_weight
+
 
 @qsearch.bench()
 def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
@@ -219,7 +229,7 @@ def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
         num_queries += 1
         if n_weight > weight:
             return neighbour, n_weight, num_queries
-    
+
     # fallback
     return None, None, num_queries
 
@@ -234,8 +244,9 @@ def get_neighbours(solution, max_hamming_distance):
     neighbours = set()
     for i in range(1, max_hamming_distance + 1):
         neighbours.update(generate_differing_arrays(solution, i))
-    
+
     neighbours = list(neighbours)
+    # random.seed(current_seed)
     random.shuffle(neighbours)
     return neighbours
 
@@ -254,9 +265,9 @@ def calculate_weight_for_solution(solution, clauses_array, weights_array):
         for literal in clause:
             # non negated literal is true in the solution vector
             # or negated literals is false in the solution vector
-            if (literal > 0 and solution[literal-1] == 1 or literal < 0 and solution[abs(literal)-1] == 0):
+            if (literal > 0 and solution[literal - 1] == 1 or literal < 0 and solution[abs(literal) - 1] == 0):
                 weight += weights_array[clause_idx]
-                break # no need to check further literals
+                break  # no need to check further literals
 
     return weight
 
@@ -298,4 +309,5 @@ def generate_differing_arrays(array, num_changes):
 
 def generate_random_solution(length):
     """Generates a random input vector of the given length. Examples length=5 -> [0, 1, 0, 1, 1]"""
+    # random.seed(current_seed)
     return [random.randint(0, 1) for _ in range(length)]

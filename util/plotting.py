@@ -4,12 +4,14 @@ import matplotlib.colors as mcolors
 import random
 import os.path as path
 
+
 def plot(src, quantum_factor=2):
     colors = {
         "KIT": "green",
         "RUB": "blue",
         "Cade": "orange"
     }
+
     def color_for_impl(impl):
         """
             Returns a color given a key. Does not duplicate colors so it might run
@@ -26,7 +28,7 @@ def plot(src, quantum_factor=2):
     # read in data to plot
     history = pd.read_json(src, orient="split")
     # read in references TODO: make this optional via additional arguments
-    ref_path = path.join(path.dirname(path.realpath(__file__)), 
+    ref_path = path.join(path.dirname(path.realpath(__file__)),
                          "../data/plot_reference/hill_climb_cade.json")
     reference = pd.read_json(ref_path, orient="split")
     history = pd.concat([history, reference])
@@ -34,14 +36,14 @@ def plot(src, quantum_factor=2):
     # compute combined query costs of quantum search
     c = history["quantum_expected_classical_queries"]
     q = history["quantum_expected_quantum_queries"]
-    history["quantum_cqq"] = c + quantum_factor * q  
+    history["quantum_cqq"] = c + quantum_factor * q
 
     # define lines to plot
     lines = {
         "classical_actual_queries": "Classical Queries",
         "quantum_cqq": "Quantum Queries",
     }
-    seen_labels = [] # keep track to ensure proper legends
+    seen_labels = []  # keep track to ensure proper legends
 
     # group plots by combinations of k and r
     groups = history.groupby(["k", "r"])
@@ -50,8 +52,8 @@ def plot(src, quantum_factor=2):
         axs = [axs]
     for ax, ((k, r), group) in zip(axs, groups):
         ax.set_title(f"k = {k}, r = {r}")
-        ax.set_xlim(10**2, 10**4)
-        ax.set_ylim(300, 10**5)
+        ax.set_xlim(10 ** 2, 10 ** 4)
+        ax.set_ylim(300, 10 ** 5)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("$n$")
@@ -73,9 +75,9 @@ def plot(src, quantum_factor=2):
 
                 ax.plot(
                     means.index,
-                    means[col], 
-                    "x" if "Quantum" in label else "o", 
-                    label=text, 
+                    means[col],
+                    "x" if "Quantum" in label else "o",
+                    label=text,
                     color=color_for_impl(name))
                 ax.fill_between(
                     means.index,
@@ -84,7 +86,6 @@ def plot(src, quantum_factor=2):
                     alpha=0.4,
                     color=color_for_impl(name)
                 )
-        
 
     fig.legend(loc="upper center")
     plt.subplots_adjust(top=0.7)
