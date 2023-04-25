@@ -11,13 +11,14 @@ import bench.qsearch as qsearch
 
 T = TypeVar("T")
 
+
 def search(
-        seq: Iterable[T],
-        predicate: Callable[[T], bool],
-        *,
-        eps,
-        K=130,
-        stats: QueryStats = None,
+    seq: Iterable[T],
+    predicate: Callable[[T], bool],
+    *,
+    eps,
+    K=130,
+    stats: QueryStats = None,
 ):
     """
     Search a list by random sampling (and keep track of classical and quantum stats).
@@ -31,8 +32,12 @@ def search(
         N = len(seq)
         T = sum(1 for x in seq if predicate(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
-        stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T, K)
-        stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T, eps, K)
+        stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(
+            N, T, K
+        )
+        stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(
+            N, T, eps, K
+        )
 
     # run the classical sampling-without-replacement algorithms
     random.shuffle(seq)
@@ -44,7 +49,7 @@ def search(
 
 
 def simple_hill_climber(
-        inst: MaxSatInstance, *, eps=10 ** -5, stats: QueryStats = None
+    inst: MaxSatInstance, *, eps=10**-5, stats: QueryStats = None
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n

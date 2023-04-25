@@ -6,21 +6,19 @@ import os.path as path
 
 
 def plot(src, quantum_factor=2):
-    colors = {
-        "KIT": "green",
-        "RUB": "blue",
-        "Cade": "orange"
-    }
+    colors = {"KIT": "green", "RUB": "blue", "Cade": "orange"}
 
     def color_for_impl(impl):
         """
-            Returns a color given a key. Does not duplicate colors so it might run
-            out of colors but who is going to print that much data :)
+        Returns a color given a key. Does not duplicate colors so it might run
+        out of colors but who is going to print that much data :)
         """
         try:
             return colors[impl]
         except KeyError:
-            mcolor_names: list = [c for c in mcolors.CSS4_COLORS.keys() if c not in colors.values()]
+            mcolor_names: list = [
+                c for c in mcolors.CSS4_COLORS.keys() if c not in colors.values()
+            ]
             new_color = random.choice(mcolor_names)
             colors[impl] = new_color
             return new_color
@@ -28,8 +26,10 @@ def plot(src, quantum_factor=2):
     # read in data to plot
     history = pd.read_json(src, orient="split")
     # read in references TODO: make this optional via additional arguments
-    ref_path = path.join(path.dirname(path.realpath(__file__)),
-                         "../data/plot_reference/hill_climb_cade.json")
+    ref_path = path.join(
+        path.dirname(path.realpath(__file__)),
+        "../data/plot_reference/hill_climb_cade.json",
+    )
     reference = pd.read_json(ref_path, orient="split")
     history = pd.concat([history, reference])
 
@@ -52,8 +52,8 @@ def plot(src, quantum_factor=2):
         axs = [axs]
     for ax, ((k, r), group) in zip(axs, groups):
         ax.set_title(f"k = {k}, r = {r}")
-        ax.set_xlim(10 ** 2, 10 ** 4)
-        ax.set_ylim(300, 10 ** 5)
+        ax.set_xlim(10**2, 10**4)
+        ax.set_ylim(300, 10**5)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("$n$")
@@ -78,13 +78,14 @@ def plot(src, quantum_factor=2):
                     means[col],
                     "x" if "Quantum" in label else "o",
                     label=text,
-                    color=color_for_impl(name))
+                    color=color_for_impl(name),
+                )
                 ax.fill_between(
                     means.index,
                     means[col] + errors[col],
                     means[col] - errors[col],
                     alpha=0.4,
-                    color=color_for_impl(name)
+                    color=color_for_impl(name),
                 )
 
     fig.legend(loc="upper center")

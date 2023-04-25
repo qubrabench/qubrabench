@@ -2,7 +2,9 @@ import cProfile, pstats
 from functools import wraps
 
 
-def profile(output_file=None, sort_by='cumulative', lines_to_print=None, strip_dirs=False):
+def profile(
+    output_file=None, sort_by="cumulative", lines_to_print=None, strip_dirs=False
+):
     """A time profiler decorator.
 
     Inspired by and modified the profile decorator of Giampaolo Rodola:
@@ -35,14 +37,14 @@ def profile(output_file=None, sort_by='cumulative', lines_to_print=None, strip_d
     def inner(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            _output_file = output_file or func.__name__ + '.prof'
+            _output_file = output_file or func.__name__ + ".prof"
             pr = cProfile.Profile()
             pr.enable()
             retval = func(*args, **kwargs)
             pr.disable()
             pr.dump_stats(_output_file)
 
-            with open(_output_file, 'w') as f:
+            with open(_output_file, "w") as f:
                 ps = pstats.Stats(pr, stream=f)
                 if strip_dirs:
                     ps.strip_dirs()

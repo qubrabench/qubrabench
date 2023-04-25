@@ -15,10 +15,10 @@ from algorithms.maxsat import MaxSatInstance
 # ============================================================================================================
 def maxsat_instance_to_lists(instance: MaxSatInstance):
     """
-        Take a MaxSatInstance and transform it to a list of literals for the clauses and a list of
-        floats for the according weights.
-        This function acts as an adaptor between the general MaxSatInstance and the KIT hillclimber
-        implementation.
+    Take a MaxSatInstance and transform it to a list of literals for the clauses and a list of
+    floats for the according weights.
+    This function acts as an adaptor between the general MaxSatInstance and the KIT hillclimber
+    implementation.
     """
     clauses = []
     for row in instance.clauses.toarray().tolist():
@@ -26,7 +26,9 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
         clauses.append(clause)
         for col_idx, col in enumerate(row):
             if not col == 0:
-                clause.append(col_idx * col)  # negated variables will have -1 at their index
+                clause.append(
+                    col_idx * col
+                )  # negated variables will have -1 at their index
 
     weights = instance.weights.tolist()
 
@@ -92,7 +94,9 @@ def dprint(*args, **kwargs):
 # ============================================================================================================
 # Benchmarking
 # ============================================================================================================
-def calculate_solution_with_call_count(instance: MaxSatInstance, hamming_distance, stats: QueryStats):
+def calculate_solution_with_call_count(
+    instance: MaxSatInstance, hamming_distance, stats: QueryStats
+):
     """
     Calculates the solution (array) to a randomly generated problem using the given parameters
     :param k_sat: number of literals per clause (k-sat)
@@ -105,7 +109,9 @@ def calculate_solution_with_call_count(instance: MaxSatInstance, hamming_distanc
     clauses, weights = maxsat_instance_to_lists(instance)
 
     # Solving the instance
-    solution, solution_weight = climb_hill_sat(clauses, weights, instance.n, hamming_distance, stats)
+    solution, solution_weight = climb_hill_sat(
+        clauses, weights, instance.n, hamming_distance, stats
+    )
 
     # Done solving, provide debug outputs
     dprint("Traced Query Calls: " + str(qsearch.trace_system_data["call_count"]))
@@ -118,7 +124,9 @@ def calculate_solution_with_call_count(instance: MaxSatInstance, hamming_distanc
 def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
     def evaluate_one_solution(solution):
         """Increases T if the given solution is a valid candidate improving the weight"""
-        new_weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
+        new_weight = calculate_weight_for_solution(
+            solution, clauses_array, weights_array
+        )
         return new_weight > weight
 
     T = 0
@@ -144,7 +152,9 @@ def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
 # ============================================================================================================
 # Hill Climbing
 # ============================================================================================================
-def climb_hill_sat(clauses_array, weights_array, variable_count, dist, stats: QueryStats):
+def climb_hill_sat(
+    clauses_array, weights_array, variable_count, dist, stats: QueryStats
+):
     """
     Standard method for solving a hill climber problem.
     Directly estimates hybrid-quantum calls based on the assumptions by Cade et al.
@@ -161,8 +171,9 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, stats: Qu
     #     solution, weight, clauses_array, weights_array, dist, call_data)
 
     while True:
-        better_solution, better_weight = bench_wrap_find_better_neighbour(solution, weight, clauses_array,
-                                                                          weights_array, dist, stats)
+        better_solution, better_weight = bench_wrap_find_better_neighbour(
+            solution, weight, clauses_array, weights_array, dist, stats
+        )
 
         if not better_solution:
             break
@@ -176,7 +187,9 @@ def climb_hill_sat(clauses_array, weights_array, variable_count, dist, stats: Qu
     return better_solution, better_weight
 
 
-def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, weights_array, dist, stats: QueryStats):
+def bench_wrap_find_better_neighbour(
+    current_solution, weight, clauses_array, weights_array, dist, stats: QueryStats
+):
     """
     Function searching for better neighbour given a current solution
     :param solution: current solution
@@ -189,8 +202,9 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
     """
     neighbours = get_neighbours(current_solution, dist)
 
-    better_neighbour, better_weight, num_queries = find_better_neighbour(neighbours, weight, clauses_array,
-                                                                         weights_array)
+    better_neighbour, better_weight, num_queries = find_better_neighbour(
+        neighbours, weight, clauses_array, weights_array
+    )
     # if better_neighbour is None:
     #     better_neighbour = current_solution
     #     better_weight = weight
@@ -204,7 +218,7 @@ def bench_wrap_find_better_neighbour(current_solution, weight, clauses_array, we
 
     # TODO determine epsilon using number of traced qsearch calls
     dprint("Number of Queries: " + str(num_queries))
-    eps = 10 ** -5 / num_queries
+    eps = 10**-5 / num_queries
     stats.classical_control_method_calls += 1
     stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T)
     stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T)
@@ -225,7 +239,9 @@ def find_better_neighbour(neighbours, weight, clauses_array, weights_array):
     """
     num_queries = 0
     for neighbour in neighbours:
-        n_weight = calculate_weight_for_solution(neighbour, clauses_array, weights_array)
+        n_weight = calculate_weight_for_solution(
+            neighbour, clauses_array, weights_array
+        )
         num_queries += 1
         if n_weight > weight:
             return neighbour, n_weight, num_queries
@@ -265,7 +281,12 @@ def calculate_weight_for_solution(solution, clauses_array, weights_array):
         for literal in clause:
             # non negated literal is true in the solution vector
             # or negated literals is false in the solution vector
-            if (literal > 0 and solution[literal - 1] == 1 or literal < 0 and solution[abs(literal) - 1] == 0):
+            if (
+                literal > 0
+                and solution[literal - 1] == 1
+                or literal < 0
+                and solution[abs(literal) - 1] == 0
+            ):
                 weight += weights_array[clause_idx]
                 break  # no need to check further literals
 
