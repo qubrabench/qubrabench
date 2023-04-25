@@ -4,10 +4,10 @@ from pathlib import Path
 from datetime import datetime
 import click
 
-import util.plotting as plotting
+import qubra_bench.util.plotting as plotting
 
-from algorithms.hillclimber_rub import run as rub_run
-from algorithms.hillclimber_kit import run as kit_run
+from qubra_bench.algorithms.hillclimber_rub import run as rub_run
+from qubra_bench.algorithms.hillclimber_kit import run as kit_run
 
 import logging
 

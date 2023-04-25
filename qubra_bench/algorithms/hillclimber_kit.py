@@ -6,9 +6,9 @@ import logging
 import numpy as np
 from dataclasses import asdict
 
-import bench.qsearch as qsearch
-from bench.stats import QueryStats
-from algorithms.maxsat import MaxSatInstance
+from .maxsat import MaxSatInstance
+from ..bench.stats import QueryStats
+from ..bench import qsearch
 
 # ============================================================================================================
 # Instance Adaptation

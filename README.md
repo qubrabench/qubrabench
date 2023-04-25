@@ -49,7 +49,7 @@ In this case, the generated data is all stored in the `satfix.json` file.
 To generate a plot, you first need to run the framework and thereby populate a JSON output file, like the `satfix.json` file in the example above.
 Once this is done, you can generate a plot based on this file by running the command `./qubrabench.py plot <path-to-file>`.
 
-![Example plot](/documentation/img/satfix.png "Generated plot based on satfix.json")
+![Example plot](docs/img/satfix.png "Generated plot based on satfix.json")
 
 
 ## Testing

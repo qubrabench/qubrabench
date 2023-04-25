@@ -5,9 +5,9 @@ import random
 import logging
 import pandas as pd
 
-from algorithms.maxsat import MaxSatInstance
-from bench.stats import QueryStats
-import bench.qsearch as qsearch
+from .maxsat import MaxSatInstance
+from ..bench.stats import QueryStats
+from ..bench import qsearch
 
 T = TypeVar("T")
 
