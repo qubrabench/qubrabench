@@ -1,6 +1,12 @@
-.idea
-__pycache__/
+# ignore IDE stuff
+/.idea
 
-# Ignore data artifacts, except for plotting references
-data
-!data/plot_reference
+# ignore python build artifacts
+/dist/
+/build/
+/__pycache__/
+*.egg-info
+
+# ignore data artifacts (except for reference plots)
+/data
+!/data/plot_reference

@@ -1,21 +1,50 @@
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "qubra_bench"
-version = "0.0.1"
 authors = [
-  { name="Example Author", email="author@example.com" },
+  { name="Tim Bittner", email="tim.bittner@kit.edu" },
+  { name="Luke Southall", email="luke.southall@student.kit.edu" },
+  { name="Michael Walter", email="michael.walter@rub.de" },
 ]
-description = "Bla bla bla"
+description = "QuBRA Benchmarking Framework"
 readme = "README.md"
 requires-python = ">=3.10"
+# license = ???
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+    "click~=8.1",
+    "pandas~=2.0",
+    "matplotlib~=3.7",
+    "numpy~=1.24",
+    "scipy~=1.10",
+]
+dynamic = ["version"]
 
 [project.urls]
 "Homepage" = "https://github.com/KIT-TVA/qubra-bench"
 "Bug Tracker" = "https://github.com/KIT-TVA/qubra-bench/issues"
+
+# [project.scripts]
+# my-script = "my_package.module:function"
+
+[project.optional-dependencies]
+dev = [
+    "pytest~=7.3",
+    "black",
+]
+
+[tool.setuptools.dynamic]
+version = {attr = "qubra_bench.__version__"}
+
+[tool.setuptools.packages.find]
+include = ["qubra_bench"]
 
 [tool.pytest.ini_options]
 markers = [

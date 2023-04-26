@@ -13,29 +13,30 @@ The data is stored in a JSON file, form which a graph comparing the two approach
 
 ## How to install
 
-To install and use this framework, simply download this repository's contents and install the necessary dependencies.
-This can be accomplished easily by running the command `pip install -r requirements.txt`.
-See [requirements.txt](requirements.txt) for the packages and versions that are installed in this way.
+To install and use this framework, simply download or check out this repository, and install it (using a virtual environment is advised):
+
+```shell
+pip install .
+```
+
+If you are interested in *developing* `qubra_bench`, please see below for instructions.
 
 ## How to run a benchmark
 
-As it is advisable to run the algorithms for multiple problem sizes, using a shell script to execute multiple benchmarks in a batch can be useful.
-An example can be found in the `batch_generation.sh` file, which runs the hill-climber algorithm for multiple input sizes:
+To benchmarks the hill-climber algorithm for MAX-k-SAT for multiple input sizes, you can run the `qubrabench.py` script:
 
-```shell
-echo "RUB RUNS"
+```
 ./qubrabench.py hill-climb RUB -k 3 -r 3 -n 100 --runs 5 --save satfix.json
-./qubrabench.py hill-climb RUB -k 3 -r 3 -n 300 --runs 5 --save satfix.json
-./qubrabench.py hill-climb RUB -k 3 -r 3 -n 1000 --runs 5 --save satfix.json
-./qubrabench.py hill-climb RUB -k 3 -r 3 -n 3000 --runs 5 --save satfix.json
-
-echo "KIT RUNS"
 ./qubrabench.py hill-climb KIT -k 3 -r 3 -n 100 --runs 5 --save satfix.json
-./qubrabench.py hill-climb KIT -k 3 -r 3 -n 300 --runs 5 --save satfix.json
-./qubrabench.py hill-climb KIT -k 3 -r 3 -n 1000 --runs 5 --save satfix.json
 ```
 
+**TODO:** Add explanation of the parameters.  
+**TODO:** There should be some default for RUB vs KIT.
+
 In this case, the generated data is all stored in the `satfix.json` file.
+
+As one will often want to benchmark algorithms for multiple choices of problem sizes and other parameters, using a shell script to execute multiple benchmarks in a batch can be useful.
+See [Makefile](Makefile) for an example.
 
 ## How to generate a plot
 
@@ -45,19 +46,37 @@ Once this is done, you can generate a plot based on this file by running the com
 ![Example plot](docs/img/satfix.png "Generated plot based on satfix.json")
 
 
-## Testing
+# Development
 
-This library uses the `pytest` library, which makes testing very simple. You can use the predefined tests or write your own tests.
-To execute all tests in the projekt, execute the `pytest` command in the project root. PyTest will search for all files starting with `test` and will test all methods containing the word `test`.
+To contribute towards development, create a new virtual environment (using [venv](https://docs.python.org/3/library/venv.html), a tool such as [pew](https://pypi.org/project/pew/), or your favorite IDE), check out this repository, and install it using [development ("editable") mode](https://setuptools.pypa.io/en/latest/userguide/development_mode.html), as follows, to include the optional development dependencies:
 
-The tests have been seperated by using markers, defined in the `pytest.ini` file. You can mark a method with a test marker as seen in this example:
-```python
-@pytest.mark.kit
-def test_always_true():
-    assert True
+```shell
+# in a virtual environment
+pip install --editable .[dev]
 ```
 
-You can then single out certain tests to run by a certain marker with the `-m` parameter, for example `pytest -m kit `.
+## Testing
+
+This library uses the [pytest](https://docs.pytest.org/) library, which makes testing very simple.
+You can use the predefined [tests](tests), or write your own tests.
+To execute all tests in the project, by simply executing the following command in the project root:
+
+```shell
+pytest
+```
+
+Pytest will search for all files starting with `test`, and will test all methods containing the word `test`.
+
+One useful feature of pytest is to use markers. You can mark a method with a test marker, as seen in this example:
+
+```python
+@pytest.mark.slow
+def test_that_runs_for_a_long_time():
+    pass
+```
+
+You can then single out certain tests to run by a certain marker with the `-m` parameter, for example `pytest -m slow` to run only tests marked as `slow`, or `pytest -m "not slow"` to run all but those tests.
+See `pytest --markers` for a list of all available markers.
 
 ## Logging
 
