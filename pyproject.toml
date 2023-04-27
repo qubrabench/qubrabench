@@ -3,7 +3,7 @@ requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "qubra_bench"
+name = "qubrabench"
 authors = [
   { name="Tim Bittner", email="tim.bittner@kit.edu" },
   { name="Luke Southall", email="luke.southall@student.kit.edu" },
@@ -41,10 +41,10 @@ dev = [
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "qubra_bench.__version__"}
+version = {attr = "qubrabench.__version__"}
 
 [tool.setuptools.packages.find]
-include = ["qubra_bench"]
+include = ["qubrabench"]
 
 [tool.pytest.ini_options]
 markers = [

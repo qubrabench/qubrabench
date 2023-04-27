@@ -66,7 +66,6 @@ def plot(src, quantum_factor=2):
             means = impl.groupby("n").mean(numeric_only=True)
             errors = impl.groupby("n").sem(numeric_only=True)
             for col, label in lines.items():
-
                 text = f"{label} ({name})"
                 if text in seen_labels:
                     text = "__nolabel__"

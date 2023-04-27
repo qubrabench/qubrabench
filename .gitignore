@@ -4,7 +4,7 @@
 # ignore python build artifacts
 /dist/
 /build/
-/__pycache__/
+__pycache__
 *.egg-info
 
 # ignore data artifacts (except for reference plots)

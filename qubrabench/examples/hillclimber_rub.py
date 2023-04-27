@@ -1,52 +1,12 @@
 from dataclasses import asdict
-from typing import Callable, Iterable, TypeVar
 import numpy as np
 import random
 import logging
 import pandas as pd
 
 from .maxsat import MaxSatInstance
-from ..bench.stats import QueryStats
-from ..bench import qsearch
-
-T = TypeVar("T")
-
-
-# MW: this should be part of the public-facing API in the (q)search module (which should probably be in algorithms)
-def search(
-    seq: Iterable[T],
-    predicate: Callable[[T], bool],
-    *,
-    eps,
-    K=130,
-    stats: QueryStats = None,
-):
-    """
-    Search a list by random sampling (and keep track of classical and quantum stats).
-
-    TODO: Think about how to interpret eps for the classical algorithm.
-    """
-    seq = list(seq)
-
-    # collect stats
-    if stats:
-        N = len(seq)
-        T = sum(1 for x in seq if predicate(x))
-        stats.classical_expected_queries += (N + 1) / (T + 1)
-        stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(
-            N, T, K
-        )
-        stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(
-            N, T, eps, K
-        )
-
-    # run the classical sampling-without-replacement algorithms
-    random.shuffle(seq)
-    for x in seq:
-        if stats:
-            stats.classical_actual_queries += 1
-        if predicate(x):
-            return x
+from qubrabench.bench.stats import QueryStats
+from qubrabench.algorithms.search import search
 
 
 # MW: should not return QueryStats

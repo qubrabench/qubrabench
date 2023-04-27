@@ -4,8 +4,8 @@ import pytest
 
 import numpy as np
 
-from qubra_bench.algorithms.hillclimber_rub import run as rub_run
-from qubra_bench.algorithms.hillclimber_kit import run as kit_run
+from qubrabench.examples.hillclimber_rub import run as rub_run
+from qubrabench.examples.hillclimber_kit import run as kit_run
 
 
 # TODO: andere zahlen?
