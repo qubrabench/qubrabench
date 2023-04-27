@@ -8,7 +8,7 @@ from dataclasses import asdict
 
 from .maxsat import MaxSatInstance
 from ..bench.stats import QueryStats
-from ..algorithms.search import search
+from ..algorithms.search import qsearch
 
 
 # ============================================================================================================
@@ -166,7 +166,7 @@ def climb_hill_sat(
         neighbors = get_neighbours(x, dist)
 
         stats.classical_control_method_calls += 1
-        result = search(
+        result = qsearch(
             neighbors,
             lambda it: calculate_weight_for_solution(it, clauses_array, weights_array)
             > w,

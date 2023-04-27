@@ -6,7 +6,7 @@ import pandas as pd
 
 from .maxsat import MaxSatInstance
 from qubrabench.bench.stats import QueryStats
-from qubrabench.algorithms.search import search
+from qubrabench.algorithms.search import qsearch
 
 
 # MW: should not return QueryStats
@@ -40,7 +40,7 @@ def simple_hill_climber(
 
         # OPTION 2: faster implementation (for our instance sizes)
         weights = inst.weight(neighbors)
-        result = search(
+        result = qsearch(
             zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
         )
         if result is None:
