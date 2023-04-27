@@ -48,7 +48,7 @@ def simple_hill_climber(
         x, w = result
 
 
-def run(k, r, n, runs, seed, dest):
+def run(k, r, n, *, runs, seed=None, random_weights=None, dest=None):
     if seed is not None:
         np.random.seed(seed)
         random.seed(seed)
@@ -57,7 +57,9 @@ def run(k, r, n, runs, seed, dest):
         # if verbose:
         logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
         stats = QueryStats()
-        inst = MaxSatInstance.random(k=k, n=n, m=r * n, seed=seed)
+        inst = MaxSatInstance.random(
+            k=k, n=n, m=r * n, seed=seed, random_weights=random_weights
+        )
         simple_hill_climber(inst, stats=stats)
         stats = asdict(stats)
         stats["impl"] = "RUB"

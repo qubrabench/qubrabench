@@ -25,10 +25,13 @@ class MaxSatInstance:
         return self.weights @ sat_clauses
 
     @staticmethod
-    def random(k, n, m, seed):
+    def random(k, n, m, *, seed=None, random_weights=None):
         """
         Generate a random k-SAT instance with n variables and m clauses.
         """
+        if random_weights is None:
+            random_weights = np.random.random
+
         # generate random clauses (m x n matrix)
         if seed is not None:
             np.random.seed(seed)
@@ -40,5 +43,5 @@ class MaxSatInstance:
         clauses = scipy.sparse.csr_matrix(clauses)
 
         # generate random weights in [0,1]
-        weights = np.random.random(m)
+        weights = random_weights(m)
         return MaxSatInstance(k, clauses, weights)

@@ -39,7 +39,7 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
 # ============================================================================================================
 # Main Control
 # ============================================================================================================
-def run(k, r, n, runs, seed, dest):
+def run(k, r, n, *, runs, seed=None, random_weights=None, dest=None):
     hamming_distance = 1
     if seed is not None:
         random.seed(seed)
@@ -48,7 +48,9 @@ def run(k, r, n, runs, seed, dest):
     for run in range(runs):
         logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
         stats = QueryStats()
-        inst = MaxSatInstance.random(k=k, n=n, m=r * n, seed=seed)
+        inst = MaxSatInstance.random(
+            k=k, n=n, m=r * n, seed=seed, random_weights=random_weights
+        )
         calculate_solution_with_call_count(inst, hamming_distance, stats)
 
         stats = asdict(stats)
