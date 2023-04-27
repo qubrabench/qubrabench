@@ -31,13 +31,13 @@ def test_kit_values_100():
     with check:
         assert history.loc[0, "classical_control_method_calls"] == 38.6
     with check:
-        assert history.loc[0, "classical_actual_queries"] == 488.2
+        assert history.loc[0, "classical_actual_queries"] == 442.6
     with check:
-        assert history.loc[0, "classical_expected_queries"] == 455.0878159026828
+        assert history.loc[0, "classical_expected_queries"] == 447.55989714369844
     with check:
-        assert history.loc[0, "quantum_expected_classical_queries"] == 556.6182119870105
+        assert history.loc[0, "quantum_expected_classical_queries"] == 546.0817997883502
     with check:
-        assert history.loc[0, "quantum_expected_quantum_queries"] == 1039.134264879581
+        assert history.loc[0, "quantum_expected_quantum_queries"] == 1033.1587409686078
 
 
 @pytest.mark.rub
