@@ -42,6 +42,7 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
 def run(k, r, n, *, runs, seed=None, random_weights=None, dest=None):
     hamming_distance = 1
     if seed is not None:
+        np.random.seed(seed)
         random.seed(seed)
 
     history = []
@@ -167,7 +168,7 @@ def climb_hill_sat(
     :param dist: hamming distance we search for in neighbours
     :return: solution tuple containing the best solution and weight, which is maximized
     """
-    solution = generate_random_solution(variable_count)
+    solution = np.random.choice([0, 1], variable_count)
     weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
 
     # better_solution, better_weight = bench_wrap_find_better_neighbour(
@@ -224,6 +225,7 @@ def bench_wrap_find_better_neighbour(
     dprint("Number of Queries: " + str(num_queries))
     eps = 10**-5 / num_queries
     stats.classical_control_method_calls += 1
+    stats.classical_expected_queries += (N + 1) / (T + 1)
     stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T)
     stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T)
 
@@ -330,9 +332,3 @@ def generate_differing_arrays(array, num_changes):
             arrays.add(tuple(new_arr))
 
     return arrays
-
-
-def generate_random_solution(length):
-    """Generates a random input vector of the given length. Examples length=5 -> [0, 1, 0, 1, 1]"""
-    # random.seed(current_seed)
-    return [random.randint(0, 1) for _ in range(length)]
