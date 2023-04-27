@@ -38,6 +38,7 @@ dynamic = ["version"]
 dev = [
     "pytest~=7.3",
     "black",
+    "pytest-check",
 ]
 
 [tool.setuptools.dynamic]

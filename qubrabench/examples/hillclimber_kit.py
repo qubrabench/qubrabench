@@ -9,6 +9,7 @@ from dataclasses import asdict
 from .maxsat import MaxSatInstance
 from ..bench.stats import QueryStats
 from ..bench import qsearch
+from ..algorithms.search import search
 
 
 # ============================================================================================================
@@ -113,15 +114,13 @@ def calculate_solution_with_call_count(
     clauses, weights = maxsat_instance_to_lists(instance)
 
     # Solving the instance
-    solution, solution_weight = climb_hill_sat(
-        clauses, weights, instance.n, hamming_distance, stats
-    )
+    climb_hill_sat(clauses, weights, instance.n, hamming_distance, stats)
 
     # Done solving, provide debug outputs
     dprint("Traced Query Calls: " + str(qsearch.trace_system_data["call_count"]))
 
     # Cache trace count and reset
-    stats.classical_actual_queries = qsearch.trace_system_data["call_count"]
+    # stats.classical_actual_queries = qsearch.trace_system_data["call_count"]
     qsearch.trace_system_data["call_count"] = 0
 
 
@@ -168,68 +167,82 @@ def climb_hill_sat(
     :param dist: hamming distance we search for in neighbours
     :return: solution tuple containing the best solution and weight, which is maximized
     """
-    solution = np.random.choice([0, 1], variable_count)
-    weight = calculate_weight_for_solution(solution, clauses_array, weights_array)
-
-    # better_solution, better_weight = bench_wrap_find_better_neighbour(
-    #     solution, weight, clauses_array, weights_array, dist, call_data)
+    x = np.random.choice([0, 1], variable_count)
+    w = calculate_weight_for_solution(x, clauses_array, weights_array)
 
     while True:
-        better_solution, better_weight = bench_wrap_find_better_neighbour(
-            solution, weight, clauses_array, weights_array, dist, stats
+        # KIT IMPL
+        # better_solution, better_weight = bench_wrap_find_better_neighbour(
+        #     solution, weight, clauses_array, weights_array, dist, stats
+        # )
+        # if not better_solution:
+        #     break
+        # solution = better_solution
+        # weight = better_weight
+
+        # Generic Search
+        neighbors = get_neighbours(x, dist)
+
+        stats.classical_control_method_calls += 1
+        result = search(
+            neighbors,
+            lambda it: calculate_weight_for_solution(it, clauses_array, weights_array)
+            > w,
+            eps=10**-5,
+            stats=stats,
         )
+        if result is None:
+            return x
+        x = result
+        w = calculate_weight_for_solution(x, clauses_array, weights_array)
 
-        if not better_solution:
-            break
-        solution = better_solution
-        weight = better_weight
+    # KIT IMPL
+    # dprint("Quantum\tCalls: " + str(stats.quantum_expected_quantum_queries))
+    # dprint("Classic\tCalls: " + str(stats.quantum_expected_classical_queries))
+    # dprint("Search \tCalls: " + str(stats.classical_control_method_calls))
 
-    dprint("Quantum\tCalls: " + str(stats.quantum_expected_quantum_queries))
-    dprint("Classic\tCalls: " + str(stats.quantum_expected_classical_queries))
-    dprint("Search \tCalls: " + str(stats.classical_control_method_calls))
-
-    return better_solution, better_weight
+    # return better_solution, better_weight
 
 
-def bench_wrap_find_better_neighbour(
-    current_solution, weight, clauses_array, weights_array, dist, stats: QueryStats
-):
-    """
-    Function searching for better neighbour given a current solution
-    :param solution: current solution
-    :param weight: the current solutions weight
-    :param clauses_array: the problems clause array
-    :param weights_array: the problems weights array
-    :param dist: the problem's dist (hamming distance for neighbours)
-    :param call_data: benchmarking data structure
-    :return: Tuple of better neighbour and the current weight
-    """
-    neighbours = get_neighbours(current_solution, dist)
+# def bench_wrap_find_better_neighbour(
+#     current_solution, weight, clauses_array, weights_array, dist, stats: QueryStats
+# ):
+#     """
+#     Function searching for better neighbour given a current solution
+#     :param solution: current solution
+#     :param weight: the current solutions weight
+#     :param clauses_array: the problems clause array
+#     :param weights_array: the problems weights array
+#     :param dist: the problem's dist (hamming distance for neighbours)
+#     :param call_data: benchmarking data structure
+#     :return: Tuple of better neighbour and the current weight
+#     """
+#     neighbours = get_neighbours(current_solution, dist)
 
-    better_neighbour, better_weight, num_queries = find_better_neighbour(
-        neighbours, weight, clauses_array, weights_array
-    )
-    # if better_neighbour is None:
-    #     better_neighbour = current_solution
-    #     better_weight = weight
+#     better_neighbour, better_weight, num_queries = find_better_neighbour(
+#         neighbours, weight, clauses_array, weights_array
+#     )
+#     # if better_neighbour is None:
+#     #     better_neighbour = current_solution
+#     #     better_weight = weight
 
-    # Determine inputs for call estimation
-    N = len(neighbours)
-    dprint("Neighbourhood Size: " + str(N))
-    # find out T by counting valid neighbours to current solution (value greater than current)
-    T = determine_T(neighbours, clauses_array, weights_array, weight)
-    dprint("Valid Neighbours: " + str(T))
+#     # Determine inputs for call estimation
+#     N = len(neighbours)
+#     dprint("Neighbourhood Size: " + str(N))
+#     # find out T by counting valid neighbours to current solution (value greater than current)
+#     T = determine_T(neighbours, clauses_array, weights_array, weight)
+#     dprint("Valid Neighbours: " + str(T))
 
-    # TODO determine epsilon using number of traced qsearch calls
-    # MW: this needs to use an "a priori bound" (can't run the algorithm to figure out how to run the algorithm)
-    dprint("Number of Queries: " + str(num_queries))
-    eps = 10**-5 / num_queries
-    stats.classical_control_method_calls += 1
-    stats.classical_expected_queries += (N + 1) / (T + 1)
-    stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T)
-    stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T)
+#     # TODO determine epsilon using number of traced qsearch calls
+#     # MW: this needs to use an "a priori bound" (can't run the algorithm to figure out how to run the algorithm)
+#     dprint("Number of Queries: " + str(num_queries))
+#     eps = 10**-5 / num_queries
+#     stats.classical_control_method_calls += 1
+#     stats.classical_expected_queries += (N + 1) / (T + 1)
+#     stats.quantum_expected_quantum_queries += qsearch.estimate_quantum_queries(N, T)
+#     stats.quantum_expected_classical_queries += qsearch.estimate_classical_queries(N, T)
 
-    return better_neighbour, better_weight
+#     return better_neighbour, better_weight
 
 
 @qsearch.bench()
