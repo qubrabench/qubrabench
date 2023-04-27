@@ -61,7 +61,7 @@ def run_specific_instance():
         k=2, clauses=np.array([[1, 0, 0], [0, 1, 1], [0, -1, -1]], dtype=int)
     )
 
-    # TODO: run multiple times to obtain proper statistics 
+    # TODO: run multiple times to obtain proper statistics
     n = inst.n
     search_space = np.full((2**n, n), 1, dtype=int)
     for i in range(n):
