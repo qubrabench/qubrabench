@@ -6,8 +6,8 @@ import click
 
 import qubrabench.util.plotting as plotting
 
-from .hillclimber_rub import run as rub_run
-from .hillclimber_kit import run as kit_run
+from qubrabench.examples.hillclimber_rub import run as rub_run
+from qubrabench.examples.hillclimber_kit import run as kit_run
 
 import logging
 
@@ -63,9 +63,9 @@ def hill_climb(impl, k, r, seed, n, runs, dest, verbose):
     # print(seed)
     setup_default_logger(verbose)
     if impl == "KIT":
-        kit_run(k, r, n, runs, seed, dest)
+        kit_run(k, r, n, runs=runs, seed=seed, dest=dest)
     elif impl == "RUB":
-        rub_run(k, r, n, runs, seed, dest)
+        rub_run(k, r, n, runs=runs, seed=seed, dest=dest)
 
 
 def setup_default_logger(verbose):
