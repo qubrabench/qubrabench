@@ -12,6 +12,7 @@ from ..bench import qsearch
 T = TypeVar("T")
 
 
+# MW: this should be part of the public-facing API in the (q)search module (which should probably be in algorithms)
 def search(
     seq: Iterable[T],
     predicate: Callable[[T], bool],
@@ -48,6 +49,7 @@ def search(
             return x
 
 
+# MW: should not return QueryStats
 def simple_hill_climber(
     inst: MaxSatInstance, *, eps=10**-5, stats: QueryStats = None
 ):
@@ -63,15 +65,25 @@ def simple_hill_climber(
     while True:
         # compute all Hamming neighbors (row by row) and their weights
         neighbors = flip_mat * np.outer(ones, x)
-        weights = inst.weight(neighbors)
-        # better = np.flatnonzero(weights > w)
 
         # find improved directions
         stats.classical_control_method_calls += 1
-        result = search(  # TODO this is called too often!
+
+        # TODO this is called too often!
+        # MW: Cade et al propose picking eps = eps_overall / n as a heuristic (see 4.3.1 in Cade et al), we should do the same
+
+        # OPTION 1: "realistic" implementation
+        # result = search(neighbors, lambda x: inst.weight(x) > w, eps=eps, stats=stats)
+        # if result is None:
+        #     return x
+        # x, w = result, inst.weight(result)
+
+        # OPTION 2: faster implementation (for our instance sizes)
+        weights = inst.weight(neighbors)
+        result = search(
             zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
         )
-        if not result:
+        if result is None:
             return x
         x, w = result
 

@@ -217,6 +217,7 @@ def bench_wrap_find_better_neighbour(
     dprint("Valid Neighbours: " + str(T))
 
     # TODO determine epsilon using number of traced qsearch calls
+    # MW: this needs to use an "a priori bound" (can't run the algorithm to figure out how to run the algorithm)
     dprint("Number of Queries: " + str(num_queries))
     eps = 10**-5 / num_queries
     stats.classical_control_method_calls += 1

@@ -3,6 +3,7 @@ from functools import wraps
 import sys
 
 
+# MW: epsilon should not have a default value
 def estimate_quantum_queries(N, T, epsilon=10**-5, K=130):
     if T == 0:
         # approximate epsilon if it isn't provided
