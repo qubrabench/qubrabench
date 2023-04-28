@@ -52,9 +52,8 @@ To contribute towards development, create a new virtual environment (using [venv
 
 ```shell
 # in a virtual environment
-pip install --editable .[dev]
+pip install -e '.[dev]'
 ```
-In zsh on macOS, you might need to execute `pip install --editable '.[dev]'` to prevent globbing.
 
 ## Testing
 
