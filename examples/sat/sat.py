@@ -1,15 +1,12 @@
-from dataclasses import asdict
+from dataclasses import asdict, dataclass
 import numpy as np
 import random
 import logging
 import pandas as pd
+import scipy
 
 from qubrabench.bench.stats import QueryStats
 from qubrabench.algorithms.search import search as search
-
-from dataclasses import dataclass
-import numpy as np
-import scipy
 
 
 @dataclass(frozen=True)

@@ -4,14 +4,11 @@ from pathlib import Path
 from datetime import datetime
 import click
 
-import qubrabench.util.plotting as plotting
+from qubrabench.util import plotting
 
 import hillclimber
 
 import logging
-
-
-# logging.basicConfig(filename='logs/output.log', filemode='w', level=logging.DEBUG, format='%(levelname)s: %(message)s')
 
 
 # TODO: generell performance schlechter?
