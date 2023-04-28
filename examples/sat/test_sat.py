@@ -15,7 +15,6 @@ def isclose(x):
     return lambda y: np.isclose(x, y)
 
 
-@pytest.mark.rub
 def test_simple_sat():
     # TODO
     np.random.seed(3)
