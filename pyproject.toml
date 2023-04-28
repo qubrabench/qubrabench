@@ -8,6 +8,7 @@ authors = [
   { name="Tim Bittner", email="tim.bittner@kit.edu" },
   { name="Luke Southall", email="luke.southall@student.kit.edu" },
   { name="Michael Walter", email="michael.walter@rub.de" },
+  { name="Luca Witt", email="luca.witt@rub.de"},
 ]
 description = "QuBRA Benchmarking Framework"
 readme = "README.md"
