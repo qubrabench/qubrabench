@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 
 from qubrabench.bench.stats import QueryStats
-from qubrabench.algorithms.search import search
+from qubrabench.algorithms.search import qsearch as search
 
 from dataclasses import dataclass
 import numpy as np
@@ -36,13 +36,10 @@ class SatInstance:
         return np.all([np.any(c) for c in list(clauses)])
 
     @staticmethod
-    def random(k, n, m, *, seed=None, random_weights=None):
+    def random(k, n, m, *, seed=None):
         """
         Generate a random k-SAT instance with n variables and m clauses.
         """
-        if random_weights is None:
-            random_weights = np.random.random
-
         # generate random clauses (m x n matrix)
         if seed is not None:
             np.random.seed(seed)
@@ -56,6 +53,7 @@ class SatInstance:
         return SatInstance(k, clauses)
 
 
+# TODO: the algorithm (brute-force search for SAT solving) should have its own function
 def run_specific_instance():
     inst = SatInstance(
         k=2, clauses=np.array([[1, 0, 0], [0, 1, 1], [0, -1, -1]], dtype=int)

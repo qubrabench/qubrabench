@@ -33,6 +33,7 @@ def qsearch(
         stats.quantum_expected_quantum_queries += estimate_quantum_queries(N, T, eps, K)
 
     # run the classical sampling-without-replacement algorithms
+    # TODO: should provide an rng for this shuffle
     random.shuffle(seq)
     for x in seq:
         if stats:

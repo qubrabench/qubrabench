@@ -1,6 +1,7 @@
 import time
 import pytest
 from pytest_check import check
+import random
 
 import numpy as np
 from qubrabench.examples.sat import run_specific_instance as run
@@ -16,6 +17,10 @@ def isclose(x):
 
 @pytest.mark.rub
 def test_simple_sat():
+    # TODO
+    np.random.seed(3)
+    random.seed(3)
+
     n = 3
     k = 2
     m = 3
