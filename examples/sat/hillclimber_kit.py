@@ -28,7 +28,7 @@ def maxsat_instance_to_lists(instance: MaxSatInstance):
         for col_idx, col in enumerate(row):
             if not col == 0:
                 clause.append(
-                    col_idx * col
+                    (col_idx + 1) * col
                 )  # negated variables will have -1 at their index
 
     weights = instance.weights.tolist()
