@@ -16,6 +16,7 @@ def max(
     eps=10**-5,
     stats: QueryStats = None,
 ):
+    iterable = list(iterable)
     iterator = iter(iterable)
     try:
         max_val = next(iterator)
@@ -29,7 +30,13 @@ def max(
         stats.classical_actual_queries += 1
         if key(elem) > key(max_val):
             max_val = elem
-    return max_val
+    max_val_occurrences = 0
+    for elem in iterator:
+        if key(elem) == max_val:
+            max_val_occurrences += 1
+    stats.quantum_expected_quantum_queries = estimate_quantum_queries(
+        len(iterable), max_val_occurrences, stats.classical_actual_queries
+    )
 
 
 def estimate_quantum_queries(N, T, cq, epsilon=10**-5):
