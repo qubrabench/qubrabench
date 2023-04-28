@@ -4,7 +4,6 @@ from pytest_check import check
 from weightedsat import WeightedSatInstance
 
 
-
 def test_weighted_inherits_fields():
     n = 3
     k = 2
@@ -14,5 +13,3 @@ def test_weighted_inherits_fields():
 
     assert n == sat.n
     assert m == sat.m
-
-    
