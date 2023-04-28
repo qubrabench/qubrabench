@@ -5,7 +5,7 @@ import scipy
 
 
 @dataclass(frozen=True)
-class MaxSatInstance(SatInstance):
+class WeightedSatInstance(SatInstance):
     """
     As in 4.3.2 in Cade et al, clauses are represented by vectors in {-1,0,1}^n and assignments by vectors in {-1,1}^n.
     """
@@ -33,4 +33,4 @@ class MaxSatInstance(SatInstance):
 
         # generate random weights
         weights = random_weights(m)
-        return MaxSatInstance(k, sat.clauses, weights)
+        return WeightedSatInstance(k, sat.clauses, weights)

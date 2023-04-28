@@ -4,14 +4,14 @@ import random
 import logging
 import pandas as pd
 
-from maxsat import MaxSatInstance
+from weightedsat import WeightedSatInstance
 from qubrabench.bench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
 
 # MW: should not return QueryStats
 def simple_hill_climber(
-    inst: MaxSatInstance, *, eps=10**-5, stats: QueryStats = None
+    inst: WeightedSatInstance, *, eps=10**-5, stats: QueryStats = None
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
@@ -56,7 +56,7 @@ def run(k, r, n, *, runs, seed=None, random_weights=None, dest=None):
         # if verbose:
         logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
         stats = QueryStats()
-        inst = MaxSatInstance.random(
+        inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, seed=seed, random_weights=random_weights
         )
         simple_hill_climber(inst, stats=stats)
