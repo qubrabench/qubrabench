@@ -6,6 +6,8 @@ import numpy as np
 
 import random
 
+__all__ = ["search"]
+
 
 T = TypeVar("T")
 
