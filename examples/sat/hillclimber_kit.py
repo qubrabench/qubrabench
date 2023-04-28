@@ -136,6 +136,7 @@ def climb_hill_sat(
 
     while True:
         neighbors = get_neighbours(x, dist)
+        neighbors.sort()  # TODO: remove this once KIT and RUB in harmony
 
         stats.classical_control_method_calls += 1
         result = search(
