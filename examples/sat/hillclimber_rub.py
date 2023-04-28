@@ -4,7 +4,7 @@ import random
 import logging
 import pandas as pd
 
-from .maxsat import MaxSatInstance
+from maxsat import MaxSatInstance
 from qubrabench.bench.stats import QueryStats
 from qubrabench.algorithms.search import qsearch
 

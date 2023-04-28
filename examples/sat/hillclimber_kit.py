@@ -6,9 +6,9 @@ import logging
 import numpy as np
 from dataclasses import asdict
 
-from .maxsat import MaxSatInstance
-from ..bench.stats import QueryStats
-from ..algorithms.search import qsearch
+from maxsat import MaxSatInstance
+from qubrabench.bench.stats import QueryStats
+from qubrabench.algorithms.search import qsearch
 
 
 # ============================================================================================================

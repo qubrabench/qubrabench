@@ -5,8 +5,8 @@ from pytest_check import check
 
 import numpy as np
 
-from qubrabench.examples.hillclimber_rub import run as rub_run
-from qubrabench.examples.hillclimber_kit import run as kit_run
+from hillclimber_rub import run as rub_run
+from hillclimber_kit import run as kit_run
 
 
 def random_weights(size):

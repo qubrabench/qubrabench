@@ -4,7 +4,7 @@ from pytest_check import check
 import random
 
 import numpy as np
-from qubrabench.examples.sat import run_specific_instance as run
+from sat import run_specific_instance as run
 
 
 def equals(x):

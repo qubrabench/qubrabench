@@ -6,8 +6,8 @@ import click
 
 import qubrabench.util.plotting as plotting
 
-from qubrabench.examples.hillclimber_rub import run as rub_run
-from qubrabench.examples.hillclimber_kit import run as kit_run
+from hillclimber_rub import run as rub_run
+from hillclimber_kit import run as kit_run
 
 import logging
 
