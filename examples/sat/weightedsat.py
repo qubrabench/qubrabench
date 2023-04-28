@@ -8,10 +8,10 @@ import scipy
 class WeightedSatInstance(SatInstance):
     """
     As in 4.3.2 in Cade et al, clauses are represented by vectors in {-1,0,1}^n and assignments by vectors in {-1,1}^n.
+
+    Inherits from :class: `SatInstance`.
     """
 
-    k: int  # number of literals per clause
-    clauses: np.ndarray  # (clauses_no x literals_no) matrix
     weights: np.ndarray  # m vector
 
     def weight(
@@ -23,7 +23,9 @@ class WeightedSatInstance(SatInstance):
     @staticmethod
     def random(k, n, m, *, seed=None, random_weights=None):
         """
-        Generate a random k-SAT instance with n variables and m clauses.
+        Generate a random k-SAT instance with n variables, m clauses and optionally provided weights.
+
+        If no weights are provided, generates them implicitly.
         """
         if random_weights is None:
             random_weights = np.random.random
