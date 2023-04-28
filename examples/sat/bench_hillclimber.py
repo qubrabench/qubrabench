@@ -6,8 +6,7 @@ import click
 
 import qubrabench.util.plotting as plotting
 
-from hillclimber_rub import run as rub_run
-from hillclimber_kit import run as kit_run
+import hillclimber
 
 import logging
 
@@ -33,7 +32,6 @@ def plot(src):
 
 
 @cli.command()
-@click.argument("impl", type=click.Choice(["KIT", "RUB"], case_sensitive=False))
 @click.option("-k", help="Number of literals per clause.", type=int, required=True)
 @click.option("-n", help="Number of variables.", type=int, required=True)
 @click.option(
@@ -54,7 +52,7 @@ def plot(src):
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def hill_climb(impl, k, r, seed, n, runs, dest, verbose):
+def hill_climb(k, r, seed, n, runs, dest, verbose):
     """
     Run simple hill simpler benchmark. Example:
 
@@ -62,10 +60,7 @@ def hill_climb(impl, k, r, seed, n, runs, dest, verbose):
     """
     # print(seed)
     setup_default_logger(verbose)
-    if impl == "KIT":
-        kit_run(k, r, n, runs=runs, seed=seed, dest=dest)
-    elif impl == "RUB":
-        rub_run(k, r, n, runs=runs, seed=seed, dest=dest)
+    hillclimber.run(k, r, n, runs=runs, seed=seed, dest=dest)
 
 
 def setup_default_logger(verbose):
