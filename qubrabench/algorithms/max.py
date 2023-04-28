@@ -1,5 +1,9 @@
 from typing import Iterable, TypeVar, Optional
+
+from qubrabench.bench.bounds import calculate_F
 from qubrabench.bench.stats import QueryStats
+
+import numpy as np
 
 T = TypeVar("T")
 
@@ -26,3 +30,11 @@ def max(
         if key(elem) > key(max_val):
             max_val = elem
     return max_val
+
+
+def estimate_quantum_queries(N, T, cq, epsilon=10**-5):
+    # i assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
+    sum_of_ts = 0
+    for i in range(T, N):
+        sum_of_ts += calculate_F(N, i) / (i + 1)
+    return np.ceil(np.log(1 / epsilon) / np.log(3)) * 3 * (cq * sum_of_ts)
