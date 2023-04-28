@@ -186,11 +186,10 @@ def calculate_weight_for_solution(solution, clauses_array, weights_array):
                 literal > 0
                 and solution[literal - 1] == 1
                 or literal < 0
-                and solution[abs(literal) - 1] == 0
+                and solution[-literal - 1] == 0
             ):
                 weight += weights_array[clause_idx]
                 break  # no need to check further literals
-
     return weight
 
 

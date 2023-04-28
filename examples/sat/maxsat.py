@@ -42,6 +42,6 @@ class MaxSatInstance:
 
         clauses = scipy.sparse.csr_matrix(clauses)
 
-        # generate random weights in [0,1]
+        # generate random weights
         weights = random_weights(m)
         return MaxSatInstance(k, clauses, weights)
