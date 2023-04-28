@@ -116,34 +116,6 @@ def calculate_solution_with_call_count(
     climb_hill_sat(clauses, weights, instance.n, hamming_distance, stats)
 
 
-def determine_T(neighbours, clauses_array, weights_array, weight, K=130):
-    def evaluate_one_solution(solution):
-        """Increases T if the given solution is a valid candidate improving the weight"""
-        new_weight = calculate_weight_for_solution(
-            solution, clauses_array, weights_array
-        )
-        return new_weight > weight
-
-    T = 0
-    # brute force T, might take a long Time
-    if exact_T:
-        for neighbour in neighbours:
-            if evaluate_one_solution(neighbour):
-                T += 1
-
-    # approximate T based on an amount of samples
-    else:
-        for _ in range(K):
-            # random.seed(current_seed)
-            sample = random.choice(list(neighbours))
-            if evaluate_one_solution(sample):
-                T += 1
-        # extrapolate from the sampling hit-rate
-        T = math.floor((T / K) * len(neighbours))
-
-    return T
-
-
 # ============================================================================================================
 # Hill Climbing
 # ============================================================================================================
