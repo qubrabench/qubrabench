@@ -164,7 +164,7 @@ def get_neighbours(solution, max_hamming_distance):
 
     neighbours = list(neighbours)
     # random.seed(current_seed)
-    random.shuffle(neighbours)
+    # random.shuffle(neighbours)
     return neighbours
 
 
