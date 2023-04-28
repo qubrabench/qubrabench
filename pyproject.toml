@@ -49,6 +49,4 @@ include = ["qubrabench"]
 
 [tool.pytest.ini_options]
 markers = [
-    "kit: test KIT implementations (in case of parallel implementations)",
-    "rub: test RUB implementations (in case of parallel implementations)",
 ]
