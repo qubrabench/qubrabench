@@ -34,7 +34,7 @@ def max(
     for elem in iterator:
         if key(elem) == max_val:
             max_val_occurrences += 1
-    stats.quantum_expected_quantum_queries = estimate_quantum_queries(
+    stats.quantum_expected_quantum_queries += estimate_quantum_queries(
         len(iterable), max_val_occurrences, stats.classical_actual_queries
     )
 
