@@ -5,7 +5,7 @@ import logging
 import pandas as pd
 
 from qubrabench.bench.stats import QueryStats
-from qubrabench.algorithms.search import qsearch as search
+from qubrabench.algorithms.search import search as search
 
 from dataclasses import dataclass
 import numpy as np

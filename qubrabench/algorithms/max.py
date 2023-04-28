@@ -1,7 +1,7 @@
 from qubrabench.bench.stats import QueryStats
 
 
-def qmax(iterable, default=None, key=None, *, eps=10**-5, stats: QueryStats = None):
+def max(iterable, default=None, key=None, *, eps=10**-5, stats: QueryStats = None):
     iterator = iter(iterable)
     try:
         max_val = next(iterator)

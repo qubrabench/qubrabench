@@ -9,8 +9,8 @@ import random
 T = TypeVar("T")
 
 
-def qsearch(
-    seq: Iterable[T],
+def search(
+    iterable: Iterable[T],
     predicate: Callable[[T], bool],
     *,
     eps,
@@ -22,20 +22,20 @@ def qsearch(
 
     TODO: Think about how to interpret eps for the classical algorithm.
     """
-    seq = list(seq)
+    iterable = list(iterable)
 
     # collect stats
     if stats:
-        N = len(seq)
-        T = sum(1 for x in seq if predicate(x))
+        N = len(iterable)
+        T = sum(1 for x in iterable if predicate(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += estimate_classical_queries(N, T, K)
         stats.quantum_expected_quantum_queries += estimate_quantum_queries(N, T, eps, K)
 
     # run the classical sampling-without-replacement algorithms
     # TODO: should provide an rng for this shuffle
-    random.shuffle(seq)
-    for x in seq:
+    random.shuffle(iterable)
+    for x in iterable:
         if stats:
             stats.classical_actual_queries += 1
         if predicate(x):

@@ -1,11 +1,11 @@
 import random
 from pytest_check import check
 
-from qubrabench.algorithms.search import qsearch
+from qubrabench.algorithms.search import search
 from qubrabench.bench.stats import QueryStats
 
 
-def test_qsearch():
+def test_search():
     list_to_search = range(0, 100)
     stats = QueryStats()
 
@@ -13,8 +13,7 @@ def test_qsearch():
 
     with check:
         assert (
-            qsearch(list_to_search, lambda it: it == 50, eps=10**-5, stats=stats)
-            == 50
+            search(list_to_search, lambda it: it == 50, eps=10**-5, stats=stats) == 50
         )
     with check:
         assert stats.classical_control_method_calls == 0
