@@ -26,13 +26,9 @@ def simple_hill_climber(
         # compute all Hamming neighbors (row by row) and their weights
         neighbors = flip_mat * np.outer(ones, x)
 
-        # TODO: remove this once KIT and RUB in harmony
-        neighbors = np.array(sorted(map(tuple, neighbors)))
-
         # find improved directions
         stats.classical_control_method_calls += 1
 
-        # TODO this is called too often!
         # MW: Cade et al propose picking eps = eps_overall / n as a heuristic (see 4.3.1 in Cade et al), we should do the same
 
         # OPTION 1: "realistic" implementation
