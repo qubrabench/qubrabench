@@ -1,10 +1,11 @@
 from dataclasses import dataclass
+from sat import SatInstance
 import numpy as np
 import scipy
 
 
 @dataclass(frozen=True)
-class MaxSatInstance:
+class MaxSatInstance(SatInstance):
     """
     As in 4.3.2 in Cade et al, clauses are represented by vectors in {-1,0,1}^n and assignments by vectors in {-1,1}^n.
     """
@@ -12,11 +13,6 @@ class MaxSatInstance:
     k: int  # number of literals per clause
     clauses: np.ndarray  # (clauses_no x literals_no) matrix
     weights: np.ndarray  # m vector
-
-    @property
-    def n(self):
-        """Number of variables"""
-        return self.clauses.shape[1]
 
     def weight(
         self, assignment
@@ -32,16 +28,9 @@ class MaxSatInstance:
         if random_weights is None:
             random_weights = np.random.random
 
-        # generate random clauses (m x n matrix)
-        if seed is not None:
-            np.random.seed(seed)
-        clauses = np.zeros(shape=(m, n), dtype=int)
-        for i in range(m):
-            vs = np.random.choice(n, k, replace=False)
-            clauses[i][vs] = np.random.choice([-1, 1], k)
-
-        clauses = scipy.sparse.csr_matrix(clauses)
+        # Generate 'normal' SatInstance
+        sat = SatInstance.random(k=k, n=n, m=m, seed=seed)
 
         # generate random weights
         weights = random_weights(m)
-        return MaxSatInstance(k, clauses, weights)
+        return MaxSatInstance(k, sat.clauses, weights)
