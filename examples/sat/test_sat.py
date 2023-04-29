@@ -2,7 +2,7 @@ from pytest_check import check
 import random
 
 import numpy as np
-from sat import run_specific_instance as run
+from sat import WeightedSatInstance, run_specific_instance
 
 
 def equals(x):
@@ -22,7 +22,7 @@ def test_simple_sat():
     k = 2
     m = 3
 
-    stats = run()
+    stats = run_specific_instance()
 
     def verify(stat, checker):
         with check:
@@ -40,3 +40,14 @@ def test_simple_sat():
     verify("classical_expected_queries", equals(3))
     verify("quantum_expected_classical_queries", isclose(4))
     verify("quantum_expected_quantum_queries", isclose(0))
+
+
+def test_weighted_inherits_fields():
+    n = 3
+    k = 2
+    m = 3
+
+    sat = WeightedSatInstance.random(n=n, k=k, m=m)
+
+    assert n == sat.n
+    assert m == sat.m

@@ -5,7 +5,7 @@ import random
 import logging
 import pandas as pd
 
-from weightedsat import WeightedSatInstance
+from sat import WeightedSatInstance
 from qubrabench.bench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
