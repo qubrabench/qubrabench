@@ -3,6 +3,10 @@ BENCH_HILLCLIMBER = examples/sat/bench_hillclimber.py
 pretty:
 	black -t py310 .
 
+mypy:
+	mypy .
+	# mypy . --strict
+
 bench-hillclimber-quick:
 	$(eval FNAME = data/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
 	$(BENCH_HILLCLIMBER) hill-climb -k 3 -r 3 -n 100 --runs 5 --save $(FNAME)
