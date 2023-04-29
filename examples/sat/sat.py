@@ -1,8 +1,5 @@
 from dataclasses import asdict, dataclass
 import numpy as np
-import random
-import logging
-import pandas as pd
 import scipy
 
 from qubrabench.bench.stats import QueryStats

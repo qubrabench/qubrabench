@@ -31,7 +31,7 @@ def simple_hill_climber(
 
         # MW: Cade et al propose picking eps = eps_overall / n as a heuristic (see 4.3.1 in Cade et al), we should do the same
 
-        # OPTION 1: "realistic" implementation
+        # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
         # result = search(neighbors, lambda x: inst.weight(x) > w, eps=eps, stats=stats)
         # if result is None:
         #     return x

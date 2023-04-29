@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 from sat import SatInstance
 import numpy as np
-import scipy
 
 
 @dataclass(frozen=True)

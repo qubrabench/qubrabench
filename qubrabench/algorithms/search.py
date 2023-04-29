@@ -1,10 +1,8 @@
-from typing import Callable, Iterable, TypeVar
+import random
+from typing import Callable, Iterable, Optional, TypeVar
+import numpy as np
 from qubrabench.bench.stats import QueryStats
 from qubrabench.bench.bounds import calculate_F
-
-import numpy as np
-
-import random
 
 __all__ = ["search"]
 
@@ -19,7 +17,7 @@ def search(
     eps,
     K=130,
     stats: QueryStats = None,
-):
+) -> Optional[T]:
     """
     Search a list by linear search, while keeping track of query statistics.
 
@@ -83,5 +81,5 @@ def cade_et_al_expected_classical_queries(N, T, K):
     """
     if T == 0:
         return K
-    else:
-        return (N / T) * (1 - (1 - (T / N)) ** K)
+
+    return (N / T) * (1 - (1 - (T / N)) ** K)

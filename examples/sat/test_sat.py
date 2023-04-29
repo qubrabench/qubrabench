@@ -1,5 +1,3 @@
-import time
-import pytest
 from pytest_check import check
 import random
 

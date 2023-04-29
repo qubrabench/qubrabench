@@ -1,4 +1,5 @@
-import cProfile, pstats
+import cProfile
+import pstats
 from functools import wraps
 
 

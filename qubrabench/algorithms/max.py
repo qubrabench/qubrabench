@@ -1,9 +1,8 @@
 from typing import Iterable, TypeVar, Optional
+import numpy as np
 
 from qubrabench.bench.bounds import calculate_F
 from qubrabench.bench.stats import QueryStats
-
-import numpy as np
 
 T = TypeVar("T")
 
@@ -20,12 +19,15 @@ def max(
     iterator = iter(iterable)
     try:
         max_val = next(iterator)
-    except StopIteration:
+    except StopIteration as exc:
         if default is None:
-            raise ValueError("max() arg is an empty sequence")
+            raise ValueError("max() arg is an empty sequence") from exc
         return default
     if key is None:
-        key = lambda x: x
+
+        def key(x):
+            return x
+
     for elem in iterator:
         stats.classical_actual_queries += 1
         if key(elem) > key(max_val):
@@ -37,6 +39,7 @@ def max(
     stats.quantum_expected_quantum_queries += estimate_quantum_queries(
         len(iterable), max_val_occurrences, stats.classical_actual_queries
     )
+    return max_val
 
 
 def estimate_quantum_queries(N, T, cq, epsilon=10**-5):

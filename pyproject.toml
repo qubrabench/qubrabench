@@ -5,10 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "qubrabench"
 authors = [
-  { name="Tim Bittner", email="tim.bittner@kit.edu" },
-  { name="Luke Southall", email="luke.southall@student.kit.edu" },
-  { name="Michael Walter", email="michael.walter@rub.de" },
-  { name="Luca Witt", email="luca.witt@rub.de"},
+    { name = "Tim Bittner", email = "tim.bittner@kit.edu" },
+    { name = "Luke Southall", email = "luke.southall@student.kit.edu" },
+    { name = "Michael Walter", email = "michael.walter@rub.de" },
+    { name = "Luca Witt", email = "luca.witt@rub.de" },
 ]
 description = "QuBRA Benchmarking Framework"
 readme = "README.md"
@@ -37,17 +37,16 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "pytest~=7.3",
     "black",
-    "pytest-check",
+    "pytest~=7.3",
+    "pytest-check~=2.1",
 ]
 
 [tool.setuptools.dynamic]
-version = {attr = "qubrabench.__version__"}
+version = { attr = "qubrabench.__version__" }
 
 [tool.setuptools.packages.find]
 include = ["qubrabench"]
 
 [tool.pytest.ini_options]
-markers = [
-]
+markers = []

@@ -1,6 +1,7 @@
 import numpy as np
 
 
+# TODO: what is this function about? docstring? :o) should it be in algorithms/max.py?
 def calculate_F(N, T):
     F = 2.0344
     if 1 <= T < (N / 4):

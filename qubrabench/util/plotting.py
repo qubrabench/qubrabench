@@ -1,11 +1,13 @@
+from os import path
+import random
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
-import random
-import os.path as path
 
 
 def plot(src, quantum_factor=2):
+    # TODO: this still refers to KIT and RUB
+    # TODO: this module seems sufficiently special-case that it should rather reside in bench_hillclimber.py in the examples folder
     colors = {"KIT": "green", "RUB": "blue", "Cade": "orange"}
 
     def color_for_impl(impl):
@@ -17,7 +19,7 @@ def plot(src, quantum_factor=2):
             return colors[impl]
         except KeyError:
             mcolor_names: list = [
-                c for c in mcolors.CSS4_COLORS.keys() if c not in colors.values()
+                c for c in mcolors.CSS4_COLORS if c not in colors.values()
             ]
             new_color = random.choice(mcolor_names)
             colors[impl] = new_color
