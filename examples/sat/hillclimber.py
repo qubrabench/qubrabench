@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from typing import Optional
 import numpy as np
 import random
 import logging
@@ -11,7 +12,10 @@ from qubrabench.algorithms.search import search
 
 # MW: should not return QueryStats
 def simple_hill_climber(
-    inst: WeightedSatInstance, *, eps=10**-5, stats: QueryStats = None
+    inst: WeightedSatInstance,
+    *,
+    eps: float = 10**-5,
+    stats: Optional[QueryStats] = None,
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
@@ -27,7 +31,8 @@ def simple_hill_climber(
         neighbors = flip_mat * np.outer(ones, x)
 
         # find improved directions
-        stats.classical_control_method_calls += 1
+        if stats:
+            stats.classical_control_method_calls += 1
 
         # MW: Cade et al propose picking eps = eps_overall / n as a heuristic (see 4.3.1 in Cade et al), we should do the same
 

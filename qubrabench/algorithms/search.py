@@ -16,7 +16,7 @@ def search(
     *,
     eps,
     K=130,
-    stats: QueryStats = None,
+    stats: Optional[QueryStats] = None,
 ) -> Optional[T]:
     """
     Search a list by linear search, while keeping track of query statistics.
@@ -52,6 +52,8 @@ def search(
             stats.classical_actual_queries += 1
         if predicate(x):
             return x
+
+    return None
 
 
 def cade_et_al_expected_quantum_queries(N, T, eps, K):

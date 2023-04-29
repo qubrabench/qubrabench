@@ -13,8 +13,8 @@ def max(
     default: Optional[T] = None,
     key=None,
     eps=10**-5,
-    stats: QueryStats = None,
-):
+    stats: Optional[QueryStats] = None,
+) -> T:
     iterable = list(iterable)
     iterator = iter(iterable)
     try:
@@ -29,16 +29,18 @@ def max(
             return x
 
     for elem in iterator:
-        stats.classical_actual_queries += 1
+        if stats:
+            stats.classical_actual_queries += 1
         if key(elem) > key(max_val):
             max_val = elem
     max_val_occurrences = 0
     for elem in iterator:
         if key(elem) == max_val:
             max_val_occurrences += 1
-    stats.quantum_expected_quantum_queries += estimate_quantum_queries(
-        len(iterable), max_val_occurrences, stats.classical_actual_queries
-    )
+    if stats:
+        stats.quantum_expected_quantum_queries += estimate_quantum_queries(
+            len(iterable), max_val_occurrences, stats.classical_actual_queries
+        )
     return max_val
 
 
