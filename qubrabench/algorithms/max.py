@@ -4,17 +4,17 @@ import numpy as np
 from qubrabench.bench.bounds import calculate_F
 from qubrabench.bench.stats import QueryStats
 
-T = TypeVar("T")
+E = TypeVar("E")
 
 
 def max(
-    iterable: Iterable[T],
+    iterable: Iterable[E],
     *,
-    default: Optional[T] = None,
+    default: Optional[E] = None,
     key=None,
     eps=10**-5,
     stats: Optional[QueryStats] = None,
-) -> T:
+) -> E:
     iterable = list(iterable)
     iterator = iter(iterable)
     try:
@@ -23,6 +23,7 @@ def max(
         if default is None:
             raise ValueError("max() arg is an empty sequence") from exc
         return default
+
     if key is None:
 
         def key(x):
@@ -39,14 +40,15 @@ def max(
             max_val_occurrences += 1
     if stats:
         stats.quantum_expected_quantum_queries += estimate_quantum_queries(
-            len(iterable), max_val_occurrences, stats.classical_actual_queries
+            len(iterable), max_val_occurrences, stats.classical_actual_queries, eps
         )
     return max_val
 
 
-def estimate_quantum_queries(N, T, cq, epsilon=10**-5):
-    # i assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
+def estimate_quantum_queries(N, T, cq, eps=10**-5):
+    # assume cq corresponds to the number of classical comparisons corresponding to
+    # oracle O_f_i in paper
     sum_of_ts = 0
     for i in range(T, N):
         sum_of_ts += calculate_F(N, i) / (i + 1)
-    return np.ceil(np.log(1 / epsilon) / np.log(3)) * 3 * (cq * sum_of_ts)
+    return np.ceil(np.log(1 / eps) / np.log(3)) * 3 * (cq * sum_of_ts)

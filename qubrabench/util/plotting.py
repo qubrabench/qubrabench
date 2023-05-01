@@ -7,7 +7,8 @@ import matplotlib.colors as mcolors
 
 def plot(src, quantum_factor=2):
     # TODO: this still refers to KIT and RUB
-    # TODO: this module seems sufficiently special-case that it should rather reside in bench_hillclimber.py in the examples folder
+    # TODO: this module seems sufficiently special-case that it should rather reside
+    #       in bench_hillclimber.py in the examples folder
     colors = {"KIT": "green", "RUB": "blue", "Cade": "orange"}
 
     def color_for_impl(impl):
