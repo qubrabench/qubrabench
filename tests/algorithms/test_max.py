@@ -1,3 +1,4 @@
+import pytest
 from pytest_check import check
 
 from qubrabench.algorithms.max import max
@@ -22,3 +23,12 @@ def test_max():
     #     assert stats.quantum_expected_classical_queries == 72.9245740488006
     # with check:
     #     assert stats.quantum_expected_quantum_queries == 18.991528740664712
+
+
+def test_max_raises_on_empty_and_no_default():
+    with pytest.raises(ValueError):
+        max([], eps=10**-5)
+
+
+def test_max_on_empty_with_default():
+    assert max([], eps=10**-5, default=42) == 42

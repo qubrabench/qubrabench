@@ -30,6 +30,13 @@ def max(
         if max_val is None or key(elem) > key(max_val):
             max_val = elem
 
+    if max_val is None:
+        if default is None:
+            raise ValueError(
+                "max() arg is an empty sequence, and no default value provided"
+            )
+        max_val = default
+
     max_val_occurrences = 0
     for elem in iterable:
         if key(elem) == max_val:
