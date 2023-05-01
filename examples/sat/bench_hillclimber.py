@@ -2,6 +2,7 @@
 from pathlib import Path
 from datetime import datetime
 import click
+import numpy as np
 
 from qubrabench.util import plotting
 
@@ -54,9 +55,10 @@ def hill_climb(k, r, seed, n, runs, dest, verbose):
 
         qubrabench.py hill-climb kit -k 2 -r 3 -n 100 --save results.json
     """
-    # print(seed)
     setup_default_logger(verbose)
-    hillclimber.run(k, r, n, runs=runs, seed=seed, dest=dest)
+    hillclimber.run(
+        k, r, n, n_runs=runs, rng=np.random.default_rng(seed=seed), dest=dest
+    )
 
 
 def setup_default_logger(verbose):

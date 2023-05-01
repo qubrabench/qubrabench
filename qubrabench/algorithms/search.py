@@ -16,6 +16,7 @@ def search(
     eps: Optional[float] = None,
     K: int = 130,
     stats: Optional[QueryStats] = None,
+    rng: np.random.Generator = np.random.default_rng(),
 ) -> Optional[E]:
     """
     Search a list by linear search, while keeping track of query statistics.
@@ -46,8 +47,7 @@ def search(
         )
 
     # run the classical sampling-without-replacement algorithms
-    # TODO: should provide an rng for this shuffle
-    np.random.shuffle(iterable)
+    rng.shuffle(iterable)
     for x in iterable:
         if stats:
             stats.classical_actual_queries += 1

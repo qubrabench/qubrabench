@@ -7,7 +7,13 @@ from qubrabench.bench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
 
-def run_specific_instance(inst: SatInstance, *, n_runs: int = 5, eps: float = 10**-5):
+def run_specific_instance(
+    inst: SatInstance,
+    *,
+    n_runs: int = 5,
+    eps: float = 10**-5,
+    rng: np.random.Generator = np.random.default_rng(),
+):
     n = inst.n
     search_space = np.full((2**n, n), 1, dtype=int)
     for i in range(n):
@@ -23,7 +29,7 @@ def run_specific_instance(inst: SatInstance, *, n_runs: int = 5, eps: float = 10
     history = []
     for run_ix in range(n_runs):
         stats = QueryStats()
-        search(search_space, inst.evaluate, stats=stats, eps=eps)
+        search(search_space, inst.evaluate, eps=eps, stats=stats, rng=rng)
 
         stats = asdict(stats)
         stats["n"] = inst.n
