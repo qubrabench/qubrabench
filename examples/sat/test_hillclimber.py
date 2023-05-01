@@ -9,7 +9,9 @@ def random_weights(size):
 
 
 def test_maxsat_values_100():
-    history = hillclimber.run(3, 3, 100, runs=5, seed=12, random_weights=random_weights)
+    history = hillclimber.run(
+        3, 3, 100, n_runs=5, seed=12, random_weights=random_weights
+    )
     history = history.groupby(["k", "r", "n"]).mean(numeric_only=True).reset_index()
     check.equal(history.loc[0, "k"], 3)
     check.equal(history.loc[0, "r"], 3)

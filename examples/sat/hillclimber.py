@@ -52,14 +52,14 @@ def simple_hill_climber(
         x, w = result
 
 
-def run(k, r, n, *, runs, seed=None, random_weights=None, dest=None):
+def run(k, r, n, *, n_runs, seed=None, random_weights=None, dest=None):
     if seed is not None:
         np.random.seed(seed)
         random.seed(seed)
     history = []
-    for run in range(runs):
+    for run_ix in range(n_runs):
         # if verbose:
-        logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run}")
+        logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run_ix}")
         stats = QueryStats()
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, seed=seed, random_weights=random_weights
