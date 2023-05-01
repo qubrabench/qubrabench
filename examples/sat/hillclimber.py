@@ -15,6 +15,7 @@ def simple_hill_climber(
     *,
     eps: float = 10**-5,
     stats: Optional[QueryStats] = None,
+    rng: np.random.Generator = np.random.default_rng(),
 ):
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
@@ -22,7 +23,7 @@ def simple_hill_climber(
     flip_mat = np.outer(ones, ones) - 2 * np.eye(n, dtype=int)
 
     # start with a random assignment
-    x = np.random.choice([-1, 1], n)
+    x = rng.choice([-1, 1], n)
     w = inst.weight(x)
 
     while True:
@@ -44,25 +45,32 @@ def simple_hill_climber(
         # OPTION 2: faster implementation (for our instance sizes)
         weights = inst.weight(neighbors)
         result = search(
-            zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats
+            zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats, rng=rng
         )
         if result is None:
             return x
         x, w = result
 
 
-def run(k, r, n, *, n_runs, seed=None, random_weights=None, dest=None):
-    if seed is not None:
-        np.random.seed(seed)
+def run(
+    k,
+    r,
+    n,
+    *,
+    n_runs,
+    rng: np.random.Generator = np.random.default_rng(),
+    random_weights=None,
+    dest=None,
+):
     history = []
     for run_ix in range(n_runs):
         # if verbose:
-        logging.debug(f"k={k}, r={r}, n={n}, seed={seed}, #{run_ix}")
+        logging.debug(f"k={k}, r={r}, n={n}, #{run_ix}")
         stats = QueryStats()
         inst = WeightedSatInstance.random(
-            k=k, n=n, m=r * n, seed=seed, random_weights=random_weights
+            k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
-        simple_hill_climber(inst, stats=stats)
+        simple_hill_climber(inst, stats=stats, rng=rng)
         stats = asdict(stats)
         stats["impl"] = "RUB"
         stats["n"] = n

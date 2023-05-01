@@ -27,17 +27,15 @@ class SatInstance:
         return np.all([np.any(c) for c in list(clauses)])
 
     @staticmethod
-    def random(k, n, m, *, seed=None):
+    def random(k, n, m, *, rng: np.random.Generator = np.random.default_rng()):
         """
         Generate a random k-SAT instance with n variables and m clauses.
         """
         # generate random clauses (m x n matrix)
-        if seed is not None:
-            np.random.seed(seed)
         clauses = np.zeros(shape=(m, n), dtype=int)
         for i in range(m):
-            vs = np.random.choice(n, k, replace=False)
-            clauses[i][vs] = np.random.choice([-1, 1], k)
+            vs = rng.choice(n, k, replace=False)
+            clauses[i][vs] = rng.choice([-1, 1], k)
 
         clauses = scipy.sparse.csr_matrix(clauses)
 
@@ -61,17 +59,24 @@ class WeightedSatInstance(SatInstance):
         return self.weights @ sat_clauses
 
     @staticmethod
-    def random(k, n, m, *, seed=None, random_weights=None):
+    def random(
+        k,
+        n,
+        m,
+        *,
+        rng: np.random.Generator = np.random.default_rng(),
+        random_weights=None,
+    ):
         """
         Generate a random k-SAT instance with n variables, m clauses and optionally provided weights.
 
         If no weights are provided, generates them implicitly.
         """
         if random_weights is None:
-            random_weights = np.random.random
+            random_weights = rng.random
 
         # Generate 'normal' SatInstance
-        sat = SatInstance.random(k=k, n=n, m=m, seed=seed)
+        sat = SatInstance.random(k=k, n=n, m=m, rng=rng)
 
         # generate random weights
         weights = random_weights(m)

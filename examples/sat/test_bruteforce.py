@@ -11,10 +11,9 @@ def test_simple_sat_instance():
         k=2, clauses=np.array([[1, 0, 0], [0, 1, 1], [0, -1, -1]], dtype=int)
     )
 
-    # TODO
-    np.random.seed(3)
-
-    history = run_specific_instance(inst, n_runs=200)
+    history = run_specific_instance(
+        inst, n_runs=200, eps=10**-5, rng=np.random.default_rng(seed=12)
+    )
     history = history.groupby(["n", "k", "m"]).mean(numeric_only=True).reset_index()
 
     check.equal(history.loc[0, "n"], 3)
@@ -23,7 +22,7 @@ def test_simple_sat_instance():
     check.equal(history.loc[0, "T"], 2)
 
     check.almost_equal(history.loc[0, "classical_control_method_calls"], 0)
-    check.almost_equal(history.loc[0, "classical_actual_queries"], 2.835)
+    check.almost_equal(history.loc[0, "classical_actual_queries"], 3.285)
     check.almost_equal(history.loc[0, "classical_expected_queries"], 3)
     check.almost_equal(history.loc[0, "quantum_expected_classical_queries"], 4)
     check.almost_equal(history.loc[0, "quantum_expected_quantum_queries"], 0)
