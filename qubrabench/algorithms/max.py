@@ -46,8 +46,7 @@ def max(
 
 
 def estimate_quantum_queries(N, T, cq, eps=10**-5):
-    # assume cq corresponds to the number of classical comparisons corresponding to
-    # oracle O_f_i in paper
+    # assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
     sum_of_ts = 0
     for i in range(T, N):
         sum_of_ts += calculate_F(N, i) / (i + 1)

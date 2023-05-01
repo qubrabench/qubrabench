@@ -27,8 +27,7 @@ def search(
     :param int N: number of elements of search space
     :param int T: number of solutions / marked elements
     :param float eps: upper bound on the failure probability of the quantum algorithm
-    :param int K: maximum number of classical queries before entering the quantum
-                  part of the algorithm
+    :param int K: maximum number of classical queries before entering the quantum part of the algorithm
     :param QueryStats stats: object that keeps track of statistics
     """
     iterable = list(iterable)
@@ -59,14 +58,12 @@ def search(
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, eps, K: int):
     """
-    Upper bound on the number of *quantum* queries made by Cade et al's quantum
-    search algorithm.
+    Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
 
     :param int N: number of elements of search space
     :param int T: number of solutions / marked elements
     :param float eps: upper bound on the failure probability
-    :param int K: maximum number of classical queries before entering the
-                  quantum part of the algorithm
+    :param int K: maximum number of classical queries before entering the quantum part of the algorithm
     """
     if T == 0:
         return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
