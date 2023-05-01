@@ -11,9 +11,9 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
+    eps: float,
     default: Optional[E] = None,
     key=None,
-    eps: float = 10**-5,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     if key is None:
