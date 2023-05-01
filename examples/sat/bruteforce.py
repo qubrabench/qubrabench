@@ -1,18 +1,15 @@
 from dataclasses import asdict
 import numpy as np
+import pandas as pd
 import scipy
 from typing import Callable, Iterable, Optional, TypeVar
 
 from sat import SatInstance
 from qubrabench.bench.stats import QueryStats
-from qubrabench.algorithms.search import search as search
+from qubrabench.algorithms.search import search
 
 
-def brute_force(
-    inst: SatInstance,
-    *,
-    stats: Optional[QueryStats] = None,
-):
+def run_specific_instance(inst: SatInstance, *, n_runs: int = 5, eps: float = 10**-5):
     n = inst.n
     search_space = np.full((2**n, n), 1, dtype=int)
     for i in range(n):
@@ -20,25 +17,26 @@ def brute_force(
             for j in range(2**i):
                 search_space[start + j, i] = -1
 
-    search(search_space, lambda x: inst.evaluate(x), stats=stats, eps=10**-5)
-
     T = 0
     for x in list(search_space):
         if inst.evaluate(x):
             T += 1
-    return T
 
+    history = []
+    for run_ix in range(n_runs):
+        stats = QueryStats()
+        search(search_space, inst.evaluate, stats=stats, eps=eps)
 
-def run_specific_instance(inst: SatInstance, *, n_runs=5):
-    stats = QueryStats()
+        stats = asdict(stats)
+        stats["n"] = inst.n
+        stats["k"] = inst.k
+        stats["m"] = inst.m
+        stats["T"] = T
+        history.append(stats)
 
-    T = brute_force(inst, stats=stats)
+    history = pd.DataFrame(
+        [list(row.values()) for row in history],
+        columns=stats.keys(),
+    )
 
-    stats = asdict(stats)
-    stats["n"] = inst.n
-    stats["k"] = inst.k
-    stats["m"] = inst.m
-
-    stats["T"] = T
-
-    return stats
+    return history
