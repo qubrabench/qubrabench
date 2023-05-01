@@ -11,7 +11,7 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
-    eps: float,
+    eps: Optional[float] = None,
     default: Optional[E] = None,
     key=None,
     stats: Optional[QueryStats] = None,
@@ -43,6 +43,8 @@ def max(
             max_val_occurrences += 1
 
     if stats:
+        if eps is None:
+            raise ValueError("max() eps not provided, cannot compute stats")
         stats.quantum_expected_quantum_queries += estimate_quantum_queries(
             len(iterable), max_val_occurrences, stats.classical_actual_queries, eps
         )

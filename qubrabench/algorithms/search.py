@@ -13,7 +13,7 @@ def search(
     iterable: Iterable[E],
     predicate: Callable[[E], bool],
     *,
-    eps: float,
+    eps: Optional[float] = None,
     K: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
@@ -33,6 +33,8 @@ def search(
 
     # collect stats
     if stats:
+        if eps is None:
+            raise ValueError("search() eps not provided, cannot compute stats")
         N = len(iterable)
         T = sum(1 for x in iterable if predicate(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
