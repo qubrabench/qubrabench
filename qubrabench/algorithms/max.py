@@ -15,7 +15,7 @@ def max(
     default: Optional[E] = None,
     key=None,
     stats: Optional[QueryStats] = None,
-) -> Optional[E]:
+) -> E:
     if key is None:
 
         def key(x):
