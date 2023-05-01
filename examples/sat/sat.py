@@ -1,9 +1,6 @@
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 import numpy as np
 import scipy
-
-from qubrabench.bench.stats import QueryStats
-from qubrabench.algorithms.search import search as search
 
 
 @dataclass(frozen=True)
@@ -79,34 +76,3 @@ class WeightedSatInstance(SatInstance):
         # generate random weights
         weights = random_weights(m)
         return WeightedSatInstance(k, sat.clauses, weights)
-
-
-# TODO: the algorithm (brute-force search for SAT solving) should have its own function
-def run_specific_instance():
-    inst = SatInstance(
-        k=2, clauses=np.array([[1, 0, 0], [0, 1, 1], [0, -1, -1]], dtype=int)
-    )
-
-    # TODO: run multiple times to obtain proper statistics
-    n = inst.n
-    search_space = np.full((2**n, n), 1, dtype=int)
-    for i in range(n):
-        for start in range(0, 2**n, 2 ** (i + 1)):
-            for j in range(2**i):
-                search_space[start + j, i] = -1
-
-    stats = QueryStats()
-    search(search_space, lambda x: inst.evaluate(x), stats=stats, eps=10**-5)
-
-    stats = asdict(stats)
-    stats["n"] = n
-    stats["k"] = inst.k
-    stats["m"] = inst.m
-
-    T = 0
-    for x in list(search_space):
-        if inst.evaluate(x):
-            T += 1
-    stats["T"] = T
-
-    return stats
