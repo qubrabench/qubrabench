@@ -14,8 +14,8 @@ def search(
     iterable: Iterable[E],
     predicate: Callable[[E], bool],
     *,
-    eps,
-    K=130,
+    eps: float,
+    K: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """
