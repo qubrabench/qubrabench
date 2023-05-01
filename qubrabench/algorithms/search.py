@@ -1,4 +1,3 @@
-import random
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from qubrabench.bench.stats import QueryStats
@@ -46,7 +45,7 @@ def search(
 
     # run the classical sampling-without-replacement algorithms
     # TODO: should provide an rng for this shuffle
-    random.shuffle(iterable)
+    np.random.shuffle(iterable)
     for x in iterable:
         if stats:
             stats.classical_actual_queries += 1

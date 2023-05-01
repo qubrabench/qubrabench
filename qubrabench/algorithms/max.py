@@ -7,41 +7,39 @@ from qubrabench.bench.stats import QueryStats
 E = TypeVar("E")
 
 
+# TODO: add type for `key`
 def max(
     iterable: Iterable[E],
     *,
     default: Optional[E] = None,
     key=None,
-    eps=10**-5,
+    eps: float = 10**-5,
     stats: Optional[QueryStats] = None,
-) -> E:
-    iterable = list(iterable)
-    iterator = iter(iterable)
-    try:
-        max_val = next(iterator)
-    except StopIteration as exc:
-        if default is None:
-            raise ValueError("max() arg is an empty sequence") from exc
-        return default
-
+) -> Optional[E]:
     if key is None:
 
         def key(x):
             return x
 
-    for elem in iterator:
+    iterable = list(iterable)
+
+    max_val: Optional[E] = None
+    for elem in iterable:
         if stats:
             stats.classical_actual_queries += 1
-        if key(elem) > key(max_val):
+        if max_val is None or key(elem) > key(max_val):
             max_val = elem
+
     max_val_occurrences = 0
-    for elem in iterator:
+    for elem in iterable:
         if key(elem) == max_val:
             max_val_occurrences += 1
+
     if stats:
         stats.quantum_expected_quantum_queries += estimate_quantum_queries(
             len(iterable), max_val_occurrences, stats.classical_actual_queries, eps
         )
+
     return max_val
 
 

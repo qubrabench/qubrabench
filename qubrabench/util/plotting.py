@@ -1,5 +1,4 @@
 from os import path
-import random
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
@@ -22,7 +21,7 @@ def plot(src, quantum_factor=2):
             mcolor_names: list = [
                 c for c in mcolors.CSS4_COLORS if c not in colors.values()
             ]
-            new_color = random.choice(mcolor_names)
+            new_color = np.random.choice(mcolor_names)
             colors[impl] = new_color
             return new_color
 

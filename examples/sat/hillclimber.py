@@ -1,7 +1,6 @@
 from dataclasses import asdict
 from typing import Optional
 import numpy as np
-import random
 import logging
 import pandas as pd
 
@@ -55,7 +54,6 @@ def simple_hill_climber(
 def run(k, r, n, *, n_runs, seed=None, random_weights=None, dest=None):
     if seed is not None:
         np.random.seed(seed)
-        random.seed(seed)
     history = []
     for run_ix in range(n_runs):
         # if verbose:
