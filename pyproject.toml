@@ -9,6 +9,7 @@ authors = [
     { name = "Luke Southall", email = "luke.southall@student.kit.edu" },
     { name = "Michael Walter", email = "michael.walter@rub.de" },
     { name = "Luca Witt", email = "luca.witt@rub.de" },
+    { name = "Anurudh Peduri", email = "anurudh.peduri@rub.de" },
 ]
 description = "QuBRA Benchmarking Framework"
 readme = "README.md"
