@@ -27,7 +27,7 @@ class SatInstance:
         return np.all([np.any(c) for c in list(clauses)])
 
     @staticmethod
-    def random(k, n, m, *, rng: np.random.Generator = np.random.default_rng()):
+    def random(k, n, m, *, rng: np.random.Generator):
         """
         Generate a random k-SAT instance with n variables and m clauses.
         """
@@ -64,7 +64,7 @@ class WeightedSatInstance(SatInstance):
         n,
         m,
         *,
-        rng: np.random.Generator = np.random.default_rng(),
+        rng: np.random.Generator,
         random_weights=None,
     ):
         """

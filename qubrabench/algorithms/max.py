@@ -52,7 +52,7 @@ def max(
     return max_val
 
 
-def estimate_quantum_queries(N, T, cq, eps=10**-5):
+def estimate_quantum_queries(N: int, T: int, cq: int, eps: float):
     # assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
     sum_of_ts = 0
     for i in range(T, N):

@@ -13,10 +13,10 @@ def search(
     iterable: Iterable[E],
     predicate: Callable[[E], bool],
     *,
+    rng: Optional[np.random.Generator] = None,
     eps: Optional[float] = None,
     K: int = 130,
     stats: Optional[QueryStats] = None,
-    rng: np.random.Generator = np.random.default_rng(),
 ) -> Optional[E]:
     """
     Search a list by linear search, while keeping track of query statistics.
@@ -24,12 +24,16 @@ def search(
     This function random sampling (and keep track of classical and quantum stats).
 
     Arguments:
-    :param int N: number of elements of search space
-    :param int T: number of solutions / marked elements
+    :param iterable: iterable object containing the elements of the search space
+    :param predicate: function to test if an element is marked
+    :param rng: np.random.Generator object
     :param float eps: upper bound on the failure probability of the quantum algorithm
     :param int K: maximum number of classical queries before entering the quantum part of the algorithm
     :param QueryStats stats: object that keeps track of statistics
     """
+    if rng is None:
+        rng = np.random.default_rng()
+
     iterable = list(iterable)
 
     # collect stats
@@ -57,7 +61,7 @@ def search(
     return None
 
 
-def cade_et_al_expected_quantum_queries(N: int, T: int, eps, K: int):
+def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int):
     """
     Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
 

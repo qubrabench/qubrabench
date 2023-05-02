@@ -57,7 +57,13 @@ def hill_climb(k, r, seed, n, runs, dest, verbose):
     """
     setup_default_logger(verbose)
     hillclimber.run(
-        k, r, n, n_runs=runs, rng=np.random.default_rng(seed=seed), dest=dest
+        k,
+        r,
+        n,
+        n_runs=runs,
+        rng=np.random.default_rng(seed=seed),
+        eps=10**-5,
+        dest=dest,
     )
 
 

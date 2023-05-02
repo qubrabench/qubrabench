@@ -16,6 +16,7 @@ def test_maxsat_values_100():
         100,
         n_runs=5,
         rng=rng,
+        eps=10**-5,
         random_weights=random_weights,
     )
     history = history.groupby(["k", "r", "n"]).mean(numeric_only=True).reset_index()
