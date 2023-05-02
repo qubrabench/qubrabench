@@ -13,10 +13,13 @@ from qubrabench.algorithms.search import search
 def simple_hill_climber(
     inst: WeightedSatInstance,
     *,
-    eps: float = 10**-5,
+    rng: Optional[np.random.Generator] = None,
+    eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
-    rng: np.random.Generator = np.random.default_rng(),
 ):
+    if rng is None:
+        rng = np.random.default_rng()
+
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
     ones = np.ones(n, dtype=int)
@@ -53,15 +56,19 @@ def simple_hill_climber(
 
 
 def run(
-    k,
-    r,
-    n,
+    k: int,
+    r: int,
+    n: int,
     *,
-    n_runs,
-    rng: np.random.Generator = np.random.default_rng(),
+    n_runs: int,
+    rng: Optional[np.random.Generator] = None,
+    eps: Optional[float] = None,
     random_weights=None,
     dest=None,
 ):
+    if rng is None:
+        rng = np.random.default_rng()
+
     history = []
     for run_ix in range(n_runs):
         # if verbose:
@@ -70,7 +77,7 @@ def run(
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
-        simple_hill_climber(inst, stats=stats, rng=rng)
+        simple_hill_climber(inst, eps=eps, stats=stats, rng=rng)
         stats = asdict(stats)
         stats["impl"] = "RUB"
         stats["n"] = n

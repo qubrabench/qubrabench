@@ -10,9 +10,9 @@ from qubrabench.algorithms.search import search
 def run_specific_instance(
     inst: SatInstance,
     *,
+    rng: np.random.Generator,
     n_runs: int = 5,
-    eps: float = 10**-5,
-    rng: np.random.Generator = np.random.default_rng(),
+    eps: Optional[float] = None,
 ):
     n = inst.n
     search_space = np.full((2**n, n), 1, dtype=int)
