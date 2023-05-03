@@ -1,8 +1,6 @@
 from dataclasses import asdict
 import numpy as np
 import pandas as pd
-import scipy
-from typing import Callable, Iterable, Optional, TypeVar
 
 from sat import SatInstance
 from qubrabench.bench.stats import QueryStats

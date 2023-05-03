@@ -1,5 +1,4 @@
 import pytest
-from pytest_check import check
 import re
 
 from qubrabench.algorithms.max import max
