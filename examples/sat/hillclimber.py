@@ -75,7 +75,7 @@ def run(
         )
         simple_hill_climber(inst, eps=eps, stats=stats, rng=rng)
         stats = asdict(stats)
-        stats["impl"] = "RUB"
+        stats["impl"] = "QuBRA"
         stats["n"] = n
         stats["k"] = k
         stats["r"] = r
