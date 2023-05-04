@@ -12,7 +12,7 @@ def run_specific_instance(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
-    n_runs: int = 5,
+    n_runs: int,
     eps: Optional[float] = None,
 ):
     n = inst.n
