@@ -61,7 +61,7 @@ def run(
     n: int,
     *,
     n_runs: int,
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator,
     eps: Optional[float] = None,
     random_weights=None,
 ):
