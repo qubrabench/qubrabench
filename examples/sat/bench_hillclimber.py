@@ -3,6 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import click
 import numpy as np
+import pandas as pd
 
 from qubrabench.util import plotting
 
@@ -56,15 +57,22 @@ def hill_climb(k, r, seed, n, runs, dest, verbose):
         qubrabench.py hill-climb kit -k 2 -r 3 -n 100 --save results.json
     """
     setup_default_logger(verbose)
-    hillclimber.run(
+    history = hillclimber.run(
         k,
         r,
         n,
         n_runs=runs,
         rng=np.random.default_rng(seed=seed),
         eps=10**-5,
-        dest=dest,
     )
+
+    # save
+    if dest is not None:
+        logging.info(f"saving to {dest}...")
+        orig = pd.read_json(dest, orient="split") if dest.exists() else None
+        history = pd.concat([orig, history])
+        with dest.open("w") as f:
+            f.write(history.to_json(orient="split"))
 
 
 def setup_default_logger(verbose):

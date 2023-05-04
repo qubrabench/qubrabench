@@ -64,11 +64,7 @@ def run(
     rng: Optional[np.random.Generator] = None,
     eps: Optional[float] = None,
     random_weights=None,
-    dest=None,
 ):
-    if rng is None:
-        rng = np.random.default_rng()
-
     history = []
     for run_ix in range(n_runs):
         # if verbose:
@@ -92,13 +88,5 @@ def run(
 
     # print summary
     logging.info(history.groupby(["k", "r", "n"]).mean(numeric_only=True))
-
-    # save
-    if dest is not None:
-        logging.info(f"saving to {dest}...")
-        orig = pd.read_json(dest, orient="split") if dest.exists() else None
-        history = pd.concat([orig, history])
-        with dest.open("w") as f:
-            f.write(history.to_json(orient="split"))
 
     return history
