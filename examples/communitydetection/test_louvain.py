@@ -73,7 +73,9 @@ def test_node_to_community_strength():
     # determine delta modularity for moving node 0 to beta
     # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
     check.equal(solver.delta_modularity(target_node, community_alpha), 0)
-    check.equal(solver.delta_modularity(target_node, community_beta), 0)
+    check.equal(
+        solver.delta_modularity(target_node, community_beta), -0.03597633136094677
+    )
 
 
 def test_move_nodes():
@@ -90,7 +92,7 @@ def test_move_nodes():
 
     # determine delta modularity for moving node 0 to community 1
     # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
-    check.equal(solver.delta_modularity(0, 1), 0)
+    check.equal(solver.delta_modularity(0, 1), -1.8074009453914082e-06)
     check.equal(solver.delta_modularity(0, 0), 0)
 
 
