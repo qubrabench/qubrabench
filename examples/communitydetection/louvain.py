@@ -1,4 +1,5 @@
 from networkx.generators.community import LFR_benchmark_graph
+from networkx.algorithms.community import quality
 import networkx as nx
 
 
@@ -176,3 +177,25 @@ class Louvain:
 
     def strength(self, u: int) -> float:
         return self.G.degree(u, weight="weight")
+
+    def modularity(self, node_community_map: dict = None) -> float:
+        """Calculate the modularity of self.G and a node to community mapping
+
+        Args:
+            node_community_map (dict, optional): A node to community mapping. Defaults to self.C
+
+        Returns:
+            float: The modularity value [-1/2, 1)
+        """
+        if node_community_map is None:
+            node_community_map = self.C
+
+        # Convert the dictionary to a list of sets
+        communities = [set() for _ in range(max(node_community_map.values()) + 1)]
+        for node, community in node_community_map.items():
+            communities[community].add(node)
+
+        # Calculate the modularity
+        modularity = quality.modularity(self.G, communities)
+
+        return modularity

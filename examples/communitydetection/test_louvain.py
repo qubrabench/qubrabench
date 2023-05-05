@@ -72,8 +72,8 @@ def test_node_to_community_strength():
 
     # determine delta modularity for moving node 0 to beta
     # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
-    # check.equal(solver.delta_modularity(target_node, community_alpha), 0)
-    # check.equal(solver.delta_modularity(target_node, community_beta), 0)
+    check.equal(solver.delta_modularity(target_node, community_alpha), 0)
+    check.equal(solver.delta_modularity(target_node, community_beta), 0)
 
 
 def test_move_nodes():
@@ -90,22 +90,65 @@ def test_move_nodes():
 
     # determine delta modularity for moving node 0 to community 1
     # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
-    # check.equal(solver.delta_modularity(0, 1), 0)
-    # check.equal(solver.delta_modularity(0, 0), 0)
+    check.equal(solver.delta_modularity(0, 1), 0)
+    check.equal(solver.delta_modularity(0, 0), 0)
 
 
-def test_louvain():
-    """
-    TODO test an entire louvain pass
-    """
-    # setup rng
-    rng = np.random.default_rng(seed=123)
+def test_modularity():
+    # Example graph
+    G = nx.barbell_graph(3, 0)
 
-    # generate graph instance
-    G = louvain.random_lfr_graph(100, seed=rng)
+    # Dictionary of node to community mappings
+    node_community_map = {0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1}
+
+    # setup our Louvain solver instance
     solver = louvain.Louvain(G)
-    sanity_check_input(solver.A)
+    solver.C = node_community_map
 
-    print(solver.G)
-    solver.louvain()
-    print(solver.G)
+    check.equal(solver.modularity(), 0.35714285714285715)
+
+
+def test_delta_modularity():
+    # generate graph instance
+    G = nx.from_numpy_array(small_graph_example)
+    solver = louvain.Louvain(G)
+
+    # setup community
+    split_index = int(G.order() / 2)  # split initial communities into halves
+    community_alpha = 0
+    community_beta = 1
+    C = {}
+    for n in G:
+        C[n] = community_alpha if n < split_index else community_beta
+    solver.C = C
+
+    # moving a node to its own community should be a delta of 0
+    check.equal(solver.delta_modularity(0, community_alpha), 0)
+
+    # moving a node to another community should be the same result that explicit modularity deltas yield
+    C2 = C.copy()
+    C2[0] = community_beta
+    modularity_0_alpha = solver.modularity()
+    modularity_0_beta = solver.modularity(C2)
+    delta_modularity = modularity_0_beta - modularity_0_alpha
+    print(
+        f"Original Modularity:{modularity_0_alpha}\tModularity after move:{modularity_0_beta}"
+    )
+    check.equal(solver.delta_modularity(0, community_beta), delta_modularity)
+
+
+# def test_louvain():
+#     """
+#     TODO test an entire louvain pass
+#     """
+#     # setup rng
+#     rng = np.random.default_rng(seed=123)
+
+#     # generate graph instance
+#     G = louvain.random_lfr_graph(100, seed=rng)
+#     solver = louvain.Louvain(G)
+#     sanity_check_input(solver.A)
+
+#     print(solver.G)
+#     solver.louvain()
+#     print(solver.G)
