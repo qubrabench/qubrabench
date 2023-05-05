@@ -1,5 +1,6 @@
 # ignore IDE stuff
 /.idea
+/.vscode
 
 # ignore python build artifacts
 /dist/
