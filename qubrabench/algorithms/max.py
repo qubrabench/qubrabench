@@ -1,7 +1,7 @@
 from typing import Iterable, TypeVar, Optional
 import numpy as np
 
-from qubrabench.bench.bounds import calculate_F
+from .search import cade_et_al_F
 from qubrabench.bench.stats import QueryStats
 
 E = TypeVar("E")
@@ -45,16 +45,16 @@ def max(
     if stats:
         if eps is None:
             raise ValueError("max() eps not provided, cannot compute stats")
-        stats.quantum_expected_quantum_queries += estimate_quantum_queries(
+        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
             len(iterable), max_val_occurrences, stats.classical_actual_queries, eps
         )
 
     return max_val
 
 
-def estimate_quantum_queries(N: int, T: int, cq: int, eps: float):
+def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float):
     # assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
     sum_of_ts = 0
     for i in range(T, N):
-        sum_of_ts += calculate_F(N, i) / (i + 1)
+        sum_of_ts += cade_et_al_F(N, i) / (i + 1)
     return np.ceil(np.log(1 / eps) / np.log(3)) * 3 * (cq * sum_of_ts)

@@ -1,7 +1,6 @@
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from qubrabench.bench.stats import QueryStats
-from qubrabench.bench.bounds import calculate_F
 
 __all__ = ["search"]
 
@@ -71,8 +70,7 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int):
     if T == 0:
         return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
 
-    F = calculate_F(N, T)
-
+    F = cade_et_al_F(N, T)
     return pow((1 - (T / N)), K) * F * (1 + (1 / (1 - (F / (9.2 * np.sqrt(N))))))
 
 
@@ -90,3 +88,17 @@ def cade_et_al_expected_classical_queries(N: int, T: int, K: int):
         return K
 
     return (N / T) * (1 - (1 - (T / N)) ** K)
+
+
+def cade_et_al_F(N: int, T: int) -> float:
+    """
+    Return quantity F defined in Eq. (3) of Cade et al.
+    """
+    F = 2.0344
+    if 1 <= T < (N / 4):
+        F = (
+            (9 / 4) * (N / (np.sqrt((N - T) * T)))
+            + np.ceil(np.log((N / (2 * np.sqrt((N - T) * T)))) / np.log(6 / 5))
+            - 3
+        )
+    return F
