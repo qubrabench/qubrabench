@@ -6,16 +6,14 @@ from sat import SatInstance
 from bruteforce import bruteforce_solve
 
 
-def test_solve() -> None:
+def test_solve(rng) -> None:
     # solve a simple SAT instance
     inst = SatInstance(
         k=2,
         clauses=np.array([[1, 1, 0], [1, -1, 0], [0, 1, 1], [0, -1, -1]], dtype=int),
     )
     stats = QueryStats()
-    x = bruteforce_solve(
-        inst, rng=np.random.default_rng(seed=12), eps=10**-5, stats=stats
-    )
+    x = bruteforce_solve(inst, rng=rng, eps=10**-5, stats=stats)
     assert x is not None
 
     # check that found a solution
