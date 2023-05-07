@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from pytest_check import check
-import re
 
 from qubrabench.algorithms.search import search
 from qubrabench.stats import QueryStats
