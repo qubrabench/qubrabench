@@ -1,11 +1,27 @@
 import numpy as np
-from sat import WeightedSatInstance
+from sat import SatInstance, WeightedSatInstance
 
 
-def test_weighted_inherits_fields():
-    n, k, m = 3, 2, 3
+def test_evaluate() -> None:
+    inst = SatInstance(
+        k=2,
+        clauses=np.array([[1, -1, 0], [0, 1, -1]]),
+    )
+    assert not inst.evaluate([-1, 1, -1])
+    assert inst.evaluate([1, 1, -1])
 
-    sat = WeightedSatInstance.random(n=n, k=k, m=m, rng=np.random.default_rng(seed=12))
+    result = inst.evaluate([[-1, 1, -1], [1, 1, -1]])
+    assert list(result) == [False, True]
 
-    assert n == sat.n
-    assert m == sat.m
+
+def test_weight() -> None:
+    inst = WeightedSatInstance(
+        k=2,
+        clauses=np.array([[1, -1, 0], [0, 1, -1]]),
+        weights=np.array([5, 7]),
+    )
+    assert inst.weight([-1, 1, -1]) == 7
+    assert inst.weight([1, 1, -1]) == 12
+
+    result = inst.weight([[-1, 1, -1], [1, 1, -1]])
+    assert list(result) == [7, 12]
