@@ -1,4 +1,4 @@
-from typing import Iterable, TypeVar, Optional
+from typing import Iterable, TypeVar, Optional, Callable, Any
 import numpy as np
 
 from .search import cade_et_al_F
@@ -7,18 +7,17 @@ from qubrabench.bench.stats import QueryStats
 E = TypeVar("E")
 
 
-# TODO: add type for `key`
 def max(
     iterable: Iterable[E],
     *,
     eps: Optional[float] = None,
     default: Optional[E] = None,
-    key=None,
+    key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
 ) -> E:
     if key is None:
 
-        def key(x):
+        def key(x: E) -> Any:
             return x
 
     iterable = list(iterable)
@@ -52,9 +51,9 @@ def max(
     return max_val
 
 
-def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float):
-    # assume cq corresponds to the number of classical comparisons corresponding to oracle O_f_i in paper
-    sum_of_ts = 0
+def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float) -> float:
+    # assume cq corresponds to the number of classical comparisons corresponding to oracle O_{f_i} in paper
+    sum_of_ts: float = 0
     for i in range(T, N):
         sum_of_ts += cade_et_al_F(N, i) / (i + 1)
-    return np.ceil(np.log(1 / eps) / np.log(3)) * 3 * (cq * sum_of_ts)
+    return np.ceil(np.log(1 / eps) / np.log(3)) * 3 * (cq * sum_of_ts)  # type: ignore

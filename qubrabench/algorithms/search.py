@@ -2,6 +2,7 @@ from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from qubrabench.bench.stats import QueryStats
 
+
 __all__ = ["search"]
 
 
@@ -58,7 +59,7 @@ def search(
     return None
 
 
-def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int):
+def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> float:
     """
     Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
 
@@ -68,13 +69,13 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int):
     :param int K: maximum number of classical queries before entering the quantum part of the algorithm
     """
     if T == 0:
-        return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)
+        return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)  # type: ignore
 
     F = cade_et_al_F(N, T)
-    return pow((1 - (T / N)), K) * F * (1 + (1 / (1 - (F / (9.2 * np.sqrt(N))))))
+    return (1 - (T / N)) ** K * F * (1 + (1 / (1 - (F / (9.2 * np.sqrt(N))))))  # type: ignore
 
 
-def cade_et_al_expected_classical_queries(N: int, T: int, K: int):
+def cade_et_al_expected_classical_queries(N: int, T: int, K: int) -> float:
     """
     Upper bound on the number of *classical* queries made by Cade et al's quantum
     search algorithm.
