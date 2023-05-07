@@ -19,12 +19,10 @@ def search(
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """
-    Search a list by linear search, while keeping track of query statistics.
-
-    This function random sampling (and keep track of classical and quantum stats).
+    Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
 
     Arguments:
-    :param iterable: iterable object containing the elements of the search space
+    :param iterable: iterable to be searched over
     :param predicate: function to test if an element is marked
     :param rng: np.random.Generator object
     :param float eps: upper bound on the failure probability of the quantum algorithm
@@ -51,7 +49,7 @@ def search(
         )
 
     # run the classical sampling-without-replacement algorithms
-    rng.shuffle(iterable)
+    rng.shuffle(iterable)  # type: ignore
     for x in iterable:
         if stats:
             stats.classical_actual_queries += 1
