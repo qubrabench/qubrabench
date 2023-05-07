@@ -1,11 +1,14 @@
 BENCH_HILLCLIMBER = examples/sat/bench_hillclimber.py
 
-pretty:
+black:
 	black -t py310 .
 
 mypy:
 	mypy .
 	# mypy . --strict
+
+ruff:
+	ruff .
 
 bench-hillclimber-quick:
 	$(eval FNAME = data/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
