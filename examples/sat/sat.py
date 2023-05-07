@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Callable, TypeVar, Generic, Any, Self
+from typing import Optional, Callable, TypeVar, Generic, Any
 import numpy as np
 import numpy.typing as npt
 import scipy  # type: ignore
@@ -22,7 +22,7 @@ class SatInstance:
     k: int  # number of literals per clause
     clauses: npt.NDArray[np.int_]  # num_clauses x num_literals
 
-    def __post_init__(self: Self) -> None:
+    def __post_init__(self: "SatInstance") -> None:
         ks = np.sum(np.abs(self.clauses), axis=1)
         assert np.all(
             ks == self.k
