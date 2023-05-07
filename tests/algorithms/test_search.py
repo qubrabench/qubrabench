@@ -28,8 +28,11 @@ def test_search():
 
 
 def test_search_raises_on_stats_requested_and_eps_missing():
-    with pytest.raises(
-        ValueError, match=re.escape("search() eps not provided, cannot compute stats")
-    ):
+    with pytest.raises(ValueError, match="eps not provided"):
         stats = QueryStats()
-        search(range(100), lambda it: it == 42, stats=stats)
+        search(
+            range(100),
+            lambda it: it == 42,
+            rng=np.random.default_rng(seed=12),
+            stats=stats,
+        )

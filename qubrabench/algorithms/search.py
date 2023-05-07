@@ -13,7 +13,7 @@ def search(
     iterable: Iterable[E],
     predicate: Callable[[E], bool],
     *,
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator,
     eps: Optional[float] = None,
     K: int = 130,
     stats: Optional[QueryStats] = None,
@@ -29,15 +29,12 @@ def search(
     :param int K: maximum number of classical queries before entering the quantum part of the algorithm
     :param QueryStats stats: object that keeps track of statistics
     """
-    if rng is None:
-        rng = np.random.default_rng()
-
     iterable = list(iterable)
 
     # collect stats
     if stats:
         if eps is None:
-            raise ValueError("search() eps not provided, cannot compute stats")
+            raise ValueError("eps not provided, cannot compute stats")
         N = len(iterable)
         T = sum(1 for x in iterable if predicate(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
