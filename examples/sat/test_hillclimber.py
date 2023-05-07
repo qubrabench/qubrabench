@@ -1,13 +1,14 @@
 from pytest_check import check
 
 import numpy as np
+import numpy.typing as npt
 import hillclimber
 
 
-def test_maxsat_values_100():
+def test_maxsat_values_100() -> None:
     rng = np.random.default_rng(seed=12)
 
-    def random_weights(size):
+    def random_weights(size: int) -> npt.NDArray[np.int_]:
         return rng.integers(0, 100_000, size)
 
     history = hillclimber.run(

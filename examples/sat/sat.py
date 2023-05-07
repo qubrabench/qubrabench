@@ -1,15 +1,5 @@
 from dataclasses import dataclass
-from typing import (
-    Optional,
-    Callable,
-    TypeVar,
-    Generic,
-    Any,
-    Self,
-    Sequence,
-    Union,
-    overload,
-)
+from typing import Optional, Callable, TypeVar, Generic, Any, Self
 import numpy as np
 import numpy.typing as npt
 import scipy  # type: ignore

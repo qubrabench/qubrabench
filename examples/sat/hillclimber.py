@@ -1,22 +1,23 @@
 from dataclasses import asdict
-from typing import Optional
-import numpy as np
+from typing import Optional, Tuple, Callable
 import logging
+import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
-from sat import WeightedSatInstance
-from qubrabench.bench.stats import QueryStats
+from sat import WeightedSatInstance, Assignment, W
+from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
 
-# MW: should not return QueryStats
+# TODO: should not return QueryStats
 def simple_hill_climber(
     inst: WeightedSatInstance,
     *,
-    rng: Optional[np.random.Generator] = None,
+    rng: np.random.Generator,
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
-):
+) -> Optional[Assignment]:
     if rng is None:
         rng = np.random.default_rng()
 
@@ -47,9 +48,11 @@ def simple_hill_climber(
 
         # OPTION 2: faster implementation (for our instance sizes)
         weights = inst.weight(neighbors)
-        result = search(
-            zip(neighbors, weights), lambda it: it[1] > w, eps=eps, stats=stats, rng=rng
-        )
+
+        def pred(it: Tuple[Assignment, np.float_]) -> bool:
+            return bool(it[1] > w)
+
+        result = search(zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng)
         if result is None:
             return x
         x, w = result
@@ -63,30 +66,30 @@ def run(
     n_runs: int,
     rng: np.random.Generator,
     eps: Optional[float] = None,
-    random_weights=None,
-):
+    random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
+) -> pd.DataFrame:
     history = []
     for run_ix in range(n_runs):
-        # if verbose:
         logging.debug(f"k={k}, r={r}, n={n}, #{run_ix}")
+
+        # run hill climber on random instance
         stats = QueryStats()
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
         simple_hill_climber(inst, eps=eps, stats=stats, rng=rng)
-        stats = asdict(stats)
-        stats["impl"] = "QuBRA"
-        stats["n"] = n
-        stats["k"] = k
-        stats["r"] = r
-        history.append(stats)
 
-    history = pd.DataFrame(
-        [list(row.values()) for row in history],
-        columns=stats.keys(),
-    )
+        # save record to history
+        rec = asdict(stats)
+        rec["impl"] = "QuBRA"
+        rec["n"] = n
+        rec["k"] = k
+        rec["r"] = r
+        history.append(rec)
 
-    # print summary
-    logging.info(history.groupby(["k", "r", "n"]).mean(numeric_only=True))
-
-    return history
+    # return pandas dataframe
+    df = pd.DataFrame([list(row.values()) for row in history], columns=list(rec))
+    logging.info(
+        df.groupby(["k", "r", "n"]).mean(numeric_only=True)
+    )  # TODO: get rid of numeric_only once 'impl' is gone
+    return df

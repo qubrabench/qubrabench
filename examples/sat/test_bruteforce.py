@@ -16,6 +16,7 @@ def test_solve() -> None:
     x = bruteforce_solve(
         inst, rng=np.random.default_rng(seed=12), eps=10**-5, stats=stats
     )
+    assert x is not None
 
     # check that found a solution
     assert inst.evaluate(x)
