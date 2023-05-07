@@ -1,4 +1,4 @@
-name: pytest
+name: test
 
 on: [push, pull_request]
 
@@ -9,8 +9,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: psf/black@stable
-      
-  test:
+
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: chartboost/ruff-action@v1
+
+  pytest:
     runs-on: ubuntu-latest
     strategy:
       matrix:
