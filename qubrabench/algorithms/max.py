@@ -2,7 +2,7 @@ from typing import Iterable, TypeVar, Optional, Callable, Any
 import numpy as np
 
 from .search import cade_et_al_F
-from qubrabench.bench.stats import QueryStats
+from ..stats import QueryStats
 
 E = TypeVar("E")
 

@@ -4,7 +4,7 @@ from pytest_check import check
 import re
 
 from qubrabench.algorithms.search import search
-from qubrabench.bench.stats import QueryStats
+from qubrabench.stats import QueryStats
 
 
 def test_search():

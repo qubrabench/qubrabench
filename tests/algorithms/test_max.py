@@ -2,7 +2,7 @@ import pytest
 import re
 
 from qubrabench.algorithms.max import max
-from qubrabench.bench.stats import QueryStats
+from qubrabench.stats import QueryStats
 
 
 def test_max_return_value():
