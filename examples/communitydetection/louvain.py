@@ -76,7 +76,6 @@ class Louvain:
             done = True
             for u in self.G:
                 # calculate maximum increase of modularity
-                # TODO if we have differing values check these parameters
                 max_modularity_increase, v_community = max(
                     [
                         (self.delta_modularity(u, self.C[v]), self.C[v])
@@ -84,12 +83,9 @@ class Louvain:
                     ],
                     key=lambda entry: entry[0],
                 )
-                # TODO: is there something wrong with the delta_modularity function or do we need an epsilon
                 if max_modularity_increase > 0:
                     # reassign u to community of v
-                    print(
-                        f"Reassigned u{u} from C{self.C[u]} to C{v_community} with delta:{max_modularity_increase}"
-                    )
+                    # print(f"Reassigned u{u} from C{self.C[u]} to C{v_community} with delta:{max_modularity_increase}")
                     self.C[u] = v_community
                     done = False
                 # terminate when there is no modularity increase
@@ -137,7 +133,9 @@ class Louvain:
         Returns:
             float: The resulting change in modularity
         """
-        # TODO in Cade the modularity equations (3) and (4) differ by a ± sign, which one to choose?
+        # moving a node to its current community should not change modularity
+        if self.C[u] == alpha:
+            return 0
         return ((self.S(u, alpha) - self.S(u, self.C[u])) / self.W) - (
             self.strength(u)
             * (self.Sigma(alpha) - self.Sigma(self.C[u]) + self.strength(u))

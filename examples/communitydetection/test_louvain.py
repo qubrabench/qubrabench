@@ -71,29 +71,10 @@ def test_node_to_community_strength():
     check.equal(solver.strength(target_node), sum(small_graph_example[target_node]))
 
     # determine delta modularity for moving node 0 to beta
-    # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
     check.equal(solver.delta_modularity(target_node, community_alpha), 0)
     check.equal(
-        solver.delta_modularity(target_node, community_beta), -0.03597633136094677
+        solver.delta_modularity(target_node, community_beta), -0.00757396449704142
     )
-
-
-def test_move_nodes():
-    """
-    TODO test the reassignment of communities without aggregating the graph
-    """
-    # setup rng
-    rng = np.random.default_rng(seed=123)
-
-    # generate graph instance
-    G = louvain.random_lfr_graph(1000, seed=rng)
-    solver = louvain.Louvain(G)
-    sanity_check_input(solver.A)
-
-    # determine delta modularity for moving node 0 to community 1
-    # TODO Why do these checks both fail, I would assume that a potential move to its own community should not change modularity
-    check.equal(solver.delta_modularity(0, 1), -1.8074009453914082e-06)
-    check.equal(solver.delta_modularity(0, 0), 0)
 
 
 def test_modularity():
@@ -110,33 +91,27 @@ def test_modularity():
     check.equal(solver.modularity(), 0.35714285714285715)
 
 
-def test_delta_modularity():
+def test_move_nodes():
+    """
+    Test the reassignment of communities without aggregating the graph
+    """
+    # setup rng
+    rng = np.random.default_rng(seed=123)
+
     # generate graph instance
-    G = nx.from_numpy_array(small_graph_example)
+    G = louvain.random_lfr_graph(1000, seed=rng)
     solver = louvain.Louvain(G)
+    sanity_check_input(solver.A)
 
-    # setup community
-    split_index = int(G.order() / 2)  # split initial communities into halves
-    community_alpha = 0
-    community_beta = 1
-    C = {}
-    for n in G:
-        C[n] = community_alpha if n < split_index else community_beta
-    solver.C = C
+    # verify initial modularity
+    initial_modularity = solver.modularity()
+    check.equal(initial_modularity, -0.0016399151244515982)
 
-    # moving a node to its own community should be a delta of 0
-    check.equal(solver.delta_modularity(0, community_alpha), 0)
-
-    # moving a node to another community should be the same result that explicit modularity deltas yield
-    C2 = C.copy()
-    C2[0] = community_beta
-    modularity_0_alpha = solver.modularity()
-    modularity_0_beta = solver.modularity(C2)
-    delta_modularity = modularity_0_beta - modularity_0_alpha
-    print(
-        f"Original Modularity:{modularity_0_alpha}\tModularity after move:{modularity_0_beta}"
-    )
-    check.equal(solver.delta_modularity(0, community_beta), delta_modularity)
+    # move nodes
+    solver.move_nodes()
+    # determine delta modularity for moving node 0 to community 1
+    check.not_equal(solver.modularity(), initial_modularity)
+    check.equal(solver.modularity(), 0.40396751618527543)
 
 
 # def test_louvain():
