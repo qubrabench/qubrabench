@@ -3,7 +3,7 @@ import numpy as np
 import networkx as nx
 
 import louvain
-
+from graph_instances import random_lfr_graph
 
 small_graph_example = np.array(
     [  # A, A, A, A, A, B, B, B, B, B
@@ -99,7 +99,7 @@ def test_move_nodes():
     rng = np.random.default_rng(seed=123)
 
     # generate graph instance
-    G = louvain.random_lfr_graph(1000, seed=rng)
+    G = random_lfr_graph(1000, seed=rng)
     solver = louvain.Louvain(G)
     sanity_check_input(solver.A)
 
@@ -122,7 +122,7 @@ def test_move_nodes():
 #     rng = np.random.default_rng(seed=123)
 
 #     # generate graph instance
-#     G = louvain.random_lfr_graph(100, seed=rng)
+#     G = random_lfr_graph(100, seed=rng)
 #     solver = louvain.Louvain(G)
 #     sanity_check_input(solver.A)
 
