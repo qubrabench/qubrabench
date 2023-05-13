@@ -21,5 +21,22 @@ def schoning(
     n = inst.n
     x = rng.choice([-1, 1], n)
 
+    for _ in 3*n:
+        clauses = inst.evaluate(x)
+        if clauses.size == 0:
+            return x
+        # Choose random falsified clause
+
+        i = rng.choice(clauses.shape[1], 1, replace=False)
+        clause = clauses[i]
+
+        j = rng.choice(clause.shape, 1, replace=False)
+        x[j] *= -1
+        
+        # Flip a variable in that clause and flip it
+
+        
+
+
 
 
