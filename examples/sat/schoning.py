@@ -6,7 +6,7 @@ from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
 
-def schoning(
+def schoning_solve(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
@@ -17,26 +17,16 @@ def schoning(
     if rng is None:
         rng = np.random.default_rng()
 
+    domain = []
+
     # Setup random assignment.
     n = inst.n
     x = rng.choice([-1, 1], n)
 
-    for _ in 3*n:
-        clauses = inst.evaluate(x)
-        if clauses.size == 0:
-            return x
-        # Choose random falsified clause
+    for _ in range(0, 3*n):
+        domain.append(x)
 
-        i = rng.choice(clauses.shape[1], 1, replace=False)
-        clause = clauses[i]
+        # Flip a random variable
+        x[rng.choice(np.arange(len(x)))] *= -1
 
-        j = rng.choice(clause.shape, 1, replace=False)
-        x[j] *= -1
-        
-        # Flip a variable in that clause and flip it
-
-        
-
-
-
-
+    return search(domain, inst.evaluate, eps=eps, stats=stats, rng=rng)
