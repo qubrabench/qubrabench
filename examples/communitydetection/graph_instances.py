@@ -17,7 +17,7 @@ def random_lfr_graph(
 ):
     """
     Generates an LFR benchmark graph instance with defaults similar to Cade et al.
-    Sacrifices exact node number for ensuring no selfloops
+    Sacrifices exact node number for ensuring no self loops
     """
     graph = LFR_benchmark_graph(
         n,
@@ -50,7 +50,7 @@ def random_fcs_graph(
         community_size (float, optional): The size of the communities (S). Defaults to 50.
         mu (float, optional): Mixing parameter. Defaults to 0.3.
         average_degree (float, optional): <d>. Defaults to 5.
-        seed: source of randomness
+        rng: source of randomness
 
     Returns:
         nx.Graph: A graph instance
