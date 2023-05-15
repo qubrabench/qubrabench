@@ -72,9 +72,9 @@ def random_fcs_graph(
     # remaining edges counter k
     k = average_degree * n
     while k > 0:
-        l = rng.choice(community_labels)
+        label = rng.choice(community_labels)
         u = rng.choice(graph.nodes)
-        V_l, V_others = get_community_node_lists(l, C)
+        V_l, V_others = get_community_node_lists(label, C)
 
         # draw from either V_l or V_others depending on randomness and mu
         v = rng.choice(V_l) if rng.uniform() < 1 - mu else rng.choice(V_others)
