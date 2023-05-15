@@ -1,5 +1,6 @@
 from typing import Optional
 import numpy as np
+import itertools
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
@@ -12,22 +13,26 @@ def schoning_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
-    # Setup random assignment.
-    n = inst.n
-    x = rng.choice([-1, 1], n)
 
-    domain = []
+    domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=inst.n)]
 
-    for _ in range(0, 3 * n):
-        domain.append(x)
-        x = flip_random_variable(x, rng)
+    # Predicate for the search function. Uses SatInstance and rng from context.
+    def schoning(
+        x: np.array
+    ) -> bool:
 
-    return search(domain, inst.evaluate, eps=eps, stats=stats, rng=rng)
+        n = inst.n
+        for _ in range(0, 3 * n):
+            if inst.evaluate(x):
+                return True
+            x = flip_random_variable(x, rng)
 
+        return False
+
+    return search(domain, schoning, eps=eps, stats=stats, rng=rng)
 
 def flip_random_variable(
-    assignment: np.ndarray, rng: np.random.Generator
+    x: np.ndarray, rng: np.random.Generator
 ) -> np.ndarray:
-    x = np.copy(assignment)
     x[rng.choice(np.arange(len(x)))] *= -1
     return x
