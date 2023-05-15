@@ -99,7 +99,7 @@ def test_move_nodes():
     rng = np.random.default_rng(seed=123)
 
     # generate graph instance
-    G = random_lfr_graph(1000, seed=rng)
+    G = random_lfr_graph(1000, rng=rng)
     solver = louvain.Louvain(G)
     sanity_check_input(solver.A)
 

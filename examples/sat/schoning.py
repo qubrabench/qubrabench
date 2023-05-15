@@ -14,10 +14,9 @@ def schoening_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
-
     n = inst.n
     assignments = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
-    seeds = [np.array(x, dtype=int) for x in itertools.product([0, 1, 2], repeat=3*n)]
+    seeds = [np.array(x, dtype=int) for x in itertools.product([0, 1, 2], repeat=3 * n)]
 
     # elements of the form (assignment) X (Random bits)
     domain = itertools.product(assignments, seeds)
@@ -33,7 +32,6 @@ def schoening(
     x: np.array,
     inst: SatInstance,
 ) -> bool:
-
     # Split input into assignment and seed
     (assignment, seed) = zip(x)
     assignment = np.copy(assignment[0])
