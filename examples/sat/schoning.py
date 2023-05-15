@@ -7,7 +7,7 @@ from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
 
-def schoning_solve(
+def schoening_solve(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
@@ -22,14 +22,14 @@ def schoning_solve(
     # elements of the form (assignment) X (Random bits)
     domain = itertools.product(assignments, seeds)
 
-    # Supply schoning with SatInstance to check against
-    schoning_with_sat = partial(schoning, inst=inst)
+    # Supply schoening with SatInstance to check against
+    schoening_with_sat = partial(schoening, inst=inst)
 
     # Predicate for the search function. Uses SatInstance and rng from context.
-    return search(domain, schoning_with_sat, eps=eps, stats=stats, rng=rng)
+    return search(domain, schoening_with_sat, eps=eps, stats=stats, rng=rng)
 
 
-def schoning(
+def schoening(
     x: np.array,
     inst: SatInstance,
 ) -> bool:
