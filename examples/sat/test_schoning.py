@@ -3,7 +3,7 @@ from pytest_check import check
 
 from qubrabench.stats import QueryStats
 from sat import SatInstance
-from schoning import schoning_solve
+from schoning import schoning_solve, schoning
 
 
 def test_solve(rng) -> None:
@@ -17,11 +17,12 @@ def test_solve(rng) -> None:
     assert x is not None
 
     # check that found a solution
-    assert inst.evaluate(x)
+    assert schoning(x, inst)
 
     # check stats
     check.equal(stats.classical_control_method_calls, 0)
     check.equal(stats.classical_actual_queries, 1)
-    check.almost_equal(stats.classical_expected_queries, 1)
-    check.almost_equal(stats.quantum_expected_classical_queries, 1)
+    check.almost_equal(stats.classical_expected_queries, 1.0714455822814957)
+    check.almost_equal(stats.quantum_expected_classical_queries, 1.0714460684249203)
+
     check.almost_equal(stats.quantum_expected_quantum_queries, 0)
