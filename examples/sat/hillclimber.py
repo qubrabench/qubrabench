@@ -18,7 +18,7 @@ def hill_climber(
     rng: np.random.Generator,
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
-    steep: bool = False
+    steep: bool = False,
 ) -> Optional[Assignment]:
     if rng is None:
         rng = np.random.default_rng()
@@ -55,18 +55,21 @@ def hill_climber(
             return bool(it[1] > w)
 
         if steep:
-            result = max(zip(neighbors, weights), key=lambda it: it[1], eps=eps, stats=stats)
+            result = max(
+                zip(neighbors, weights), key=lambda it: it[1], eps=eps, stats=stats
+            )
             nx, nw = result
             if nw > w:
                 x, w = result
             else:
                 return x
         else:
-            result = search(zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng)
+            result = search(
+                zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng
+            )
             if result is None:
                 return x
             x, w = result
-
 
 
 def run(
@@ -78,7 +81,7 @@ def run(
     rng: np.random.Generator,
     eps: Optional[float] = None,
     random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
-    steep: bool = False
+    steep: bool = False,
 ) -> pd.DataFrame:
     history = []
     for run_ix in range(n_runs):

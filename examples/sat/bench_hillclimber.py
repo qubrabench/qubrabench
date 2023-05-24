@@ -58,11 +58,7 @@ def cli():
     help="Show more output.",
     default=True,
 )
-@click.option(
-    "--steep/--simple",
-    help="Activate steep hill climber.",
-    default=False
-)
+@click.option("--steep/--simple", help="Activate steep hill climber.", default=False)
 @click.option(
     "--save",
     "dest",
@@ -85,7 +81,7 @@ def hill_climb(k, r, seed, n, runs, dest, verbose, steep):
         n_runs=runs,
         rng=np.random.default_rng(seed=seed),
         eps=10**-5,
-        steep=steep
+        steep=steep,
     )
 
     # save
@@ -129,12 +125,12 @@ def setup_default_logger(verbose):
 @click.argument(
     "ref-path",
     type=click.Path(dir_okay=True, readable=True, path_type=Path),
-    default="../../data/plot_reference/"
+    default="../../data/plot_reference/",
 )
 @click.argument(
     "ref-file",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
-    default="hill_climb_cade.json"
+    default="hill_climb_cade.json",
 )
 def plot(src, ref_path, ref_file, quantum_factor=2):
     """
