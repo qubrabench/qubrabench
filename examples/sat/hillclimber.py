@@ -65,6 +65,7 @@ def hill_climber(
             result = search(zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng)
             if result is None:
                 return x
+            x, w = result
 
 
 
