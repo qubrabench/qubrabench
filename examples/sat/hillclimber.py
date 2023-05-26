@@ -8,15 +8,17 @@ import pandas as pd
 from sat import WeightedSatInstance, Assignment, W
 from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
+from qubrabench.algorithms.max import max
 
 
 # TODO: should not return QueryStats
-def simple_hill_climber(
+def hill_climber(
     inst: WeightedSatInstance,
     *,
     rng: np.random.Generator,
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
+    steep: bool = False,
 ) -> Optional[Assignment]:
     if rng is None:
         rng = np.random.default_rng()
@@ -52,10 +54,22 @@ def simple_hill_climber(
         def pred(it: Tuple[Assignment, np.float_]) -> bool:
             return bool(it[1] > w)
 
-        result = search(zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng)
-        if result is None:
-            return x
-        x, w = result
+        if steep:
+            result = max(
+                zip(neighbors, weights), key=lambda it: it[1], eps=eps, stats=stats
+            )
+            nx, nw = result
+            if nw > w:
+                x, w = result
+            else:
+                return x
+        else:
+            result = search(
+                zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng
+            )
+            if result is None:
+                return x
+            x, w = result
 
 
 def run(
@@ -67,17 +81,18 @@ def run(
     rng: np.random.Generator,
     eps: Optional[float] = None,
     random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
+    steep: bool = False,
 ) -> pd.DataFrame:
     history = []
     for run_ix in range(n_runs):
-        logging.debug(f"k={k}, r={r}, n={n}, #{run_ix}")
+        logging.debug(f"k={k}, r={r}, n={n}, steep={steep}, #{run_ix}")
 
         # run hill climber on random instance
         stats = QueryStats()
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
-        simple_hill_climber(inst, eps=eps, stats=stats, rng=rng)
+        hill_climber(inst, eps=eps, stats=stats, rng=rng, steep=steep)
 
         # save record to history
         rec = asdict(stats)
