@@ -121,16 +121,17 @@ def setup_default_logger(verbose):
 @click.argument(
     "src",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
+    required=True,
 )
 @click.argument(
     "ref-path",
     type=click.Path(dir_okay=True, readable=True, path_type=Path),
-    default="../../data/plot_reference/",
+    required=True,
 )
 @click.argument(
     "ref-file",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
-    default="hill_climb_cade.json",
+    required=True,
 )
 def plot(src, ref_path, ref_file, quantum_factor=2):
     """
@@ -188,7 +189,8 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     for ax, ((k, r), group) in zip(axs, groups):
         ax.set_title(f"k = {k}, r = {r}")
         ax.set_xlim(10**2, 10**4)
-        ax.set_ylim(300, 10**5)
+        # TODO: improve this scaling system, maybe read max value on y scale from data frame
+        ax.set_ylim(300, 10**7)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("$n$")
