@@ -4,6 +4,8 @@ import numpy as np
 from .search import cade_et_al_F
 from ..stats import QueryStats
 
+__all__ = ["max"]
+
 E = TypeVar("E")
 
 
