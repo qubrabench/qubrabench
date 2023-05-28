@@ -17,6 +17,16 @@ def max(
     key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
 ) -> E:
+    """
+    Find the largest element in a list, while keeping track of query statistics.
+
+    Arguments:
+    :param iterable: iterable to be searched over
+    :param key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
+    :param default: default value to return if iterable is empty
+    :param float eps: upper bound on the failure probability of the quantum algorithm
+    :param QueryStats stats: object that keeps track of statistics
+    """
     if key is None:
 
         def key(x: E) -> Any:
