@@ -1,3 +1,5 @@
+"""This module collects test functions for the examples.sat.schoning module."""
+
 import numpy as np
 from pytest_check import check
 
@@ -7,6 +9,11 @@ from schoning import schoening_solve, schoening
 
 
 def test_solve(rng) -> None:
+    """Test schönings algorithm and quantum statistic generation
+
+    Args:
+        rng (np.rng): Source of randomness provided by test fixtures
+    """
     # solve a simple SAT instance
     inst = SatInstance(
         k=2,

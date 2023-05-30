@@ -1,3 +1,5 @@
+"""This module contains SAT related data classes, calculations and instance generations."""
+
 from dataclasses import dataclass
 from typing import Optional, Callable, TypeVar, Generic, Any
 import numpy as np
@@ -50,13 +52,16 @@ class SatInstance:
 
     @staticmethod
     def random(k: int, n: int, m: int, *, rng: np.random.Generator) -> "SatInstance":
-        """
-        Generate a random k-SAT instance.
+        """Generate a random k-SAT instance.
 
-        Arguments:
-        :param n: number of variables
-        :param m: number of clauses
-        :param k: precise number of literals per clause
+        Args:
+            k (int): number of variables
+            n (int): number of clauses
+            m (int): precise number of literals per clause
+            rng (np.random.Generator): Source of randomness
+
+        Returns:
+            SatInstance: the generated instance
         """
         # generate random clauses matrix
         clauses = np.zeros(shape=(m, n), dtype=int)

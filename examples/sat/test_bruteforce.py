@@ -1,3 +1,5 @@
+"""This module collects test functions surrounding the SAT bruteforce example."""
+
 import numpy as np
 from pytest_check import check
 
@@ -7,6 +9,11 @@ from bruteforce import bruteforce_solve
 
 
 def test_solve(rng) -> None:
+    """Perform an example run of bruteforcing SAT and assure statistic collection.
+
+    Args:
+        rng (np.rng): Source of randomness provided by test fixtures
+    """
     # solve a simple SAT instance
     inst = SatInstance(
         k=2,

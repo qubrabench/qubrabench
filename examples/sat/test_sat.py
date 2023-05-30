@@ -1,8 +1,11 @@
+"""This module collects test functions surrounding the example sat instances."""
+
 import numpy as np
 from sat import SatInstance, WeightedSatInstance
 
 
 def test_evaluate() -> None:
+    """Create a SAT instance and assure evaluation proceeds correctly."""
     inst = SatInstance(
         k=2,
         clauses=np.array([[1, -1, 0], [0, 1, -1]]),
@@ -15,6 +18,7 @@ def test_evaluate() -> None:
 
 
 def test_weight() -> None:
+    """Create a SAT instance and assure the weight given an assignment is calculated correctly."""
     inst = WeightedSatInstance(
         k=2,
         clauses=np.array([[1, -1, 0], [0, 1, -1]]),

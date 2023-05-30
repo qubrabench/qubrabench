@@ -1,8 +1,15 @@
+"""This module tests the graph instance generation for different community graph types."""
+
 from pytest_check import check
 from graph_instances import random_fcs_graph
 
 
 def test_fcs_generation(rng):
+    """Test FCS type graph generation.
+
+    Args:
+        rng (np.random.Generator): Source of randomness provided by test fixture.
+    """
     G = random_fcs_graph(200, community_size=50, mu=0.3, average_degree=5, rng=rng)
 
     check.equal(len(G.nodes), 200)

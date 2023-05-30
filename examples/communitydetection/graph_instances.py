@@ -1,3 +1,5 @@
+"""This module handles different types of graph instance generation for community detection."""
+
 from networkx.generators.community import LFR_benchmark_graph
 import numpy as np
 import networkx as nx

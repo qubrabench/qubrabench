@@ -1,3 +1,7 @@
+""" This module provides a generic maximum finding interface that executes classically 
+    and calculates the expected quantum query costs to a predicate function
+"""
+
 from typing import Iterable, TypeVar, Optional, Callable, Any
 import numpy as np
 
@@ -17,15 +21,21 @@ def max(
     key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
 ) -> E:
-    """
-    Find the largest element in a list, while keeping track of query statistics.
+    """Find the largest element in a list, while keeping track of query statistics.
 
-    Arguments:
-    :param iterable: iterable to be searched over
-    :param key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
-    :param default: default value to return if iterable is empty
-    :param float eps: upper bound on the failure probability of the quantum algorithm
-    :param QueryStats stats: object that keeps track of statistics
+    Args:
+        iterable (Iterable[E]): iterable to find the maximum in
+        eps (Optional[float], optional): upper bound on the failure probability of the quantum algorithm. Defaults to None.
+        default (Optional[E], optional): default value to return if iterable is empty. Defaults to None.
+        key (Optional[Callable[[E], Any]], optional): function that maps iterable elements to values that are comparable. By default, use the iterable elements. Defaults to None.
+        stats (Optional[QueryStats], optional): object that keeps track of statistics. Defaults to None.
+
+    Raises:
+        ValueError: Raised when the failure rate epsilon is not provided and statistics cannot be calculated.
+        ValueError: Raised when iterable is an empty sequence and no default is provided.
+
+    Returns:
+        E: the desired maximum element
     """
     if key is None:
 
@@ -64,6 +74,18 @@ def max(
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float) -> float:
+    """Upper bound on the number of quantum queries made by Cade et al's quantum max algorithm.
+
+    Args:
+        N (int): number of elements of search space
+        T (int): number of solutions (marked elements)
+        cq (int): the quantum cost factor
+        eps (float): upper bound on the failure probability of the quantum algorithm.
+
+
+    Returns:
+        float: the upper bound on the number of quantum queries
+    """
     # assume cq corresponds to the number of classical comparisons corresponding to oracle O_{f_i} in paper
     sum_of_ts: float = 0
     for i in range(T, N):

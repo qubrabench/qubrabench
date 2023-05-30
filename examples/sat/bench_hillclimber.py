@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+
+"""
+Script/Module that provides benchmarking functions for hillclimbing and plotting as command line interface.
+"""
+
 from os import path
 from pathlib import Path
 from datetime import datetime
@@ -9,11 +14,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as mcolors
 
-
 import hillclimber
-
-
-# TODO: generell performance schlechter?
 
 
 @click.group()
@@ -40,7 +41,6 @@ def cli():
     type=int,
     required=True,
 )
-# TODO: so korrekt
 @click.option(
     "--seed",
     help="Seed for the random operations.",
@@ -93,7 +93,12 @@ def hill_climb(k, r, seed, n, runs, dest, verbose, steep):
             f.write(history.to_json(orient="split"))
 
 
-def setup_default_logger(verbose):
+def setup_default_logger(verbose: bool):
+    """Set up a default logging instance and log generation.
+
+    Args:
+        verbose (bool): Whether to create more detailed logs.
+    """
     log_formatter = logging.Formatter(
         "%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s"
     )

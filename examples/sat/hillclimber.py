@@ -1,3 +1,5 @@
+"""This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
+
 from dataclasses import asdict
 from typing import Optional, Tuple, Callable
 import logging
@@ -11,7 +13,6 @@ from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
 
 
-# TODO: should not return QueryStats
 def hill_climber(
     inst: WeightedSatInstance,
     *,
@@ -20,6 +21,20 @@ def hill_climber(
     stats: Optional[QueryStats] = None,
     steep: bool = False,
 ) -> Optional[Assignment]:
+    """A hillclimbing heuristic to find maximizing assignments to weighted SAT instances
+        by progressively transitioning to better solutions using neighborhood search.
+
+
+    Args:
+        inst (WeightedSatInstance): The SAT instance to be solved.
+        rng (np.random.Generator): Source of randomness
+        eps (Optional[float], optional): upper bound on the failure probability. Defaults to None.
+        stats (Optional[QueryStats], optional): Statistics instance keeping track of costs. Defaults to None.
+        steep (bool, optional): True when the neighborhood search is performed greedily, otherwise randomly. Defaults to False.
+
+    Returns:
+        Optional[Assignment]: The best assignment found by the heuristic.
+    """
     if rng is None:
         rng = np.random.default_rng()
 
@@ -39,8 +54,6 @@ def hill_climber(
         # find improved directions
         if stats:
             stats.classical_control_method_calls += 1
-
-        # MW: Cade et al. propose picking eps = eps_overall / n as a heuristic (see 4.3.1 in Cade et al.), we should do the same
 
         # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
         # result = search(neighbors, lambda x: inst.weight(x) > w, eps=eps, stats=stats)
@@ -83,6 +96,21 @@ def run(
     random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
     steep: bool = False,
 ) -> pd.DataFrame:
+    """External interface to generate weighted sat instances, run the hillclimber algorithm and return statistics.
+
+    Args:
+        k (int): _description_
+        r (int): _description_
+        n (int): size (variable number) of the SAT instances
+        n_runs (int): number of runs to perform in each group
+        rng (np.random.Generator): Source of randomness
+        eps (Optional[float], optional): Upper bound on the failure rate. Defaults to None.
+        random_weights (Optional[Callable[[int], npt.NDArray[W]]], optional): Optionally providable weights for SAT instance generation. Defaults to None.
+        steep (bool, optional): Whether to perform hillclimb steep (greedily). Defaults to False.
+
+    Returns:
+        pd.DataFrame: Dataframe holding benchmarking statistics of the runs performed.
+    """
     history = []
     for run_ix in range(n_runs):
         logging.debug(f"k={k}, r={r}, n={n}, steep={steep}, #{run_ix}")
@@ -104,7 +132,5 @@ def run(
 
     # return pandas dataframe
     df = pd.DataFrame([list(row.values()) for row in history], columns=list(rec))
-    logging.info(
-        df.groupby(["k", "r", "n"]).mean(numeric_only=True)
-    )  # TODO: get rid of numeric_only once 'impl' is gone
+    logging.info(df.groupby(["k", "r", "n"]).mean(numeric_only=True))
     return df

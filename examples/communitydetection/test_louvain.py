@@ -1,3 +1,4 @@
+"""This module contains tests for the louvain community detection example."""
 from pytest_check import check
 import numpy as np
 import networkx as nx
@@ -78,6 +79,7 @@ def test_node_to_community_strength():
 
 
 def test_modularity():
+    """Test that calculating the (full) modularity of a graph yields an expected value"""
     # Example graph
     G = nx.barbell_graph(3, 0)
 

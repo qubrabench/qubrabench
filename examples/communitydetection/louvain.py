@@ -1,3 +1,5 @@
+"""This module provides the louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
+
 from networkx.algorithms.community import quality
 import networkx as nx
 
@@ -142,6 +144,7 @@ class Louvain:
         return sigma
 
     def strength(self, u: int) -> float:
+        """Calculate the strength of a given node index."""
         return self.G.degree(u, weight="weight")
 
     def modularity(self, node_community_map: dict = None) -> float:

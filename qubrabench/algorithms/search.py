@@ -1,3 +1,7 @@
+""" This module provides a generic search interface that executes classically 
+    and calculates the expected quantum query costs to a predicate function
+"""
+
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from ..stats import QueryStats
@@ -18,16 +22,21 @@ def search(
     K: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
-    """
-    Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+    """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
 
-    Arguments:
-    :param iterable: iterable to be searched over
-    :param predicate: function to test if an element is marked
-    :param rng: np.random.Generator object
-    :param float eps: upper bound on the failure probability of the quantum algorithm
-    :param int K: maximum number of classical queries before entering the quantum part of the algorithm
-    :param QueryStats stats: object that keeps track of statistics
+    Args:
+        iterable (Iterable[E]): iterable to be searched over
+        predicate (Callable[[E], bool]): function to test if an element is marked
+        rng (np.random.Generator): np.random.Generator instance as source of randomness
+        eps (Optional[float], optional): upper bound on the failure probability of the quantum algorithm. Defaults to None.
+        K (int, optional): maximum number of classical queries before entering the quantum part of the algorithm. Defaults to 130.
+        stats (Optional[QueryStats], optional): keeps track of statistics. Defaults to None.
+
+    Raises:
+        ValueError: Raised when the failure rate epsilon is not provided and statistics cannot be calculated.
+
+    Returns:
+        Optional[E]: the element where the predicate matches
     """
     iterable = list(iterable)
 
@@ -57,13 +66,16 @@ def search(
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> float:
-    """
-    Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
+    """Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
 
-    :param int N: number of elements of search space
-    :param int T: number of solutions / marked elements
-    :param float eps: upper bound on the failure probability
-    :param int K: maximum number of classical queries before entering the quantum part of the algorithm
+    Args:
+        N (int): number of elements of search space
+        T (int): number of solutions (marked elements)
+        eps (float): upper bound on the failure probability
+        K (int): maximum number of classical queries before entering the quantum part of the algorithm
+
+    Returns:
+        float: the upper bound on the number of quantum queries
     """
     if T == 0:
         return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)  # type: ignore
@@ -73,14 +85,15 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> f
 
 
 def cade_et_al_expected_classical_queries(N: int, T: int, K: int) -> float:
-    """
-    Upper bound on the number of *classical* queries made by Cade et al's quantum
-    search algorithm.
+    """Upper bound on the number of *classical* queries made by Cade et al's quantum search algorithm.
 
-    :param int N: number of elements of search space
-    :param int T: number of solutions / marked elements
-    :param int K: maximum number of classical queries before entering the quantum
-    part of the algorithm
+    Args:
+        N (int): number of elements of search space
+        T (int): number of solutions (marked elements)
+        K (int): maximum number of classical queries before entering the quantum part of the algorithm
+
+    Returns:
+        float: the upper bound on the number of classical queries
     """
     if T == 0:
         return K

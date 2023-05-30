@@ -1,9 +1,17 @@
+"""This module collects test functions surrounding the hillclimber example."""
+
 from pytest_check import check
 
 import hillclimber
 
 
 def test_maxsat_values_100(rng) -> None:
+    """Perform an example run of a simple hillclimber and assure statistic collection.
+
+    Args:
+        rng (np.rng): Source of randomness provided by test fixtures
+    """
+
     def random_weights(size):
         return rng.integers(0, 100_000, size)
 

@@ -1,3 +1,4 @@
+"""This module provides the Schöning example for solving SAT instances."""
 from typing import Optional
 import numpy as np
 import itertools
@@ -14,6 +15,17 @@ def schoening_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
+    """_summary_
+
+    Args:
+        inst (SatInstance): _description_
+        rng (np.random.Generator): _description_
+        eps (Optional[float], optional): _description_. Defaults to None.
+        stats (Optional[QueryStats], optional): _description_. Defaults to None.
+
+    Returns:
+        Optional[Assignment]: _description_
+    """
     n = inst.n
     assignments = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
     seeds = [np.array(x, dtype=int) for x in itertools.product([0, 1, 2], repeat=3 * n)]
@@ -32,6 +44,15 @@ def schoening(
     x: np.array,
     inst: SatInstance,
 ) -> bool:
+    """_summary_
+
+    Args:
+        x (np.array): _description_
+        inst (SatInstance): _description_
+
+    Returns:
+        bool: _description_
+    """
     # Split input into assignment and seed
     (assignment, seed) = zip(x)
     assignment = np.copy(assignment[0])
