@@ -17,7 +17,6 @@ requires-python = ">=3.10"
 # license = ???
 classifiers = [
     "Programming Language :: Python :: 3",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dependencies = [
@@ -31,8 +30,8 @@ dependencies = [
 dynamic = ["version"]
 
 [project.urls]
-"Homepage" = "https://github.com/KIT-TVA/qubra-bench"
-"Bug Tracker" = "https://github.com/KIT-TVA/qubra-bench/issues"
+"Homepage" = "https://github.com/KIT-TVA/qubrabench"
+"Bug Tracker" = "https://github.com/KIT-TVA/qubrabench/issues"
 
 # [project.scripts]
 # my-script = "my_package.module:function"

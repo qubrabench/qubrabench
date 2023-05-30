@@ -19,7 +19,7 @@ To install and use this framework, simply download or check out this repository,
 pip install .
 ```
 
-If you are interested in *developing* `qubra_bench`, please see below for instructions.
+If you are interested in *developing* `qubrabench`, please see below for instructions.
 
 ## How to run a benchmark
 
