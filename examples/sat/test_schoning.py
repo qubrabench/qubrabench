@@ -5,7 +5,7 @@ from pytest_check import check
 
 from qubrabench.stats import QueryStats
 from sat import SatInstance
-from schoning import schoening_solve, schoening
+from schoening import schoening_solve, schoening
 
 
 def test_solve(rng) -> None:

@@ -15,7 +15,7 @@ def schoening_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
-    """ Find a satisfying assignment by incrementally flipping bits contained in unsatisfied clauses,
+    """Find a satisfying assignment by incrementally flipping bits contained in unsatisfied clauses,
         as done in Schoening's algorithm for Sat solving.
 
     Args:
@@ -47,7 +47,7 @@ def schoening(
     x: np.array,
     inst: SatInstance,
 ) -> bool:
-    """ Search function employing Schoenings algorithm for sat solving.
+    """Search function employing Schoenings algorithm for sat solving.
 
     Args:
         x (np.array): An array containing a starting assignment, as well as a random bit string,
