@@ -15,16 +15,19 @@ def schoening_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
-    """_summary_
+    """ Find a satisfying assignment by incrementally flipping bits contained in unsatisfied clauses,
+        as done in Schoening's algorithm for Sat solving.
 
     Args:
-        inst (SatInstance): _description_
-        rng (np.random.Generator): _description_
-        eps (Optional[float], optional): _description_. Defaults to None.
-        stats (Optional[QueryStats], optional): _description_. Defaults to None.
+        inst (SatInstance): The Sat Instance for which to find a satisfying assignment.
+        rng (np.random.Generator): Source of randomness
+        eps (Optional[float], optional): Upper bound on the failure probability. Defaults to None.
+        stats (Optional[QueryStats], optional): Statistics instance, allows collecting classical
+        and estimated quantum query count. Defaults to None.
 
     Returns:
-        Optional[Assignment]: _description_
+        Optional[Assignment]: Returns either a satisfying assignment, together with the string of random bits
+        representing the assignment flips. If no such assignment is found, returns a None.
     """
     n = inst.n
     assignments = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
@@ -44,14 +47,17 @@ def schoening(
     x: np.array,
     inst: SatInstance,
 ) -> bool:
-    """_summary_
+    """ Search function employing Schoenings algorithm for sat solving.
 
     Args:
-        x (np.array): _description_
-        inst (SatInstance): _description_
+        x (np.array): An array containing a starting assignment, as well as a random bit string,
+        encoding positions of bit flips.
+        inst (SatInstance): The sat instance for which to compute a satisfying assignment.
 
     Returns:
-        bool: _description_
+        bool: Returns True if the initial assignment collapses into a satisfying clauses
+        at some point during the sequence of incremental bit flips.
+        Returns None if that does not happen.
     """
     # Split input into assignment and seed
     (assignment, seed) = zip(x)
@@ -61,6 +67,7 @@ def schoening(
     for i in range(0, len(seed)):
         if inst.evaluate(assignment):
             return True
+        # Flip a bit
         assignment[seed[i]] *= -1
 
     return False
