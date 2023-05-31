@@ -29,8 +29,7 @@ def schoening_solve(
 
     Returns: Satisfying assignment if found, None otherwise.
     """
-    # assert inst.k == 3
-    # FIXME: uncomment this to reveal another bug
+    assert inst.k == 3
 
     # prepare search domain (all randomness used by Schoening's algorithm)
     n = inst.n
