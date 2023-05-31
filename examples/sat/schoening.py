@@ -7,6 +7,8 @@ from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
 
+__all__ = ["schoening_solve"]
+
 
 def schoening_solve(
     inst: SatInstance,
@@ -15,59 +17,61 @@ def schoening_solve(
     eps: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
-    """Find a satisfying assignment by incrementally flipping bits contained in unsatisfied clauses,
-        as done in Schoening's algorithm for Sat solving.
-
-    Args:
-        inst (SatInstance): The Sat Instance for which to find a satisfying assignment.
-        rng (np.random.Generator): Source of randomness
-        eps (Optional[float], optional): Upper bound on the failure probability. Defaults to None.
-        stats (Optional[QueryStats], optional): Statistics instance, allows collecting classical
-        and estimated quantum query count. Defaults to None.
-
-    Returns:
-        Optional[Assignment]: Returns either a satisfying assignment, together with the string of random bits
-        representing the assignment flips. If no such assignment is found, returns a None.
     """
+    Find a satisfying assignment of a 3-SAT formula by using Schöning's algorithm,
+    which incrementally flipping bits contained in unsatisfied clauses.
+
+    Arguments:
+        inst: The 3-SAT Instance for which to find a satisfying assignment.
+        rng: Random number generator
+        eps (optional): Allowed failure probability.
+        stats (optional): Object that keeps track of statistics about evaluation queries to the SAT instance.
+
+    Returns: Satisfying assignment if found, None otherwise.
+    """
+    # assert inst.k == 3
+    # FIXME: uncomment this to reveal another bug
+
+    # prepare search domain (all randomness used by Schoening's algorithm)
     n = inst.n
     assignments = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
-    seeds = [np.array(x, dtype=int) for x in itertools.product([0, 1, 2], repeat=3 * n)]
+    steps = [np.array(s, dtype=int) for s in itertools.product([0, 1, 2], repeat=3 * n)]
+    domain = itertools.product(assignments, steps)
 
-    # elements of the form (assignment) X (Random bits)
-    domain = itertools.product(assignments, seeds)
+    # find a choice of randomness that makes Schoening's algorithm accept
+    def pred(x):
+        return schoening_with_randomness(x, inst) is not None
 
-    # Supply schoening with SatInstance to check against
-    schoening_with_sat = partial(schoening, inst=inst)
+    randomness = search(domain, pred, eps=eps, stats=stats, rng=rng)
 
-    # Predicate for the search function. Uses SatInstance and rng from context.
-    return search(domain, schoening_with_sat, eps=eps, stats=stats, rng=rng)
+    # return satisfying assignment (if any was found)
+    if randomness is not None:
+        return schoening_with_randomness(randomness, inst)
+    return None
 
 
-def schoening(
-    x: np.array,
-    inst: SatInstance,
-) -> bool:
-    """Search function employing Schoenings algorithm for sat solving.
-
-    Args:
-        x (np.array): An array containing a starting assignment, as well as a random bit string,
-        encoding positions of bit flips.
-        inst (SatInstance): The sat instance for which to compute a satisfying assignment.
-
-    Returns:
-        bool: Returns True if the initial assignment collapses into a satisfying clauses
-        at some point during the sequence of incremental bit flips.
-        Returns None if that does not happen.
+def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
     """
-    # Split input into assignment and seed
-    (assignment, seed) = zip(x)
-    assignment = np.copy(assignment[0])
-    seed = seed[0]
+    Run Schoening's algorithm with fixed random choices.
 
-    for i in range(0, len(seed)):
+    Arguments:
+        randomness: An array containing a starting assignment, as well as a random bit string,
+        encoding positions of bit flips.
+        inst: The sat instance for which to compute a satisfying assignment.
+
+    Returns: atisfying assignment if found, None otherwise.
+    """
+    # split randomness into initial assignment and steps
+    assignment, steps = randomness
+    assignment = np.copy(assignment)
+
+    for i in range(0, len(steps)):
+        # done?
         if inst.evaluate(assignment):
-            return True
-        # Flip a bit
-        assignment[seed[i]] *= -1
+            return assignment
 
-    return False
+        # flip variable that appears in an unsatisfied clause
+        # FIXME: this is not what the code currently does
+        assignment[steps[i]] *= -1
+
+    return None

@@ -5,7 +5,7 @@ from pytest_check import check
 
 from qubrabench.stats import QueryStats
 from sat import SatInstance
-from schoening import schoening_solve, schoening
+from schoening import schoening_solve
 
 
 def test_solve(rng) -> None:
@@ -24,7 +24,7 @@ def test_solve(rng) -> None:
     assert x is not None
 
     # check that found a solution
-    assert schoening(x, inst)
+    assert inst.evaluate(x)
 
     # check stats
     check.equal(stats.classical_control_method_calls, 0)
