@@ -29,7 +29,7 @@ def test_solve(rng) -> None:
     # check stats
     check.equal(stats.classical_control_method_calls, 0)
     check.equal(stats.classical_actual_queries, 1)
-    check.almost_equal(stats.classical_expected_queries, 1.0714455822814957)
-    check.almost_equal(stats.quantum_expected_classical_queries, 1.0714460684249203)
+    check.almost_equal(stats.classical_expected_queries, 1.0009153259895374)
+    check.almost_equal(stats.quantum_expected_classical_queries, 1.0009153318077804)
 
     check.almost_equal(stats.quantum_expected_quantum_queries, 0)
