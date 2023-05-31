@@ -2,7 +2,6 @@
 from typing import Optional
 import numpy as np
 import itertools
-from functools import partial
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
@@ -58,7 +57,7 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
         encoding positions of bit flips.
         inst: The sat instance for which to compute a satisfying assignment.
 
-    Returns: atisfying assignment if found, None otherwise.
+    Returns: Satisfying assignment if found, None otherwise.
     """
     # split randomness into initial assignment and steps
     assignment, steps = randomness
@@ -82,7 +81,6 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
         target_variable = target_clause[steps[i]]
 
         # flip variable that appears in an unsatisfied clause
-        # FIXME: this is not what the code currently does
         assignment[target_variable] *= -1
 
     return None
