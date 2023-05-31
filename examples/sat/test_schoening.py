@@ -16,8 +16,8 @@ def test_solve(rng) -> None:
     """
     # solve a simple SAT instance
     inst = SatInstance(
-        k=2,
-        clauses=np.array([[1, 1, 0], [1, -1, 0], [0, 1, 1], [0, -1, -1]], dtype=int),
+        k=3,
+        clauses=np.array([[1, 1, -1], [1, -1, 1], [-1, 1, 1], [1, -1, -1]], dtype=int),
     )
     stats = QueryStats()
     x = schoening_solve(inst, rng=rng, eps=10**-5, stats=stats)
