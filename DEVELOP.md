@@ -40,3 +40,12 @@ You can chose two options when running the qubrabench script:
 Annotation - logging levels: `ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF`.
 
 Please keep this functionality in mind when writing new code for QuBRA Bench, use `logging.info()` for relevant information outside of debug mode and use `logging.debug()` for messages with debug interest.
+
+
+## Randomness
+
+Some algorithms and examples operate on randomly generated instances.
+To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
+RNG function parameters should never have default values.
+
+For testing purposes, there is a [fixture](conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
