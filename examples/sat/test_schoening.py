@@ -1,4 +1,4 @@
-"""This module collects test functions for the examples.sat.schoning module."""
+"""This module collects test functions for the examples.sat.schoening module."""
 
 import numpy as np
 from pytest_check import check
@@ -9,7 +9,7 @@ from schoening import schoening_solve, schoening
 
 
 def test_solve(rng) -> None:
-    """Test schönings algorithm and quantum statistic generation
+    """Test Schöning's algorithm and quantum statistic generation
 
     Args:
         rng (np.rng): Source of randomness provided by test fixtures
