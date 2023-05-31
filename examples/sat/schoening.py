@@ -70,8 +70,20 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
         if inst.evaluate(assignment):
             return assignment
 
+        # Evaluate all clauses with current assignment
+        sat_clauses = (inst.clauses @ assignment.T) > -inst.k
+
+        # Get the index of the first unsatisfied clauses
+        clause_index = np.amin(np.argwhere(sat_clauses == False))
+
+        # Get indices of variables contained in that clause
+        target_clause = np.argwhere(inst.clauses[clause_index] != 0)
+
+        # Select index of a variable that appears in unsatisfied clause
+        target_variable = target_clause[steps[i]]
+
         # flip variable that appears in an unsatisfied clause
         # FIXME: this is not what the code currently does
-        assignment[steps[i]] *= -1
+        assignment[target_variable] *= -1
 
     return None
