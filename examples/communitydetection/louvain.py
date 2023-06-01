@@ -96,11 +96,11 @@ class Louvain:
         """Calculate the change in modularity that would occur if u was moved into community alpha
 
         Args:
-            u (int): Integer label of the nx.Node to be moved
-            alpha (int): Integer label of the target community
+            u: Integer label of the nx.Node to be moved
+            alpha: Integer label of the target community
 
         Returns:
-            float: The resulting change in modularity
+            The resulting change in modularity
         """
         # moving a node to its current community should not change modularity
         if self.C[u] == alpha:
@@ -114,11 +114,11 @@ class Louvain:
         """Strength of u to other nodes in the community alpha
 
         Args:
-            u (int): Integer label of the nx.Node whose strength should be determined
-            alpha (int): Integer label of the community that the incident edges of u belong to
+            u: Integer label of the nx.Node whose strength should be determined
+            alpha: Integer label of the community that the incident edges of u belong to
 
         Returns:
-            float: The resulting strength
+            The resulting strength
         """
         return sum(
             [self.A[u, v] for v, community in self.C.items() if community == alpha]
@@ -128,10 +128,10 @@ class Louvain:
         """Calculates sum of all weights on edges incident to vertices contained in a neighboring community
 
         Args:
-            alpha (int): Integer label of the community whose Sigma is to be calculated
+            alpha: Integer label of the community whose Sigma is to be calculated
 
         Returns:
-            float: Sum of weights
+            Sum of weights
         """
         sigma = 0
         for v, community in self.C.items():
@@ -150,10 +150,10 @@ class Louvain:
         """Calculate the modularity of self.G and a node to community mapping
 
         Args:
-            node_community_map (dict, optional): A node to community mapping. Defaults to self.C
+            node_community_map: A node to community mapping. Defaults to self.C
 
         Returns:
-            float: The modularity value [-1/2, 1)
+            The modularity value [-1/2, 1)
         """
         if node_community_map is None:
             node_community_map = self.C

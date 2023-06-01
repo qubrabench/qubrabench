@@ -23,8 +23,8 @@ def schoening_solve(
     Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
         rng: Random number generator
-        eps (optional): Allowed failure probability.
-        stats (optional): Object that keeps track of statistics about evaluation queries to the SAT instance.
+        eps: Allowed failure probability.
+        stats: Object that keeps track of statistics about evaluation queries to the SAT instance.
 
     Returns:
         Satisfying assignment if found, None otherwise.

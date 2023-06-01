@@ -26,11 +26,11 @@ def hill_climber(
 
 
     Args:
-        inst (WeightedSatInstance): The SAT instance to be solved.
-        rng (np.random.Generator): Source of randomness
-        eps (Optional[float], optional): upper bound on the failure probability. Defaults to None.
-        stats (Optional[QueryStats], optional): Statistics instance keeping track of costs. Defaults to None.
-        steep (bool, optional): True when the neighborhood search is performed greedily, otherwise randomly. Defaults to False.
+        inst: The SAT instance to be solved.
+        rng: Source of randomness
+        eps: upper bound on the failure probability. Defaults to None.
+        stats: Statistics instance keeping track of costs. Defaults to None.
+        steep: True when the neighborhood search is performed greedily, otherwise randomly. Defaults to False.
 
     Returns:
         Optional[Assignment]: The best assignment found by the heuristic.
@@ -99,17 +99,17 @@ def run(
     """External interface to generate weighted sat instances, run the hillclimber algorithm and return statistics.
 
     Args:
-        k (int): Number of literals in a clause
-        r (int): Factor for the number of clauses
-        n (int): size (variable number) of the SAT instances
-        n_runs (int): number of runs to perform in each group
-        rng (np.random.Generator): Source of randomness
-        eps (Optional[float], optional): Upper bound on the failure rate. Defaults to None.
-        random_weights (Optional[Callable[[int], npt.NDArray[W]]], optional): Optionally providable weights for SAT instance generation. Defaults to None.
-        steep (bool, optional): Whether to perform hillclimb steep (greedily). Defaults to False.
+        k: Number of literals in a clause
+        r: Factor for the number of clauses
+        n: size (variable number) of the SAT instances
+        n_runs: number of runs to perform in each group
+        rng: Source of randomness
+        eps: Upper bound on the failure rate. Defaults to None.
+        random_weights: Optionally providable weights for SAT instance generation. Defaults to None.
+        steep: Whether to perform hillclimb steep (greedily). Defaults to False.
 
     Returns:
-        pd.DataFrame: Dataframe holding benchmarking statistics of the runs performed.
+        Dataframe holding benchmarking statistics of the runs performed.
     """
     history = []
     for run_ix in range(n_runs):

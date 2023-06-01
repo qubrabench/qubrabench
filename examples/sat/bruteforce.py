@@ -18,13 +18,13 @@ def bruteforce_solve(
     """Find a satisfying solution to a SAT instance by randomly searching for solutions.
 
     Args:
-        inst (SatInstance): The instance to be solved
-        rng (np.random.Generator): Source of randomness
-        eps (Optional[float], optional): Upper bound on the quantum failure rate. Defaults to None.
-        stats (Optional[QueryStats], optional): Statistics instance to keep track of query costs. Defaults to None.
+        inst: The instance to be solved
+        rng: Source of randomness
+        eps: Upper bound on the quantum failure rate. Defaults to None.
+        stats: Statistics instance to keep track of query costs. Defaults to None.
 
     Returns:
-        Optional[Assignment]: The found assignment satisfying the instance.
+        The found assignment satisfying the instance.
     """
     # list of all bitstrings
     domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=inst.n)]
