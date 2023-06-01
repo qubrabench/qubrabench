@@ -76,7 +76,10 @@ For testing purposes, there is a [fixture](conftest.py) in place that optionally
 
 ## Code Style
 
-Please provide docstrings in the format that other modules in this project use for every module, class and method that you write. Public facing API functions should also contain `mypy` type hints.
+Please provide docstrings in the [Google Python Style](https://google.github.io/styleguide/pyguide.html) for every module, class and method that you write. 
+Public facing API functions should also contain `mypy` type hints.
+When type hints are present in the method declaration, they may be omitted from the docstring.
+For an extensive example see [here](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
 
 For formatting, make use of the [black](https://black.readthedocs.io/en/stable/) autoformatter with default configuration.
 
