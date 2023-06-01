@@ -4,7 +4,7 @@
 Script/Module that provides benchmarking functions for hillclimbing and plotting as command line interface.
 """
 
-from os import path
+from os import path, makedirs
 from pathlib import Path
 from datetime import datetime
 import click
@@ -111,10 +111,15 @@ def setup_default_logger(verbose: bool):
 
     if verbose:
         root_logger.setLevel(logging.DEBUG)
+        log_directory = "../../data/logs"
+
+        # create log dir in case it doesn't exist
+        if not path.exists(log_directory):
+            makedirs(log_directory)
 
         file_handler = logging.FileHandler(
             "{0}/{1}.log".format(
-                "data/logs",
+                log_directory,
                 "qubra-bench-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
             )
         )
@@ -194,7 +199,6 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     for ax, ((k, r), group) in zip(axs, groups):
         ax.set_title(f"k = {k}, r = {r}")
         ax.set_xlim(10**2, 10**4)
-        # TODO: improve this scaling system, maybe read max value on y scale from data frame
         ax.set_ylim(300, 10**7)
         ax.set_xscale("log")
         ax.set_yscale("log")
