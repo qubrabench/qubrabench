@@ -99,8 +99,8 @@ def run(
     """External interface to generate weighted sat instances, run the hillclimber algorithm and return statistics.
 
     Args:
-        k (int): _description_
-        r (int): _description_
+        k (int): Number of literals in a clause
+        r (int): Factor for the number of clauses
         n (int): size (variable number) of the SAT instances
         n_runs (int): number of runs to perform in each group
         rng (np.random.Generator): Source of randomness

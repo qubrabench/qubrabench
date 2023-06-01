@@ -55,9 +55,9 @@ class SatInstance:
         """Generate a random k-SAT instance.
 
         Args:
-            k (int): number of variables
-            n (int): number of clauses
-            m (int): precise number of literals per clause
+            k (int): precise number of literals per clause
+            n (int): number of variables
+            m (int): number of clauses
             rng (np.random.Generator): Source of randomness
 
         Returns:

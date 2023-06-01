@@ -114,20 +114,3 @@ def test_move_nodes():
     # determine delta modularity for moving node 0 to community 1
     check.not_equal(solver.modularity(), initial_modularity)
     check.equal(solver.modularity(), 0.40396751618527543)
-
-
-# def test_louvain():
-#     """
-#     TODO test an entire louvain pass
-#     """
-#     # setup rng
-#     rng = np.random.default_rng(seed=123)
-
-#     # generate graph instance
-#     G = random_lfr_graph(100, seed=rng)
-#     solver = louvain.Louvain(G)
-#     sanity_check_input(solver.A)
-
-#     print(solver.G)
-#     solver.louvain()
-#     print(solver.G)
