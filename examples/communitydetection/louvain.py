@@ -20,7 +20,6 @@ class Louvain:
         self.C = self.single_partition()
 
     def update_graph(self, new_graph):
-        # TODO fix conversion later for history?
         self.G = nx.relabel.convert_node_labels_to_integers(new_graph)
         self.A = nx.adjacency_matrix(new_graph)
         self.W = self.A.sum() / 2

@@ -170,7 +170,7 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
 
     # read in data to plot
     history = pd.read_json(src, orient="split")
-    # read in references TODO: make this optional via additional arguments
+    # read in references
     ref_path = path.join(
         path.dirname(path.realpath(__file__)),
         ref_path,
