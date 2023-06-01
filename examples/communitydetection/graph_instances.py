@@ -48,10 +48,10 @@ def random_fcs_graph(
     """Generate an FCS type graph according to Cade et al.'s community detection paper (Appx.D)
 
     Args:
-        n (int): Number of nodes in the graph
-        community_size (float, optional): The size of the communities (S). Defaults to 50.
-        mu (float, optional): Mixing parameter. Defaults to 0.3.
-        average_degree (float, optional): <d>. Defaults to 5.
+        n: Number of nodes in the graph
+        community_size: The size of the communities (S). Defaults to 50.
+        mu: Mixing parameter. Defaults to 0.3.
+        average_degree: <d>. Defaults to 5.
         rng: source of randomness
 
     Returns:

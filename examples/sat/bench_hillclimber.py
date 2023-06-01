@@ -97,7 +97,7 @@ def setup_default_logger(verbose: bool):
     """Set up a default logging instance and log generation.
 
     Args:
-        verbose (bool): Whether to create more detailed logs.
+        verbose: Whether to create more detailed logs.
     """
     log_formatter = logging.Formatter(
         "%(asctime)s [%(threadName)s] [%(levelname)s]  %(message)s"

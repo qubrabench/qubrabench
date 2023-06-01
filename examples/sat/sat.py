@@ -55,13 +55,13 @@ class SatInstance:
         """Generate a random k-SAT instance.
 
         Args:
-            k (int): precise number of literals per clause
-            n (int): number of variables
-            m (int): number of clauses
-            rng (np.random.Generator): Source of randomness
+            k: precise number of literals per clause
+            n: number of variables
+            m: number of clauses
+            rng: Source of randomness
 
         Returns:
-            SatInstance: the generated instance
+            the generated instance
         """
         # generate random clauses matrix
         clauses = np.zeros(shape=(m, n), dtype=int)
