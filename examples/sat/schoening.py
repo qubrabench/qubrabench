@@ -20,13 +20,14 @@ def schoening_solve(
     Find a satisfying assignment of a 3-SAT formula by using Schöning's algorithm,
     which incrementally flipping bits contained in unsatisfied clauses.
 
-    Arguments:
+    Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
         rng: Random number generator
         eps (optional): Allowed failure probability.
         stats (optional): Object that keeps track of statistics about evaluation queries to the SAT instance.
 
-    Returns: Satisfying assignment if found, None otherwise.
+    Returns:
+        Satisfying assignment if found, None otherwise.
     """
     assert inst.k == 3
 
@@ -52,12 +53,13 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
     """
     Run Schoening's algorithm with fixed random choices.
 
-    Arguments:
+    Args:
         randomness: An array containing a starting assignment, as well as a random bit string,
         encoding positions of bit flips.
         inst: The sat instance for which to compute a satisfying assignment.
 
-    Returns: Satisfying assignment if found, None otherwise.
+    Returns:
+        Satisfying assignment if found, None otherwise.
     """
     # split randomness into initial assignment and steps
     assignment, steps = randomness
