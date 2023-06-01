@@ -72,7 +72,7 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
         sat_clauses = (inst.clauses @ assignment.T) > -inst.k
 
         # Get the index of the first unsatisfied clauses
-        clause_index = np.amin(np.argwhere(sat_clauses == False))
+        clause_index = np.amin(np.argwhere(sat_clauses == False))  # noqa: E712
 
         # Get indices of variables contained in that clause
         target_clause = np.argwhere(inst.clauses[clause_index] != 0)
