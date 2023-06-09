@@ -32,10 +32,12 @@ This includes statistics classes as well as _quantumizable_ algorithms that exec
 
 ## Contributing
 
-To contribute to the repository, fork it and create a new branch for your changes in the fork.
+To contribute to the repository, [fork](https://docs.github.com/en/get-started/quickstart/fork-a-repo) it and create a new branch for your changes in the fork.
 Make sure to format, lint and test your code.
 More details on the individual actions are below, but you can quickly evaluate the project the same way our GitHub actions are performed by simply running `make` in the root of this repository.
 
+After you finished testing your implementation, create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) to start the integration of your changes into this repository.
+GitHub provides a [Quickstart Article](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) on how to contribute to projects, including step-by-step guides for everything mentioned above.
 
 
 ## Testing
