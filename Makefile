@@ -1,13 +1,16 @@
 BENCH_HILLCLIMBER = examples/sat/bench_hillclimber.py
 
-black:
-	black -t py310 .
+eval: format lint
+	pytest
+
+format:
+	black .
 
 mypy:
 	mypy .
 	# mypy . --strict
 
-ruff:
+lint:
 	ruff .
 
 bench-hillclimber-quick:
