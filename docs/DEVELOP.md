@@ -30,6 +30,13 @@ Tests for the example solvers should be placed in a new Python file next to the 
 `qubrabench` contains the benchmarking related code.
 This includes statistics classes as well as _quantumizable_ algorithms that execute classically, while estimating quantum cost (or bounds) theoretically during runtime.
 
+## Contributing
+
+To contribute to the repository, fork it and create a new branch for your changes in the fork.
+Make sure to format, lint and test your code.
+More details on the individual actions are below, but you can quickly evaluate the project the same way our GitHub actions are performed by simply running `make` in the root of this repository.
+
+
 
 ## Testing
 
