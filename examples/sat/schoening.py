@@ -22,7 +22,7 @@ def schoening_solve(
 
     Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
-        rng: Random number generator
+        rng: Random number generator.
         eps: Allowed failure probability.
         stats: Object that keeps track of statistics about evaluation queries to the SAT instance.
 
@@ -49,14 +49,13 @@ def schoening_solve(
     return None
 
 
-def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
+def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignment]:
     """
     Run Schoening's algorithm with fixed random choices.
 
     Args:
-        randomness: An array containing a starting assignment, as well as a random bit string,
-        encoding positions of bit flips.
-        inst: The sat instance for which to compute a satisfying assignment.
+        randomness: An pair consisting of a starting assignment (bit string) and steps (trit string).
+        inst: The 3-SAT Instance for which to find a satisfying assignment.
 
     Returns:
         Satisfying assignment if found, None otherwise.
@@ -70,19 +69,13 @@ def schoening_with_randomness(randomness: np.array, inst: SatInstance) -> bool:
         if inst.evaluate(assignment):
             return assignment
 
-        # evaluate all clauses with current assignment
-        sat_clauses = (inst.clauses @ assignment.T) > -inst.k
+        # choose an unsatisfied clause
+        unsat_clauses = (inst.clauses @ assignment.T) == -inst.k
+        unsat_clause = inst.clauses[unsat_clauses][0]
 
-        # get the index of the first unsatisfied clause
-        clause_index = np.amin(np.argwhere(sat_clauses == False))  # noqa: E712
-
-        # get indices of variables contained in that clause
-        target_clause = np.argwhere(inst.clauses[clause_index] != 0)
-
-        # select index of a variable that appears in unsatisfied clause
-        target_variable = target_clause[steps[i]]
-
-        # flip variable that appears in an unsatisfied clause
-        assignment[target_variable] *= -1
+        # select a variable that appears in unsatisfied clause, and flip it
+        vars_ = np.argwhere(unsat_clause != 0)
+        var = vars_[steps[i]]
+        assignment[var] *= -1
 
     return None
