@@ -3,7 +3,7 @@
 """
 Script/Module that provides benchmarking functions for hillclimbing and plotting as command line interface.
 """
-
+import math
 from os import path, makedirs
 from pathlib import Path
 from datetime import datetime
@@ -193,13 +193,29 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
 
     # group plots by combinations of k and r
     groups = history.groupby(["k", "r"])
+    # calculate the maximum value of the four relevant value columns
+    max_val_in_graph = (
+        history[
+            [
+                "classical_actual_queries",
+                "classical_expected_queries",
+                "quantum_expected_classical_queries",
+                "quantum_expected_quantum_queries",
+            ]
+        ]
+        .max(numeric_only=True)
+        .max()
+    )
+    # calculate the necessary exponent for the y-axis scaling
+    y_scale_exponent = len(str(math.ceil(max_val_in_graph)))
+
     fig, axs = plt.subplots(1, len(groups), sharey=True)
     if len(groups) == 1:
         axs = [axs]
     for ax, ((k, r), group) in zip(axs, groups):
         ax.set_title(f"k = {k}, r = {r}")
         ax.set_xlim(10**2, 10**4)
-        ax.set_ylim(300, 10**7)
+        ax.set_ylim(300, 10**y_scale_exponent)
         ax.set_xscale("log")
         ax.set_yscale("log")
         ax.set_xlabel("$n$")
