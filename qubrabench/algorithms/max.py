@@ -67,7 +67,7 @@ def max(
         if eps is None:
             raise ValueError("max() eps not provided, cannot compute stats")
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), max_val_occurrences, stats.classical_actual_queries, eps
+            len(iterable), max_val_occurrences, 1, eps
         )
 
     return max_val
