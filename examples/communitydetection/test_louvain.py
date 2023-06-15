@@ -2,9 +2,11 @@
 from pytest_check import check
 import numpy as np
 import networkx as nx
+import matplotlib.pyplot as plt
+import matplotlib as mpl
+
 
 import louvain
-from graph_instances import random_lfr_graph
 
 small_graph_example = np.array(
     [  # A, A, A, A, A, B, B, B, B, B
@@ -94,23 +96,136 @@ def test_modularity():
 
 
 def test_move_nodes():
-    """
-    Test the reassignment of communities without aggregating the graph
-    """
-    # setup rng
-    rng = np.random.default_rng(seed=123)
+    # Create a graph with 15 nodes
+    G = nx.Graph()
+    G.add_nodes_from(range(15))
 
-    # generate graph instance
-    G = random_lfr_graph(1000, rng=rng)
+    # Add edges to create the desired community structure
+    G.add_edges_from([(0, 1), (0, 2), (1, 2), (1, 3), (2, 3)])
+    G.add_edges_from([(4, 5), (4, 6), (5, 6), (5, 7), (6, 7)])
+    G.add_edges_from([(8, 9), (8, 10), (9, 10), (9, 11), (10, 11)])
+    G.add_edges_from([(12, 13), (12, 14), (13, 14)])
+
+    # Call louvain method to detect communities
     solver = louvain.Louvain(G)
     sanity_check_input(solver.A)
 
     # verify initial modularity
     initial_modularity = solver.modularity()
-    check.equal(initial_modularity, -0.0016399151244515982)
+    check.equal(initial_modularity, -0.06944444444444445)
 
-    # move nodes
     solver.move_nodes()
-    # determine delta modularity for moving node 0 to community 1
+    communities = solver.communities_as_set()
+
+    # Assert that the number of detected communities is 4
+    check.equal(len(communities), 4)
+
+    # verify changed graph modularity
     check.not_equal(solver.modularity(), initial_modularity)
-    check.equal(solver.modularity(), 0.40396751618527543)
+    check.equal(solver.modularity(), 0.7407407407407407)
+
+    # Assert that all nodes belong to exactly one community
+    nodes_in_communities = sum([len(c) for c in communities])
+    check.equal(nodes_in_communities, len(G.nodes()))
+
+
+def test_one_pass_louvain():
+    """
+    Thoroughly check the first stages of louvain (node moving and aggregation), before running
+    the entire algorithm and investigating the graph state before termination.
+    """
+    # Create a graph with 15 nodes
+    G = nx.Graph()
+    G.add_nodes_from(range(16))
+
+    # Add edges to create the desired community structure
+    G.add_edges_from([(0, 2), (0, 4), (0, 5), (1, 2), (1, 4), (2, 4), (2, 5)])
+    G.add_edges_from([(3, 7), (6, 7)])
+    G.add_edges_from([(8, 9), (8, 10), (8, 14), (8, 15), (9, 12), (9, 14), (10, 12)])
+    G.add_edges_from([(11, 13)])
+    G.add_edges_from(
+        [
+            (0, 3),
+            (1, 7),
+            (2, 6),
+            (4, 10),
+            (5, 7),
+            (5, 11),
+            (6, 11),
+            (8, 11),
+            (10, 11),
+            (10, 13),
+        ]
+    )
+
+    # Call louvain method to detect communities
+    solver = louvain.Louvain(G)
+    sanity_check_input(solver.A)
+
+    # verify initial modularity
+    initial_modularity = solver.modularity()
+    check.equal(initial_modularity, -0.07133058984910837)
+
+    solver.move_nodes()
+    communities = solver.communities_as_set()
+
+    # Assert that the number of detected communities is 4
+    check.equal(len(communities), 4)
+
+    # aggregate the graph
+    solver.aggregate_graph()
+    # four nodes should result from the four communities
+    check.equal(len(solver.G), 4)
+    # the edge weights should equal the number edges between communities
+    check.equal(solver.G.get_edge_data(0, 1)["weight"], 2)
+    check.equal(solver.G.get_edge_data(0, 3)["weight"], 4)
+    check.equal(solver.G.get_edge_data(1, 2)["weight"], 3)
+    check.equal(solver.G.get_edge_data(1, 3)["weight"], 1)
+    # no further edges exist
+    check.equal(len(solver.G.edges), 4)
+
+    # finally, do an entire louvain pass start to finish
+    solver = louvain.Louvain(G, keep_history=True)
+    solver.louvain()
+    G_check = nx.from_numpy_array(solver.history[-1][0])
+    check.equal(G_check.get_edge_data(0, 1)["weight"], 3)
+
+
+def debug_draw_communities(G, communities=None):
+    """Draw and display G given the communities mapping for debug purposes.
+
+    Args:
+        G (nx.Graph): The input graph
+        communities ([set], Optional): The list of community sets. Defaults to None.
+    """
+
+    # Draw the graph
+    pos = nx.spring_layout(G)
+    plt.figure(figsize=(8, 6))
+
+    # nodes and community coloring
+    if not communities:
+        nx.draw_networkx_nodes(G, pos, node_size=300, alpha=0.8)
+    else:
+        colors = [
+            c for i, c in enumerate(mpl.colors.CSS4_COLORS) if i < len(communities)
+        ]  # Generate unique colors
+        for i, comm in enumerate(communities):
+            nx.draw_networkx_nodes(
+                G,
+                pos,
+                nodelist=comm,
+                node_color=colors[i],
+                node_size=300,
+                alpha=0.8,
+            )
+
+    # weights and edge labels
+    edge_labels = nx.get_edge_attributes(G, "weight")
+    if edge_labels:
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+    nx.draw_networkx_edges(G, pos, width=1.0, alpha=0.5)
+    nx.draw_networkx_labels(G, pos, font_size=10)
+    plt.axis("off")
+    plt.show()

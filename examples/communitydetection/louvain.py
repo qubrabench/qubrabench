@@ -10,12 +10,15 @@ class Louvain:
     It is initialized using an undirected networkx graph instance without selfloops.
     """
 
-    def __init__(self, G) -> None:
+    def __init__(self, G, *, keep_history=False) -> None:
         """Initialize Louvain algorithm based on a graph instance
 
         Args:
             G (nx.Graph): The initial graph where communities should be detected.
+            keep_history (bool): Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
         """
+        self.keep_history = keep_history
+        self.history = []
         self.update_graph(G)
         self.C = self.single_partition()
 
@@ -24,6 +27,12 @@ class Louvain:
         self.A = nx.adjacency_matrix(new_graph)
         self.W = self.A.sum() / 2
 
+    def record_history(self):
+        """Take a record snapshot of the current adjacency matrix and community mapping."""
+        if not self.keep_history:
+            return
+        self.history.append((self.A.copy(), self.C.copy()))
+
     def louvain(self):
         """
         Start the Louvain heuristic algorithm for community detection.
@@ -31,9 +40,9 @@ class Louvain:
         done = False
         while not done and self.G.order() > 1:
             self.move_nodes()  # updates the community labeling function
+            self.record_history()
             done = self.G.order() == len(set(self.C.values()))
             if not done:
-                print("Aggregating Graph")
                 self.aggregate_graph()
                 self.C = self.single_partition()
         return self.C
@@ -47,14 +56,13 @@ class Louvain:
                 # calculate maximum increase of modularity
                 max_modularity_increase, v_community = max(
                     [
-                        (self.delta_modularity(u, self.C[v]), self.C[v])
+                        (self.delta_modularity(u, self.C[v], exact=True), self.C[v])
                         for v in self.G[u]
                     ],
                     key=lambda entry: entry[0],
                 )
                 if max_modularity_increase > 0:
                     # reassign u to community of v
-                    # print(f"Reassigned u{u} from C{self.C[u]} to C{v_community} with delta:{max_modularity_increase}")
                     self.C[u] = v_community
                     done = False
                 # terminate when there is no modularity increase
@@ -76,13 +84,11 @@ class Louvain:
                 x = self.C[v]
 
                 if not G_new.has_edge(w, x):
-                    # create edge
-                    G_new.add_edge(w, x, weight=weight)
+                    # create edge with weight key, the exact weight will be set in the update below
+                    G_new.add_edge(w, x, weight=0)
                 # update weight
                 G_new.get_edge_data(w, x)["weight"] += weight
 
-        print(list(nx.isolates(G_new)))
-        print(self.C)
         self.update_graph(G_new)
 
     def single_partition(self):
@@ -92,12 +98,13 @@ class Louvain:
             community_set[node] = node
         return community_set
 
-    def delta_modularity(self, u: int, alpha: int) -> float:
+    def delta_modularity(self, u: int, alpha: int, *, exact: bool = False) -> float:
         """Calculate the change in modularity that would occur if u was moved into community alpha
 
         Args:
             u: Integer label of the nx.Node to be moved
             alpha: Integer label of the target community
+            exact (bool, optional): If true, calculate two modularities and calculate delta, otherwise use approximative formula. Defaults to False.
 
         Returns:
             The resulting change in modularity
@@ -105,6 +112,14 @@ class Louvain:
         # moving a node to its current community should not change modularity
         if self.C[u] == alpha:
             return 0
+
+        if exact:
+            current_modularity = self.modularity()
+            mapping_after_move = self.C.copy()
+            mapping_after_move[u] = alpha
+            modularity_after_move = self.modularity(mapping_after_move)
+            return modularity_after_move - current_modularity
+
         return ((self.S(u, alpha) - self.S(u, self.C[u])) / self.W) - (
             self.strength(u)
             * (self.Sigma(alpha) - self.Sigma(self.C[u]) + self.strength(u))
@@ -155,6 +170,23 @@ class Louvain:
         Returns:
             The modularity value [-1/2, 1)
         """
+
+        # Calculate the modularity
+        modularity = quality.modularity(
+            self.G, self.communities_as_set(node_community_map)
+        )
+
+        return modularity
+
+    def communities_as_set(self, node_community_map: dict = None):
+        """Transform the node_community_map into a list of sets, containing the node levels.
+
+        Args:
+            node_community_map: A node to community mapping. Defaults to self.C
+
+        Returns:
+            The list of sets of nodes, where each inner set is a community
+        """
         if node_community_map is None:
             node_community_map = self.C
 
@@ -163,7 +195,7 @@ class Louvain:
         for node, community in node_community_map.items():
             communities[community].add(node)
 
-        # Calculate the modularity
-        modularity = quality.modularity(self.G, communities)
+        # discard empty sets
+        communities = [s for s in communities if s]
 
-        return modularity
+        return communities
