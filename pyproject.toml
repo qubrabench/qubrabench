@@ -44,6 +44,8 @@ dev = [
     "pandas-stubs~=2.0",
     "networkx-stubs~=0.0",
     "ruff~=0.0",
+    "sphinx~=7.0.1",
+    "sphinxcontrib-napoleon~=0.7",
 ]
 
 [tool.setuptools.dynamic]
