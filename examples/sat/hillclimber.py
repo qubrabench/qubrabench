@@ -69,7 +69,7 @@ def hill_climber(
 
         if steep:
             result = max(
-                zip(neighbors, weights), key=lambda it: it[1], eps=eps, stats=stats
+                zip(neighbors, weights), key=lambda it: it[1], error=eps, stats=stats
             )
             nx, nw = result
             if nw > w:
@@ -78,7 +78,7 @@ def hill_climber(
                 return x
         else:
             result = search(
-                zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng
+                zip(neighbors, weights), pred, error=eps, stats=stats, rng=rng
             )
             if result is None:
                 return x

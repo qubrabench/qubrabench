@@ -41,7 +41,7 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    randomness = search(domain, pred, eps=eps, stats=stats, rng=rng)
+    randomness = search(domain, pred, error=eps, stats=stats, rng=rng)
 
     # return satisfying assignment (if any was found)
     if randomness is not None:
