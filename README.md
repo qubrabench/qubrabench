@@ -67,5 +67,6 @@ Please make sure to update tests as appropriate.
 
 Detailed documentation on how to contribute to this project and best practices can be found in the [DEVELOP.md](docs/DEVELOP.md) file.
 
-- - -
-This work has been supported by the German Ministry for Education and Research in project QuBRA (reference number: 13N16303).
+---
+
+This work has been supported by the German Ministry for Education and Research through project QuBRA (grant no. 13N16303).
