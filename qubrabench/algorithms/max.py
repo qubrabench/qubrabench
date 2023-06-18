@@ -1,5 +1,6 @@
-""" This module provides a generic maximum finding interface that executes classically 
-    and calculates the expected quantum query costs to a predicate function
+"""
+This module provides a generic maximum finding interface that executes classically
+and calculates the expected quantum query costs to a predicate function.
 """
 
 from typing import Iterable, TypeVar, Optional, Callable, Any
@@ -21,7 +22,8 @@ def max(
     key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
 ) -> E:
-    """Find the largest element in a list, while keeping track of query statistics.
+    """
+    Find the largest element in a list, while keeping track of query statistics.
 
     Args:
         iterable: iterable to find the maximum in
@@ -39,38 +41,40 @@ def max(
     """
     if key is None:
 
-        def key(x: E) -> Any:
+        def default_key(x: E) -> Any:
             return x
+
+        key = default_key
 
     iterable = list(iterable)
 
-    max_val: Optional[E] = None
+    max_elem: Optional[E] = None
     for elem in iterable:
         if stats:
             stats.classical_actual_queries += 1
-        if max_val is None or key(elem) > key(max_val):
-            max_val = elem
+        if max_elem is None or key(elem) > key(max_elem):
+            max_elem = elem
 
-    if max_val is None:
+    if max_elem is None:
         if default is None:
             raise ValueError(
                 "max() arg is an empty sequence, and no default value provided"
             )
-        max_val = default
+        max_elem = default
 
-    max_val_occurrences = 0
+    max_elem_occurrences = 0
     for elem in iterable:
-        if key(elem) == max_val:
-            max_val_occurrences += 1
+        if key(elem) == max_elem:
+            max_elem_occurrences += 1
 
     if stats:
         if eps is None:
             raise ValueError("max() eps not provided, cannot compute stats")
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), max_val_occurrences, 1, eps
+            len(iterable), max_elem_occurrences, 1, eps
         )
 
-    return max_val
+    return max_elem
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float) -> float:
