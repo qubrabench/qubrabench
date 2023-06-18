@@ -1,17 +1,10 @@
 BENCH_HILLCLIMBER = examples/sat/bench_hillclimber.py
 
-eval: format lint
-	pytest
-
-format:
-	black .
-
-mypy:
-	mypy .
-	# mypy . --strict
-
-lint:
+# everything run by the continuous integration script on GitHub
+ci:
+	black --quiet --check .
 	ruff .
+	pytest
 
 bench-hillclimber-quick:
 	$(eval FNAME = data/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
@@ -44,4 +37,3 @@ bench-steep-hillclimber-complete:
 	$(BENCH_HILLCLIMBER) hill-climb -k 3 -r 3 -n 3000 --runs 5 --save $(FNAME) --steep
 	$(BENCH_HILLCLIMBER) hill-climb -k 3 -r 3 -n 10000 --runs 5 --save $(FNAME) --steep
 	$(BENCH_HILLCLIMBER) plot $(FNAME) "../../data/plot_reference/" "hill_climb_cade_steep.json"
-
