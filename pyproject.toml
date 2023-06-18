@@ -60,3 +60,9 @@ line-length = 100000 # 88 enforced by black, ignore for comments.
 
 [tool.mypy]
 plugins = ["numpy.typing.mypy_plugin"]
+
+[tool.pyright]
+include = ["qubrabench", "tests", "tests", "examples"]
+reportMissingImports = true
+reportMissingTypeStubs = true
+pythonVersion = "3.10"

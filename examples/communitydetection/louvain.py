@@ -2,6 +2,7 @@
 
 from networkx.algorithms.community import quality
 import networkx as nx
+from typing import Optional
 
 
 class Louvain:
@@ -161,7 +162,7 @@ class Louvain:
         """Calculate the strength of a given node index."""
         return self.G.degree(u, weight="weight")
 
-    def modularity(self, node_community_map: dict = None) -> float:
+    def modularity(self, node_community_map: Optional[dict] = None) -> float:
         """Calculate the modularity of self.G and a node to community mapping
 
         Args:
@@ -178,7 +179,7 @@ class Louvain:
 
         return modularity
 
-    def communities_as_set(self, node_community_map: dict = None):
+    def communities_as_set(self, node_community_map: Optional[dict] = None):
         """Transform the node_community_map into a list of sets, containing the node levels.
 
         Args:

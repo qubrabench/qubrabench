@@ -109,8 +109,10 @@ class WeightedSatInstance(SatInstance, Generic[W]):
         """
         if random_weights is None:
 
-            def random_weights(size: int) -> Any:
+            def default_random_weights(size: int) -> Any:
                 return rng.uniform(low=0, high=1, size=size)
+
+            random_weights = default_random_weights
 
         # Generate 'normal' SatInstance
         sat = SatInstance.random(k=k, n=n, m=m, rng=rng)

@@ -111,6 +111,8 @@ def run(
     Returns:
         Dataframe holding benchmarking statistics of the runs performed.
     """
+    assert n_runs >= 1
+
     history = []
     for run_ix in range(n_runs):
         logging.debug(f"k={k}, r={r}, n={n}, steep={steep}, #{run_ix}")
@@ -131,6 +133,6 @@ def run(
         history.append(rec)
 
     # return pandas dataframe
-    df = pd.DataFrame([list(row.values()) for row in history], columns=list(rec))
+    df = pd.DataFrame([list(row.values()) for row in history], columns=list(history[0]))
     logging.info(df.groupby(["k", "r", "n"]).mean(numeric_only=True))
     return df
