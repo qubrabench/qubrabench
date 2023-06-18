@@ -17,7 +17,7 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     default: Optional[E] = None,
     key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
@@ -27,7 +27,7 @@ def max(
 
     Args:
         iterable: iterable to find the maximum in
-        eps: upper bound on the failure probability of the quantum algorithm. Defaults to None.
+        error: upper bound on the failure probability of the quantum algorithm. Defaults to None.
         default: default value to return if iterable is empty. Defaults to None.
         key: function that maps iterable elements to values that are comparable. By default, use the iterable elements. Defaults to None.
         stats: object that keeps track of statistics. Defaults to None.
@@ -68,10 +68,10 @@ def max(
             max_elem_occurrences += 1
 
     if stats:
-        if eps is None:
-            raise ValueError("max() eps not provided, cannot compute stats")
+        if error is None:
+            raise ValueError("max() error not provided, cannot compute stats")
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), max_elem_occurrences, 1, eps
+            len(iterable), max_elem_occurrences, 1, error
         )
 
     return max_elem
