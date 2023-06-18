@@ -11,16 +11,17 @@ pip install -e '.[dev]'
 
 ```
 .
-├── .github         # GitHub related files like workflows
-├── data            # Reference data and default log output directory
-├── docs            # Documentation of this project
-├── examples        # Problem solving algorithms that are benchmarked
-├── qubrabench      # Quantum subroutines and benchmarking logic
-├── tests           # Tests for qubrabench
-├── conftest.py     # Global test fixtures
+├── .github         # github configuration
+├── data            # reference data and default log output directory
+├── docs            # documentation
+├── examples        # examples that showcase qubrabench library
+├── qubrabench      # qubrabench package (quantum subroutines with benchmarking support)
+├── tests           # unit tests
+├── conftest.py     # pytest configuration
+└── DEVELOP.md
 ├── LICENSE
 ├── Makefile
-├── pyproject.toml  # Project settings and dependencies
+├── pyproject.toml
 └── README.md
 ```
 

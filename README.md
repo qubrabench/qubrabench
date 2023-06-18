@@ -65,7 +65,7 @@ to discuss what you would like to change.
 
 Please make sure to update tests as appropriate.
 
-Detailed documentation on how to contribute to this project and best practices can be found in the [DEVELOP.md](docs/DEVELOP.md) file.
+Detailed documentation on how to contribute to this project and best practices can be found in the [DEVELOP.md](DEVELOP.md) file.
 
 ---
 
