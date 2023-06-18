@@ -18,7 +18,7 @@ pip install -e '.[dev]'
 ├── qubrabench      # qubrabench package (quantum subroutines with benchmarking support)
 ├── tests           # unit tests
 ├── conftest.py     # pytest configuration
-└── DEVELOP.md
+├── DEVELOP.md
 ├── LICENSE
 ├── Makefile
 ├── pyproject.toml
