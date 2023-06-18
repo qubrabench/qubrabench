@@ -44,7 +44,7 @@ dev = [
     "mypy~=1.2",
     "pandas-stubs~=2.0",
     "networkx-stubs~=0.0",
-    "ruff",
+    "ruff~=0.0",
 ]
 
 [tool.setuptools.dynamic]
