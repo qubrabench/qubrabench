@@ -1,5 +1,4 @@
 """This module contains tests for the louvain community detection example."""
-from pytest_check import check
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -26,9 +25,9 @@ small_graph_example = np.array(
 
 def sanity_check_input(A):
     """
-    checks that a given adjacencry matrix has 0 for all diagonal elements, as required by Cade et al. (Community Detection)
+    checks that a given adjacency matrix has 0 for all diagonal elements, as required by Cade et al. (Community Detection)
     """
-    check.equal(sum(A.diagonal()), 0)
+    assert sum(A.diagonal()) == 0
 
 
 def test_node_to_community_strength():
@@ -53,14 +52,14 @@ def test_node_to_community_strength():
     com_node_str = 0
     for value in small_graph_example[0][:split_index]:
         com_node_str += value
-    check.equal(solver.S(target_node, community_alpha), com_node_str)
+    assert solver.S(target_node, community_alpha) == com_node_str
 
     # compute strength of all nodes in community alpha
     com_str = 0
     for row in small_graph_example[:split_index]:
         for value in row[split_index:]:
             com_str += value
-    check.equal(solver.Sigma(community_alpha), com_str)
+    assert solver.Sigma(community_alpha) == com_str
 
     # compute W
     W = 0
@@ -68,16 +67,14 @@ def test_node_to_community_strength():
         for value in row:
             W += value
     W /= 2
-    check.equal(solver.W, W)
+    assert solver.W == W
 
     # validate strength
-    check.equal(solver.strength(target_node), sum(small_graph_example[target_node]))
+    assert solver.strength(target_node) == sum(small_graph_example[target_node])
 
     # determine delta modularity for moving node 0 to beta
-    check.equal(solver.delta_modularity(target_node, community_alpha), 0)
-    check.equal(
-        solver.delta_modularity(target_node, community_beta), -0.00757396449704142
-    )
+    assert solver.delta_modularity(target_node, community_alpha) == 0
+    assert solver.delta_modularity(target_node, community_beta) == -0.00757396449704142
 
 
 def test_modularity():
@@ -92,7 +89,7 @@ def test_modularity():
     solver = louvain.Louvain(G)
     solver.C = node_community_map
 
-    check.equal(solver.modularity(), 0.35714285714285715)
+    assert solver.modularity() == 0.35714285714285715
 
 
 def test_move_nodes():
@@ -112,21 +109,21 @@ def test_move_nodes():
 
     # verify initial modularity
     initial_modularity = solver.modularity()
-    check.equal(initial_modularity, -0.06944444444444445)
+    assert initial_modularity == -0.06944444444444445
 
     solver.move_nodes()
     communities = solver.communities_as_set()
 
     # Assert that the number of detected communities is 4
-    check.equal(len(communities), 4)
+    assert len(communities) == 4
 
     # verify changed graph modularity
-    check.not_equal(solver.modularity(), initial_modularity)
-    check.equal(solver.modularity(), 0.7407407407407407)
+    assert solver.modularity() != initial_modularity
+    assert solver.modularity() == 0.7407407407407407
 
     # Assert that all nodes belong to exactly one community
     nodes_in_communities = sum([len(c) for c in communities])
-    check.equal(nodes_in_communities, len(G.nodes()))
+    assert nodes_in_communities == len(G.nodes())
 
 
 def test_one_pass_louvain():
@@ -164,31 +161,31 @@ def test_one_pass_louvain():
 
     # verify initial modularity
     initial_modularity = solver.modularity()
-    check.equal(initial_modularity, -0.07133058984910837)
+    assert initial_modularity == -0.07133058984910837
 
     solver.move_nodes()
     communities = solver.communities_as_set()
 
     # Assert that the number of detected communities is 4
-    check.equal(len(communities), 4)
+    assert len(communities) == 4
 
     # aggregate the graph
     solver.aggregate_graph()
     # four nodes should result from the four communities
-    check.equal(len(solver.G), 4)
+    assert len(solver.G) == 4
     # the edge weights should equal the number edges between communities
-    check.equal(solver.G.get_edge_data(0, 1)["weight"], 2)
-    check.equal(solver.G.get_edge_data(0, 3)["weight"], 4)
-    check.equal(solver.G.get_edge_data(1, 2)["weight"], 3)
-    check.equal(solver.G.get_edge_data(1, 3)["weight"], 1)
+    assert solver.G.get_edge_data(0, 1)["weight"] == 2
+    assert solver.G.get_edge_data(0, 3)["weight"] == 4
+    assert solver.G.get_edge_data(1, 2)["weight"] == 3
+    assert solver.G.get_edge_data(1, 3)["weight"] == 1
     # no further edges exist
-    check.equal(len(solver.G.edges), 4)
+    assert len(solver.G.edges) == 4
 
     # finally, do an entire louvain pass start to finish
     solver = louvain.Louvain(G, keep_history=True)
     solver.louvain()
     G_check = nx.from_numpy_array(solver.history[-1][0])
-    check.equal(G_check.get_edge_data(0, 1)["weight"], 3)
+    assert G_check.get_edge_data(0, 1)["weight"] == 3
 
 
 def debug_draw_communities(G, communities=None):

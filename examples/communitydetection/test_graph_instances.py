@@ -1,6 +1,5 @@
 """This module tests the graph instance generation for different community graph types."""
 
-from pytest_check import check
 from graph_instances import random_fcs_graph
 
 
@@ -12,10 +11,9 @@ def test_fcs_generation(rng):
     """
     G = random_fcs_graph(200, community_size=50, mu=0.3, average_degree=5, rng=rng)
 
-    check.equal(len(G.nodes), 200)
+    assert len(G.nodes) == 200
 
     # check that the edges are as expected
-
     for e in G.edges:
         if e not in expected_edges:
             assert False, f"Edge {e} was not found in graph instance"

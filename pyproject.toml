@@ -40,7 +40,6 @@ dynamic = ["version"]
 dev = [
     "black",
     "pytest~=7.3",
-    "pytest-check~=2.1",
     "mypy~=1.2",
     "pandas-stubs~=2.0",
     "networkx-stubs~=0.0",

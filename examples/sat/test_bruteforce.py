@@ -1,8 +1,7 @@
 """This module collects test functions surrounding the SAT bruteforce example."""
 
+import pytest
 import numpy as np
-from pytest_check import check
-
 from qubrabench.stats import QueryStats
 from sat import SatInstance
 from bruteforce import bruteforce_solve
@@ -27,8 +26,10 @@ def test_solve(rng) -> None:
     assert inst.evaluate(x)
 
     # check stats
-    check.equal(stats.classical_control_method_calls, 0)
-    check.equal(stats.classical_actual_queries, 2)
-    check.almost_equal(stats.classical_expected_queries, 3)
-    check.almost_equal(stats.quantum_expected_classical_queries, 4)
-    check.almost_equal(stats.quantum_expected_quantum_queries, 0)
+    assert stats == QueryStats(
+        classical_control_method_calls=0,
+        classical_actual_queries=2,
+        classical_expected_queries=3,
+        quantum_expected_classical_queries=pytest.approx(4),
+        quantum_expected_quantum_queries=pytest.approx(0),
+    )

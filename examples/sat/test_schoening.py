@@ -1,8 +1,7 @@
 """This module collects test functions for the examples.sat.schoening module."""
 
+import pytest
 import numpy as np
-from pytest_check import check
-
 from qubrabench.stats import QueryStats
 from sat import SatInstance
 from schoening import schoening_solve
@@ -27,9 +26,10 @@ def test_solve(rng) -> None:
     assert inst.evaluate(x)
 
     # check stats
-    check.equal(stats.classical_control_method_calls, 0)
-    check.equal(stats.classical_actual_queries, 1)
-    check.almost_equal(stats.classical_expected_queries, 1.0009153259895374)
-    check.almost_equal(stats.quantum_expected_classical_queries, 1.0009153318077804)
-
-    check.almost_equal(stats.quantum_expected_quantum_queries, 0)
+    assert stats == QueryStats(
+        classical_control_method_calls=0,
+        classical_actual_queries=1,
+        classical_expected_queries=pytest.approx(1.0009153259895374),
+        quantum_expected_classical_queries=pytest.approx(1.0009153318077804),
+        quantum_expected_quantum_queries=pytest.approx(0),
+    )
