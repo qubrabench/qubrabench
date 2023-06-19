@@ -69,4 +69,4 @@ Detailed documentation on how to contribute to this project and best practices c
 
 ---
 
-This work has been supported by the German Ministry for Education and Research through project QuBRA (grant no. 13N16303).
+This work has been supported by the German Ministry for Education and Research (BMBF) through project "Quantum Methods and Benchmarks for Resource Allocation" (QuBRA).
