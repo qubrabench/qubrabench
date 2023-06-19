@@ -19,39 +19,39 @@ def search(
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
-    query_bound: int = 130,
+    max_classical_queries: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
 
     Args:
         iterable: iterable to be searched over
-        key: function to test if an element is marked
+        key: function to test if an element satisfies the predicate
         rng: np.random.Generator instance as source of randomness
-        error: upper bound on the failure probability of the quantum algorithm. Defaults to None.
-        query_bound: maximum number of classical queries before entering the quantum part of the algorithm. Defaults to 130.
-        stats: keeps track of statistics. Defaults to None.
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        stats: keeps track of statistics.
 
     Raises:
         ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
 
     Returns:
-        the element where the predicate matches
+        An element that satisfies the predicate, or None if no such argument can be found.
     """
     iterable = list(iterable)
 
     # collect stats
     if stats:
         if error is None:
-            raise ValueError("error not provided, cannot compute stats")
+            raise ValueError("search() parameter 'error' not provided, cannot compute quantum query statistics")
         N = len(iterable)
         T = sum(1 for x in iterable if key(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += (
-            cade_et_al_expected_classical_queries(N, T, query_bound)
+            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
         )
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            N, T, error, query_bound
+            N, T, error, max_classical_queries
         )
 
     # run the classical sampling-without-replacement algorithms

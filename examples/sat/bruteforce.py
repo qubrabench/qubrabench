@@ -12,7 +12,7 @@ def bruteforce_solve(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
     """Find a satisfying solution to a SAT instance by randomly searching for solutions.
@@ -20,7 +20,7 @@ def bruteforce_solve(
     Args:
         inst: The instance to be solved
         rng: Source of randomness
-        eps: Upper bound on the quantum failure rate. Defaults to None.
+        error: Upper bound on the quantum failure rate. Defaults to None.
         stats: Statistics instance to keep track of query costs. Defaults to None.
 
     Returns:
@@ -30,4 +30,4 @@ def bruteforce_solve(
     domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=inst.n)]
 
     # brute-force search
-    return search(domain, inst.evaluate, error=eps, stats=stats, rng=rng)
+    return search(domain, inst.evaluate, error=error, stats=stats, rng=rng)
