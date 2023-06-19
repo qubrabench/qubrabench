@@ -25,9 +25,12 @@ def test_max_raises_on_empty_and_no_default():
 
 
 def test_max_raises_on_stats_requested_and_eps_missing():
-    """Tests that a Value error is raised by max if epsilon (failure rate) is not provided"""
+    """Tests that a Value error is raised by max if 'error' (failure rate) is not provided"""
     with pytest.raises(
-        ValueError, match=re.escape("max() error not provided, cannot compute stats")
+        ValueError,
+        match=re.escape(
+            "max() parameter 'error' not provided, cannot compute quantum query statistics"
+        ),
     ):
         stats = QueryStats()
         max(range(100), stats=stats)

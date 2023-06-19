@@ -1,6 +1,7 @@
 """This module collects test functions for the qubrabench.search method."""
 
 import pytest
+import re
 
 from qubrabench.algorithms.search import search
 from qubrabench.stats import QueryStats
@@ -29,11 +30,16 @@ def test_search(rng):
 
 
 def test_search_raises_on_stats_requested_and_eps_missing(rng):
-    """Test that a ValueError is thrown when epsilon (failure rate) is not provided to the search function.
+    """Test that a ValueError is thrown when 'error' (failure rate) is not provided to the search function.
 
     Args:
         rng (np.rng): Source of randomness provided by test fixtures
     """
-    with pytest.raises(ValueError, match="error not provided"):
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "search() parameter 'error' not provided, cannot compute quantum query statistics"
+        ),
+    ):
         stats = QueryStats()
         search(range(100), lambda it: it == 42, rng=rng, stats=stats)

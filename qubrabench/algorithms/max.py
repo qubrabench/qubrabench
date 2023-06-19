@@ -69,7 +69,9 @@ def max(
 
     if stats:
         if error is None:
-            raise ValueError("max() parameter 'error' not provided, cannot compute quantum query statistics")
+            raise ValueError(
+                "max() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
             len(iterable), max_elem_occurrences, 1, error
         )

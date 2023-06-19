@@ -19,7 +19,7 @@ def test_solve(rng) -> None:
         clauses=np.array([[1, 1, -1], [1, -1, 1], [-1, 1, 1], [1, -1, -1]], dtype=int),
     )
     stats = QueryStats()
-    x = schoening_solve(inst, rng=rng, eps=10**-5, stats=stats)
+    x = schoening_solve(inst, rng=rng, error=10**-5, stats=stats)
     assert x is not None
 
     # check that found a solution

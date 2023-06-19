@@ -43,7 +43,9 @@ def search(
     # collect stats
     if stats:
         if error is None:
-            raise ValueError("search() parameter 'error' not provided, cannot compute quantum query statistics")
+            raise ValueError(
+                "search() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
         N = len(iterable)
         T = sum(1 for x in iterable if key(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
