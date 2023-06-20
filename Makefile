@@ -10,7 +10,7 @@ BUILDDIR      = docs/build
 ci:
 	black --quiet --check .
 	ruff .
-	pytest
+	pytest --doctest-modules
 	$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 bench-hillclimber-quick:

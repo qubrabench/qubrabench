@@ -72,7 +72,7 @@ jobs:
 
       - name: Run pytest
         id: pytest
-        run: pytest
+        run: pytest --doctest-modules
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2

@@ -48,10 +48,11 @@ You can use the predefined [tests](tests), or write your own tests.
 To execute all tests in the project, by simply executing the following command in the project root:
 
 ```shell
-pytest
+pytest --doctest-modules
 ```
 
 Pytest will search for all files starting with `test`, and will test all methods containing the word `test`.
+The option `--doctest-modules` [runs tests inside docstrings](https://docs.pytest.org/en/7.1.x/how-to/doctest.html).
 
 One useful feature of pytest is to use markers. You can mark a method with a test marker, as seen in this example:
 
