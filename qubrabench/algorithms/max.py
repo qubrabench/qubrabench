@@ -27,8 +27,8 @@ def max(
 
     Args:
         iterable: iterable to find the maximum in
-        error: upper bound on the failure probability of the quantum algorithm. Defaults to None.
-        default: default value to return if iterable is empty. Defaults to None.
+        error: upper bound on the failure probability of the quantum algorithm.
+        default: default value to return if iterable is empty.
         key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
         stats: object that keeps track of statistics.
 
