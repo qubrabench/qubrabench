@@ -4,7 +4,7 @@
 
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
-from ..stats import QueryStats
+from qubrabench.stats import QueryStats
 
 
 __all__ = ["search"]
@@ -23,6 +23,8 @@ def search(
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
+    2
 
     Args:
         iterable: iterable to be searched over
@@ -115,3 +117,9 @@ def cade_et_al_F(N: int, T: int) -> float:
             - 3
         )
     return F
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testmod()
