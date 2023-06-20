@@ -110,3 +110,15 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: docs/build/html/
           force_orphan: true
+
+      - name: Notify Slack
+        uses: ravsamhq/notify-slack-action@v2
+        if: always()
+        with:
+          status: ${{ job.status }}
+          notification_title: ""
+          message_format: "{emoji} <{run_url}|Workflow *{workflow}* {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
+          footer: ""
+          notify_when: "failure"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_NOTIFICATIONS_WEBHOOK_URL }}
