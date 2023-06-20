@@ -11,3 +11,6 @@ __pycache__
 # ignore data artifacts (except for reference plots)
 /data
 !/data/plot_reference
+
+# exclude build dir for sphinx doc
+/docs/build
