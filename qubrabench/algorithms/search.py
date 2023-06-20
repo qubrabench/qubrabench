@@ -117,9 +117,3 @@ def cade_et_al_F(N: int, T: int) -> float:
             - 3
         )
     return F
-
-
-if __name__ == "__main__":
-    import doctest
-
-    doctest.testmod()
