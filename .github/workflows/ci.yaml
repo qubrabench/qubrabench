@@ -23,7 +23,7 @@ jobs:
         with:
           status: ${{ job.status }}
           notification_title: ""
-          message_format: "{emoji} <{run_url}|Workflow *{workflow}* {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
+          message_format: "{emoji} <{run_url}|Workflow *{workflow}* (job: *black*) {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
           footer: ""
           notify_when: "failure"
         env:
@@ -44,7 +44,7 @@ jobs:
         with:
           status: ${{ job.status }}
           notification_title: ""
-          message_format: "{emoji} <{run_url}|Workflow *{workflow}* {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
+          message_format: "{emoji} <{run_url}|Workflow *{workflow}* (job: *ruff*) {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
           footer: ""
           notify_when: "failure"
         env:
@@ -80,7 +80,7 @@ jobs:
         with:
           status: ${{ job.status }}
           notification_title: ""
-          message_format: "{emoji} <{run_url}|Workflow *{workflow}* {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
+          message_format: "{emoji} <{run_url}|Workflow *{workflow}* (job: *pytest*) {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
           footer: ""
           notify_when: "failure"
         env:
@@ -117,7 +117,7 @@ jobs:
         with:
           status: ${{ job.status }}
           notification_title: ""
-          message_format: "{emoji} <{run_url}|Workflow *{workflow}* {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
+          message_format: "{emoji} <{run_url}|Workflow *{workflow}* (job: *sphinx*) {status_message}> in <{branch_url}|{repo}> on <{commit_url}|`{commit_sha}`>"
           footer: ""
           notify_when: "failure"
         env:
