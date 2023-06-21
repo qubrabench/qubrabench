@@ -1,4 +1,4 @@
-"""This module provides the louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
+"""This module provides a classical louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
 
 from networkx.algorithms.community import quality
 import networkx as nx
@@ -11,12 +11,12 @@ class Louvain:
     It is initialized using an undirected networkx graph instance without selfloops.
     """
 
-    def __init__(self, G, *, keep_history=False) -> None:
+    def __init__(self, G, *, keep_history: bool = False) -> None:
         """Initialize Louvain algorithm based on a graph instance
 
         Args:
             G (nx.Graph): The initial graph where communities should be detected.
-            keep_history (bool): Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
+            keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
         """
         self.keep_history = keep_history
         self.history = []
@@ -49,7 +49,12 @@ class Louvain:
         return self.C
 
     def move_nodes(self):
-        """Reassign nodes to new communities based on change in modularities."""
+        """
+        Reassign nodes to new communities based on change in modularities.
+        This strategy iterates over all nodes in the graph and reassigns a node to its
+        best fitting neighboring community if the modularity increases.
+        If a move was made, another pass over all graph nodes will be made.
+        """
         done = False
         while not done:
             done = True
