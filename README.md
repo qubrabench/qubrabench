@@ -1,4 +1,4 @@
-# QuBRA Benchmarking Framework
+# QuBRA Benchmarking Framework [![CI](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml)
 
 _qubrabench_ is a Python library for estimating quantum computing performance compared to classical algorithms.
 
