@@ -4,7 +4,7 @@
 
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
-from qubrabench.stats import QueryStats
+from ..stats import QueryStats
 
 
 __all__ = ["search"]
