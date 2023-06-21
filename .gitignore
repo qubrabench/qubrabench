@@ -12,5 +12,6 @@ __pycache__
 /data
 !/data/plot_reference
 
-# exclude build dir for sphinx doc
+# exclude build dir for sphinx-build, and generated sources for sphinx-apidoc
 /docs/build
+/docs/source

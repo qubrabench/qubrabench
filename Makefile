@@ -1,17 +1,11 @@
 BENCH_HILLCLIMBER = examples/sat/bench_hillclimber.py
 
-# sphinx-related variables
-SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
-SOURCEDIR     = docs/source
-BUILDDIR      = docs/build
-
 # everything run by the continuous integration script on GitHub
 ci:
 	black --quiet --check .
 	ruff .
 	pytest --doctest-modules
-	$(SPHINXBUILD) -b html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	cd docs && make html
 
 bench-hillclimber-quick:
 	$(eval FNAME = data/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
