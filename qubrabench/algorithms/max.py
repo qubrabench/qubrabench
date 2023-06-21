@@ -17,7 +17,7 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     default: Optional[E] = None,
     key: Optional[Callable[[E], Any]] = None,
     stats: Optional[QueryStats] = None,
@@ -27,13 +27,13 @@ def max(
 
     Args:
         iterable: iterable to find the maximum in
-        eps: upper bound on the failure probability of the quantum algorithm. Defaults to None.
-        default: default value to return if iterable is empty. Defaults to None.
-        key: function that maps iterable elements to values that are comparable. By default, use the iterable elements. Defaults to None.
-        stats: object that keeps track of statistics. Defaults to None.
+        error: upper bound on the failure probability of the quantum algorithm.
+        default: default value to return if iterable is empty.
+        key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
+        stats: object that keeps track of statistics.
 
     Raises:
-        ValueError: Raised when the failure rate epsilon is not provided and statistics cannot be calculated.
+        ValueError: Raised when the failure rate `error` is not provided and statistics cannot be calculated.
         ValueError: Raised when iterable is an empty sequence and no default is provided.
 
     Returns:
@@ -68,23 +68,25 @@ def max(
             max_elem_occurrences += 1
 
     if stats:
-        if eps is None:
-            raise ValueError("max() eps not provided, cannot compute stats")
+        if error is None:
+            raise ValueError(
+                "max() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), max_elem_occurrences, 1, eps
+            len(iterable), max_elem_occurrences, 1, error
         )
 
     return max_elem
 
 
-def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float) -> float:
+def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, error: float) -> float:
     """Upper bound on the number of quantum queries made by Cade et al's quantum max algorithm.
 
     Args:
         N: number of elements of search space
         T: number of solutions (marked elements)
         cq: the quantum cost factor
-        eps: upper bound on the failure probability of the quantum algorithm.
+        error: upper bound on the failure probability of the quantum algorithm.
 
 
     Returns:
@@ -94,4 +96,4 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, eps: float) -> 
     sum_of_ts: float = 0
     for i in range(T, N):
         sum_of_ts += cade_et_al_F(N, i) / (i + 1)
-    return np.ceil(np.log(1 / eps) / np.log(3)) * 3 * (cq * sum_of_ts)  # type: ignore
+    return np.ceil(np.log(1 / error) / np.log(3)) * 3 * (cq * sum_of_ts)  # type: ignore

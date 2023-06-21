@@ -13,7 +13,7 @@ def schoening_solve(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
     """
@@ -23,7 +23,7 @@ def schoening_solve(
     Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
         rng: Random number generator.
-        eps: Allowed failure probability.
+        error: Allowed failure probability.
         stats: Object that keeps track of statistics about evaluation queries to the SAT instance.
 
     Returns:
@@ -41,7 +41,7 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    randomness = search(domain, pred, eps=eps, stats=stats, rng=rng)
+    randomness = search(domain, pred, error=error, stats=stats, rng=rng)
 
     # return satisfying assignment (if any was found)
     if randomness is not None:

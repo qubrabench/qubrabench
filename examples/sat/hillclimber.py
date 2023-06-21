@@ -17,7 +17,7 @@ def hill_climber(
     inst: WeightedSatInstance,
     *,
     rng: np.random.Generator,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     stats: Optional[QueryStats] = None,
     steep: bool = False,
 ) -> Optional[Assignment]:
@@ -28,7 +28,7 @@ def hill_climber(
     Args:
         inst: The SAT instance to be solved.
         rng: Source of randomness
-        eps: upper bound on the failure probability. Defaults to None.
+        error: upper bound on the failure probability. Defaults to None.
         stats: Statistics instance keeping track of costs. Defaults to None.
         steep: True when the neighborhood search is performed greedily, otherwise randomly. Defaults to False.
 
@@ -56,7 +56,7 @@ def hill_climber(
             stats.classical_control_method_calls += 1
 
         # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
-        # result = search(neighbors, lambda x: inst.weight(x) > w, eps=eps, stats=stats)
+        # result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
         # if result is None:
         #     return x
         # x, w = result, inst.weight(result)
@@ -69,7 +69,7 @@ def hill_climber(
 
         if steep:
             result = max(
-                zip(neighbors, weights), key=lambda it: it[1], eps=eps, stats=stats
+                zip(neighbors, weights), key=lambda it: it[1], error=error, stats=stats
             )
             nx, nw = result
             if nw > w:
@@ -78,7 +78,7 @@ def hill_climber(
                 return x
         else:
             result = search(
-                zip(neighbors, weights), pred, eps=eps, stats=stats, rng=rng
+                zip(neighbors, weights), pred, error=error, stats=stats, rng=rng
             )
             if result is None:
                 return x
@@ -92,7 +92,7 @@ def run(
     *,
     n_runs: int,
     rng: np.random.Generator,
-    eps: Optional[float] = None,
+    error: Optional[float] = None,
     random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
     steep: bool = False,
 ) -> pd.DataFrame:
@@ -104,7 +104,7 @@ def run(
         n: size (variable number) of the SAT instances
         n_runs: number of runs to perform in each group
         rng: Source of randomness
-        eps: Upper bound on the failure rate. Defaults to None.
+        error: Upper bound on the failure rate. Defaults to None.
         random_weights: Optionally providable weights for SAT instance generation. Defaults to None.
         steep: Whether to perform hillclimb steep (greedily). Defaults to False.
 
@@ -122,7 +122,7 @@ def run(
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
-        hill_climber(inst, eps=eps, stats=stats, rng=rng, steep=steep)
+        hill_climber(inst, error=error, stats=stats, rng=rng, steep=steep)
 
         # save record to history
         rec = asdict(stats)

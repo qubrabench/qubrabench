@@ -10,7 +10,7 @@ from qubrabench.stats import QueryStats
 def test_max_return_value():
     """Tests that the max function returns the maximum value."""
     N = 100
-    assert max(range(N), eps=10**-5) == N - 1
+    assert max(range(N), error=10**-5) == N - 1
 
 
 def test_max_raises_on_empty_and_no_default():
@@ -21,17 +21,20 @@ def test_max_raises_on_empty_and_no_default():
             "max() arg is an empty sequence, and no default value provided"
         ),
     ):
-        max([], eps=10**-5)
+        max([], error=10**-5)
 
 
 def test_max_raises_on_stats_requested_and_eps_missing():
-    """Tests that a Value error is raised by max if epsilon (failure rate) is not provided"""
+    """Tests that a Value error is raised by max if 'error' (failure rate) is not provided"""
     with pytest.raises(
-        ValueError, match=re.escape("max() eps not provided, cannot compute stats")
+        ValueError,
+        match=re.escape(
+            "max() parameter 'error' not provided, cannot compute quantum query statistics"
+        ),
     ):
         stats = QueryStats()
         max(range(100), stats=stats)
 
 
 def test_max_on_empty_with_default():
-    assert max([], eps=10**-5, default=42) == 42
+    assert max([], error=10**-5, default=42) == 42

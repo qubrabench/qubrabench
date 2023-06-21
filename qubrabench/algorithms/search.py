@@ -4,7 +4,7 @@
 
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
-from ..stats import QueryStats
+from qubrabench.stats import QueryStats
 
 
 __all__ = ["search"]
@@ -15,43 +15,47 @@ E = TypeVar("E")
 
 def search(
     iterable: Iterable[E],
-    predicate: Callable[[E], bool],
+    key: Callable[[E], bool],
     *,
     rng: np.random.Generator,
-    eps: Optional[float] = None,
-    K: int = 130,
+    error: Optional[float] = None,
+    max_classical_queries: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
+    2
 
     Args:
         iterable: iterable to be searched over
-        predicate: function to test if an element is marked
+        key: function to test if an element satisfies the predicate
         rng: np.random.Generator instance as source of randomness
-        eps: upper bound on the failure probability of the quantum algorithm. Defaults to None.
-        K: maximum number of classical queries before entering the quantum part of the algorithm. Defaults to 130.
-        stats: keeps track of statistics. Defaults to None.
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        stats: keeps track of statistics.
 
     Raises:
-        ValueError: Raised when the failure rate epsilon is not provided and statistics cannot be calculated.
+        ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
 
     Returns:
-        the element where the predicate matches
+        An element that satisfies the predicate, or None if no such argument can be found.
     """
     iterable = list(iterable)
 
     # collect stats
     if stats:
-        if eps is None:
-            raise ValueError("eps not provided, cannot compute stats")
+        if error is None:
+            raise ValueError(
+                "search() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
         N = len(iterable)
-        T = sum(1 for x in iterable if predicate(x))
+        T = sum(1 for x in iterable if key(x))
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += (
-            cade_et_al_expected_classical_queries(N, T, K)
+            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
         )
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            N, T, eps, K
+            N, T, error, max_classical_queries
         )
 
     # run the classical sampling-without-replacement algorithms
@@ -59,7 +63,7 @@ def search(
     for x in iterable:
         if stats:
             stats.classical_actual_queries += 1
-        if predicate(x):
+        if key(x):
             return x
 
     return None
