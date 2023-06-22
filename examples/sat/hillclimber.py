@@ -1,5 +1,4 @@
 """This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
-
 from dataclasses import asdict
 from typing import Optional, Tuple, Callable
 import logging
@@ -67,10 +66,11 @@ def hill_climber(
         def pred(it: Tuple[Assignment, np.float_]) -> bool:
             return bool(it[1] > w)
 
+        def key_fun(it):
+            return list(it)[1]
+
         if steep:
-            result = max(
-                zip(neighbors, weights), key=lambda it: it[1], error=error, stats=stats
-            )
+            result = max(zip(neighbors, weights), key=key_fun, error=error, stats=stats)
             nx, nw = result
             if nw > w:
                 x, w = result
@@ -134,5 +134,5 @@ def run(
 
     # return pandas dataframe
     df = pd.DataFrame([list(row.values()) for row in history], columns=list(history[0]))
-    logging.info(df.groupby(["k", "r", "n"]).mean(numeric_only=True))
+    logging.info(df.loc[:, df.columns != "impl"].groupby(["k", "r", "n"]).mean())
     return df

@@ -17,7 +17,12 @@ def test_maxsat_values_100(rng) -> None:
     history = hillclimber.run(
         3, 3, 100, n_runs=5, rng=rng, error=10**-5, random_weights=random_weights
     )
-    history = history.groupby(["k", "r", "n"]).mean(numeric_only=True).reset_index()
+    history = (
+        history.loc[:, history.columns != "impl"]
+        .groupby(["k", "r", "n"])
+        .mean()
+        .reset_index()
+    )
     stats = history.loc[0].to_dict()
 
     assert stats == {

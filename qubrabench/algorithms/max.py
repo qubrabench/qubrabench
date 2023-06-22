@@ -64,7 +64,7 @@ def max(
 
     max_elem_occurrences = 0
     for elem in iterable:
-        if key(elem) == max_elem:
+        if key(elem) == key(max_elem):
             max_elem_occurrences += 1
 
     if stats:
