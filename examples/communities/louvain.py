@@ -110,7 +110,7 @@ class Louvain:
         Args:
             u: Integer label of the nx.Node to be moved
             alpha: Integer label of the target community
-            exact (bool, optional): If true, calculate two modularities and calculate delta, otherwise use approximative formula. Defaults to False.
+            exact (bool, optional): If true, calculate two full graph modularities and subtract them to receive delta, otherwise use one-move delta-formula. Defaults to False.
 
         Returns:
             The resulting change in modularity
@@ -146,7 +146,7 @@ class Louvain:
         )
 
     def Sigma(self, alpha: int) -> float:
-        """Calculates sum of all weights on edges incident to vertices contained in a neighboring community
+        """Calculates sum of all weights on edges incident to vertices contained in a community
 
         Args:
             alpha: Integer label of the community whose Sigma is to be calculated
@@ -157,9 +157,8 @@ class Louvain:
         sigma = 0
         for v, community in self.C.items():
             if community == alpha:
-                for x, y, weight in self.G.edges(v, data="weight", default=1):
-                    if self.C[x] != self.C[y]:
-                        sigma += weight
+                for _, _, weight in self.G.edges(v, data="weight", default=1):
+                    sigma += weight
 
         return sigma
 

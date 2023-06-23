@@ -1,8 +1,9 @@
-"""This module contains tests for the louvain community detection example."""
+"""This module contains tests for the classical louvain community detection example."""
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib as mpl
+import pytest
 
 
 import louvain
@@ -57,7 +58,7 @@ def test_node_to_community_strength():
     # compute strength of all nodes in community alpha
     com_str = 0
     for row in small_graph_example[:split_index]:
-        for value in row[split_index:]:
+        for value in row:
             com_str += value
     assert solver.Sigma(community_alpha) == com_str
 
@@ -74,7 +75,7 @@ def test_node_to_community_strength():
 
     # determine delta modularity for moving node 0 to beta
     assert solver.delta_modularity(target_node, community_alpha) == 0
-    assert solver.delta_modularity(target_node, community_beta) == -0.00757396449704142
+    assert solver.delta_modularity(target_node, community_beta) == -0.035976331360946745
 
 
 def test_modularity():
@@ -88,6 +89,24 @@ def test_modularity():
     # setup our Louvain solver instance
     solver = louvain.Louvain(G)
     solver.C = node_community_map
+    initial_modularity = solver.modularity()
+
+    # move node
+    node = 2
+    target_community = 1
+    initial_community = solver.C[node]
+    delta_modularity_move = solver.delta_modularity(node, target_community, exact=False)
+    solver.C[node] = target_community
+    move_modularity = solver.modularity()
+    delta_modularity_back = solver.delta_modularity(
+        node, initial_community, exact=False
+    )
+    solver.C[node] = initial_community
+
+    assert delta_modularity_move == delta_modularity_back * -1
+    assert move_modularity == pytest.approx(initial_modularity + delta_modularity_move)
+    assert solver.modularity() == initial_modularity
+    assert solver.modularity() == pytest.approx(move_modularity + delta_modularity_back)
 
     assert solver.modularity() == 0.35714285714285715
 
