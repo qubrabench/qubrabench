@@ -5,23 +5,55 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pytest
 
-
 import louvain
 
-small_graph_example = np.array(
-    [  # A, A, A, A, A, B, B, B, B, B
-        [0, 9, 0, 1, 2, 1, 7, 4, 0, 0],  # relations of node 0
-        [9, 0, 2, 1, 0, 6, 9, 3, 8, 6],
-        [0, 2, 0, 1, 1, 2, 4, 8, 4, 9],
-        [1, 1, 1, 0, 0, 3, 8, 0, 4, 4],
-        [2, 0, 1, 0, 0, 6, 8, 5, 3, 4],
-        [1, 6, 2, 3, 6, 0, 9, 4, 4, 8],
-        [7, 9, 4, 8, 8, 9, 0, 8, 8, 9],
-        [4, 3, 8, 0, 5, 4, 8, 0, 7, 5],
-        [0, 8, 4, 4, 3, 4, 8, 7, 0, 0],
-        [0, 6, 9, 4, 4, 8, 9, 5, 0, 0],
-    ]
-)
+
+@pytest.fixture(scope="module")
+def small_adjacency_matrix():
+    """Fixture creating a small 10 node adjacency matrix"""
+    return np.array(
+        [  # A, A, A, A, A, B, B, B, B, B
+            [0, 9, 0, 1, 2, 1, 7, 4, 0, 0],  # relations of node 0
+            [9, 0, 2, 1, 0, 6, 9, 3, 8, 6],
+            [0, 2, 0, 1, 1, 2, 4, 8, 4, 9],
+            [1, 1, 1, 0, 0, 3, 8, 0, 4, 4],
+            [2, 0, 1, 0, 0, 6, 8, 5, 3, 4],
+            [1, 6, 2, 3, 6, 0, 9, 4, 4, 8],
+            [7, 9, 4, 8, 8, 9, 0, 8, 8, 9],
+            [4, 3, 8, 0, 5, 4, 8, 0, 7, 5],
+            [0, 8, 4, 4, 3, 4, 8, 7, 0, 0],
+            [0, 6, 9, 4, 4, 8, 9, 5, 0, 0],
+        ]
+    )
+
+
+@pytest.fixture(scope="module")
+def graph_a():
+    """Fixture creating a graph instance with 15 nodes"""
+    # Create a graph with 15 nodes
+    G = nx.Graph()
+    G.add_nodes_from(range(16))
+
+    # Add edges to create the desired community structure
+    G.add_edges_from([(0, 2), (0, 4), (0, 5), (1, 2), (1, 4), (2, 4), (2, 5)])
+    G.add_edges_from([(3, 7), (6, 7)])
+    G.add_edges_from([(8, 9), (8, 10), (8, 14), (8, 15), (9, 12), (9, 14), (10, 12)])
+    G.add_edges_from([(11, 13)])
+    G.add_edges_from(
+        [
+            (0, 3),
+            (1, 7),
+            (2, 6),
+            (4, 10),
+            (5, 7),
+            (5, 11),
+            (6, 11),
+            (8, 11),
+            (10, 11),
+            (10, 13),
+        ]
+    )
+    return G
 
 
 def sanity_check_input(A):
@@ -31,12 +63,12 @@ def sanity_check_input(A):
     assert sum(A.diagonal()) == 0
 
 
-def test_node_to_community_strength():
+def test_node_to_community_strength(small_adjacency_matrix):
     """
     Test the various calculations used in Louvain algorithms
     """
     # generate graph instance
-    G = nx.from_numpy_array(small_graph_example)
+    G = nx.from_numpy_array(small_adjacency_matrix)
     solver = louvain.Louvain(G)
 
     # setup community
@@ -51,27 +83,27 @@ def test_node_to_community_strength():
     # compute strength of node and neighbors in community alpha
     target_node = 0
     com_node_str = 0
-    for value in small_graph_example[0][:split_index]:
+    for value in small_adjacency_matrix[0][:split_index]:
         com_node_str += value
     assert solver.S(target_node, community_alpha) == com_node_str
 
     # compute strength of all nodes in community alpha
     com_str = 0
-    for row in small_graph_example[:split_index]:
+    for row in small_adjacency_matrix[:split_index]:
         for value in row:
             com_str += value
     assert solver.Sigma(community_alpha) == com_str
 
     # compute W
     W = 0
-    for row in small_graph_example:
+    for row in small_adjacency_matrix:
         for value in row:
             W += value
     W /= 2
     assert solver.W == W
 
     # validate strength
-    assert solver.strength(target_node) == sum(small_graph_example[target_node])
+    assert solver.strength(target_node) == sum(small_adjacency_matrix[target_node])
 
     # determine delta modularity for moving node 0 to beta
     assert solver.delta_modularity(target_node, community_alpha) == 0
@@ -145,37 +177,13 @@ def test_move_nodes():
     assert nodes_in_communities == len(G.nodes())
 
 
-def test_one_pass_louvain():
+def test_one_pass_louvain(graph_a):
     """
     Thoroughly check the first stages of louvain (node moving and aggregation), before running
     the entire algorithm and investigating the graph state before termination.
     """
-    # Create a graph with 15 nodes
-    G = nx.Graph()
-    G.add_nodes_from(range(16))
-
-    # Add edges to create the desired community structure
-    G.add_edges_from([(0, 2), (0, 4), (0, 5), (1, 2), (1, 4), (2, 4), (2, 5)])
-    G.add_edges_from([(3, 7), (6, 7)])
-    G.add_edges_from([(8, 9), (8, 10), (8, 14), (8, 15), (9, 12), (9, 14), (10, 12)])
-    G.add_edges_from([(11, 13)])
-    G.add_edges_from(
-        [
-            (0, 3),
-            (1, 7),
-            (2, 6),
-            (4, 10),
-            (5, 7),
-            (5, 11),
-            (6, 11),
-            (8, 11),
-            (10, 11),
-            (10, 13),
-        ]
-    )
-
     # Call louvain method to detect communities
-    solver = louvain.Louvain(G)
+    solver = louvain.Louvain(graph_a)
     sanity_check_input(solver.A)
 
     # verify initial modularity
@@ -201,7 +209,7 @@ def test_one_pass_louvain():
     assert len(solver.G.edges) == 4
 
     # finally, do an entire louvain pass start to finish
-    solver = louvain.Louvain(G, keep_history=True)
+    solver = louvain.Louvain(graph_a, keep_history=True)
     solver.louvain()
     G_check = nx.from_numpy_array(solver.history[-1][0])
     assert G_check.get_edge_data(0, 1)["weight"] == 3
