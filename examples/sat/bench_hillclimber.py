@@ -80,7 +80,7 @@ def hill_climb(k, r, seed, n, runs, dest, verbose, steep):
         n,
         n_runs=runs,
         rng=np.random.default_rng(seed=seed),
-        eps=10**-5,
+        error=10**-5,
         steep=steep,
     )
 
