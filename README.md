@@ -1,19 +1,17 @@
 # QuBRA Benchmarking Framework [![CI](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml)
 
-_qubrabench_ is a Python library for estimating quantum computing performance compared to classical algorithms.
-
-The idea generalizes on the work by [Cade et al.](https://arxiv.org/abs/2203.04975) by providing classical implementations of algorithms and subroutines (e.g., `search` or `max`), that can be accelerated on a quantum computer.
-These implementations are instrumented in such a way that when they are run, they track not only certain classical cost metrics, but also quantum cost metrics, i.e., costs that would be incurred if one were running the same algorithm with the same data on a quantum computer.
-
-The collected classical costs can then be compared with the estimated quantum costs to obtain insight into when a quantum advantage might be achieved given a particular problem size or data set.
+_qubrabench_ is a Python library that aims to enable domain experts to estimate quantum speedups provided by future quantum computers for realistic use cases and data sets, in advance of large-scale quantum computers being available.
 
 <p align="center">
     <img src="docs/img/motivation.png" width="250px">
 </p>
 
-Eventually, this projects provides example algorithms and problem data sets for different industry relevant use cases.
+To this end, the library provides classical implementations of algorithms and subroutines (e.g., `search` or `max`) that can be accelerated on a quantum computer.
+These implementations are instrumented in such a way that when they are run, they track not only classical cost metrics, but also quantum cost metrics, i.e., costs that would be incurred *if one were running the same algorithm with the same data on a quantum computer*.
+These collected cost metrics can then be compared to obtain insight into when a quantum advantage might be achieved for a particular problem size or data set.
+This approach builds on the pioneering work of [Cade et al (2022)](https://arxiv.org/abs/2203.04975).
 
-By providing an API to the subroutines subject to quantum speedups, this project aims to ultimately be able to replace the classical execution of a subroutine with execution on an actual quantum backend.
+A long-term goal of this project is to also allow the execution of subroutines on quantum backends.
 
 ## Installation
 
@@ -25,51 +23,34 @@ pip install .
 
 We recommend the use of Python 3.10 or 3.11.
 
-## API Use
+## Usage
 
-Generally, you will have to create an instance of a statistics object such as `QueryStats`, that you can pass into our API found in `qubrabench/algorithms` and later evaluate. You can then replace subroutines in your own example with the according counterpart of our API and leave the rest of your codebase untouched.
+The `qubrabench` library offers [subroutines and algorithms](qubrabench/algorithms), which record classical and quantum cost metrics that can then be evaluated.
+For example, consider the following code which iterates over a list of users to find one with a particular name:
 
-For example, consider you want to benchmark the following example algorithm:
 ```python
-elements = [1, 2, 3, 4, 5]
-target = 3
-# find the target in elements
-for element in elements:
-    if element == target:
-        result = element
+for user in users:
+    if user.name == "Peter Shor":
         break
+else:
+    user = None
 ```
 
-After importing the relevant modules and creating a statistics object, you will have to adjust your code to leave iterating over your search space to `qubrabench`. 
-Your statistics object will automatically accumulate benchmarking data.
-Your example algorithm will now resemble something like this:
+To determine whether a quantum search algorithm can provide any advantage over classically iterating over the list, we can use the [search](qubrabench/algorithms/search.py) function and pass a `QueryStats` object that will accumulate the relevant cost metrics (queries to the database).
 
 ```python
-from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
+from qubrabench.stats import QueryStats
 
-elements = [1, 2, 3, 4, 5]
-target = 3
 stats = QueryStats()
-
-# deterimine whether x is the target
-def predicate(x):
-    return x == target
-
-# find target in elements
-result = search(elements, predicate, stats=stats)
+user = search(users, lambda user: user.name == "Peter Shor", stats=stats)
 ```
 
-The best place to start familiarizing yourself with this workflow is [hillclimber.py](examples/sat/hillclimber.py). For plotting and providing a command line interface of an algorithm see [bench_hillclimber.py](examples/sat/bench_hillclimber.py).
+To further familiarize yourself with this approach and workflow, we recommend looking at the [examples](examples).
 
+## Contributing & Development
 
-## Contributing
-Pull requests are welcome. For major changes, please open an issue first
-to discuss what you would like to change.
-
-Please make sure to update tests as appropriate.
-
-Detailed documentation on how to contribute to this project and best practices can be found in the [DEVELOP.md](DEVELOP.md) file.
+Please [DEVELOP.md](DEVELOP.md) for documentation on how to contribute to this project.
 
 ---
 
