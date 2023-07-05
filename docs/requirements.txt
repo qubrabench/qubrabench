@@ -1,0 +1,8 @@
+click
+pandas
+matplotlib
+numpy
+scipy
+networkx
+sphinx
+sphinxcontrib-napoleon

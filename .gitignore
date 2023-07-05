@@ -1,0 +1,17 @@
+# ignore IDE stuff
+/.idea
+/.vscode
+
+# ignore python build artifacts
+/dist/
+/build/
+__pycache__
+*.egg-info
+
+# ignore data artifacts (except for reference plots)
+/data
+!/data/plot_reference
+
+# exclude build dir for sphinx-build, and generated sources for sphinx-apidoc
+/docs/build
+/docs/source
