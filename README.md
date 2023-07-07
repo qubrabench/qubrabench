@@ -50,7 +50,7 @@ To further familiarize yourself with this approach and workflow, we recommend lo
 
 ## Contributing & Development
 
-Please [DEVELOP.md](DEVELOP.md) for documentation on how to contribute to this project.
+Please see [DEVELOP.md](DEVELOP.md) for documentation on how to contribute to this project.
 
 ---
 
