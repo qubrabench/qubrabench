@@ -153,6 +153,8 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     """
     colors = {"QuBRA": "blue", "Cade": "orange"}
 
+    # TODO: this can stay the same
+
     def color_for_impl(impl):
         """
         Returns a color given a key. Does not duplicate colors so it might run
@@ -179,11 +181,14 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     reference = pd.read_json(ref_path, orient="split")
     history = pd.concat([history, reference])
 
+    # TODO: quantum cost calculator strategy
+
     # compute combined query costs of quantum search
     c = history["quantum_expected_classical_queries"]
     q = history["quantum_expected_quantum_queries"]
     history["quantum_cqq"] = c + quantum_factor * q
 
+    # TODO: line declaration
     # define lines to plot
     lines = {
         "classical_actual_queries": "Classical Queries",
@@ -191,9 +196,11 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     }
     seen_labels = []  # keep track to ensure proper legends
 
+    # TODO: group forming strategy
     # group plots by combinations of k and r
     groups = history.groupby(["k", "r"])
     # calculate the maximum value of the four relevant value columns
+    # TODO: relevant plottable values in strategy
     max_val_in_graph = (
         history[
             [
@@ -203,7 +210,7 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
                 "quantum_expected_quantum_queries",
             ]
         ]
-        .max(numeric_only=True)
+        .max()
         .max()
     )
     # calculate the necessary exponent for the y-axis scaling
@@ -213,7 +220,9 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
     if len(groups) == 1:
         axs = [axs]
     for ax, ((k, r), group) in zip(axs, groups):
+        # TODO: title uses global variables, also defined in strategy
         ax.set_title(f"k = {k}, r = {r}")
+        # TODO: the rest seams mostly universal, except for 'impl', maybe param 'alphanum columns' which are then excluded
         ax.set_xlim(10**2, 10**4)
         ax.set_ylim(300, 10**y_scale_exponent)
         ax.set_xscale("log")
@@ -223,10 +232,11 @@ def plot(src, ref_path, ref_file, quantum_factor=2):
         ax.grid(which="both")
 
         # group lines by implementation
+        # TODO: def need strategy impl here to, to define what we sort by and what we group by
         impls = group.groupby("impl")
         for name, impl in impls:
-            means = impl.groupby("n").mean(numeric_only=True)
-            errors = impl.groupby("n").sem(numeric_only=True)
+            means = impl.loc[:, impl.columns != "impl"].groupby("n").mean()
+            errors = impl.loc[:, impl.columns != "impl"].groupby("n").sem()
             for col, label in lines.items():
                 text = f"{label} ({name})"
                 if text in seen_labels:
