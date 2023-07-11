@@ -1,9 +1,10 @@
 from plotting_strategy import PlottingStrategy
 
-quantum_factor = 2
-
 
 class HillClimberPlottingStrategy(PlottingStrategy):
+    def __init__(self):
+        self.quantum_factor = 2
+
     def get_x_label(self):
         return "$n$"
 
@@ -17,7 +18,7 @@ class HillClimberPlottingStrategy(PlottingStrategy):
         # compute combined query costs of quantum search
         c = history["quantum_expected_classical_queries"]
         q = history["quantum_expected_quantum_queries"]
-        history["quantum_cqq"] = c + quantum_factor * q
+        history["quantum_cqq"] = c + self.quantum_factor * q
         return history
 
     def get_line_plotting_dict(self):
