@@ -1,6 +1,5 @@
 # Overview
-- **gr_function** is a collection of functions to estimate the number of gates needed in the state preparation (in terms of Toffoli, 2-qbits gates and 1-qbit gates) and to build the circuit that prepares the state
-- **gr_test** tests the previous functions on randomly generated vectors to check if the algorith works as expected
+- **gr_functions** is a collection of functions to estimate the number of gates needed in the state preparation (in terms of Toffoli, 2-qbits gates and 1-qbit gates) and to build the circuit that prepares the state.
 
 
 # The Algorithm
