@@ -6,8 +6,7 @@
 # The Algorithm
 The goal of the algorithm the preparation of the state 
 
-[249517684-24cc2f0f-21dd-4647-9c79-63e0220a144e](https://github.com/Damuna/qubrabench/assets/80634171/732f7e13-aa8e-4dce-8e44-e0bdc949955e).
-
+![249517684-24cc2f0f-21dd-4647-9c79-63e0220a144e](https://github.com/Damuna/qubrabench/assets/80634171/9ad94311-21e4-4922-99db-d90abedf54b6).
 
 At each step, the algorithm performs a controlled y-rotation and a controlled phase-shift gate:
 
