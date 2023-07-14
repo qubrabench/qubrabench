@@ -128,14 +128,14 @@ class PlottingStrategy(ABC):
         return "o"
 
 
-colors = {"QuBRA": "blue", "Cade": "orange"}
-
-
 def color_for_impl(impl):
     """
     Returns a color given a key. Does not duplicate colors so it might run
-    out of colors but who is going to print that much data :)
+    out of colors.
     """
+
+    # quantum algorithms in jupyter notebooks
+    colors = {"QuBRA": "blue", "Cade": "orange"}
     if impl in colors:
         return colors[impl]
 

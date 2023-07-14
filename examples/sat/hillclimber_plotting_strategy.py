@@ -1,4 +1,4 @@
-from plotting_strategy import PlottingStrategy
+from qubrabench.utils.plotting_strategy import PlottingStrategy
 
 
 class HillClimberPlottingStrategy(PlottingStrategy):
