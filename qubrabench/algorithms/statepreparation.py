@@ -1,16 +1,26 @@
+"""
+**statepreparation** is a collection of functions to estimate the number of gates needed in the state preparation (in terms of Toffoli, 2-qbits gates and 1-qbit gates) and to build the circuit that prepares the state.
+The algorithm used is Grover Rudolph.
+"""
+
 import numpy as np
 from numpy import linalg
 from itertools import combinations
 import random
 
+__all__ = ["circuit", "gate_count"]
+
 # global zero precision
 ZERO = 1e-8
 
 
-# Given two dictionaries returns the merging of the two by joining their values in a list
-# Note that the order of the dictionary is important for later, since the gates don't commute
-# We do first all the rotations (phase == None), then the phase together with the rotations, in the end only the phases (angle == None)
 def merge_dict(dict1, dict2):
+    """
+    Given two dictionaries returns the merging of the two by joining their values in a list
+    Note that the order of the dictionary is important for later, since the gates don't commute
+    We do first all the rotations (phase == None), then the phase together with the rotations, in the end only the phases (angle == None)
+    """
+
     dict3 = {}
 
     for k1, v1 in dict1.items():
@@ -28,9 +38,12 @@ def merge_dict(dict1, dict2):
     return dict3
 
 
-# Given two strings, it checks if they differ by only one char that is not 'e', and it return its position
-# It is checking if the gates can be merged: if they differ in only one control
-def where_diff_one(string_1, string_2):
+def where_diff_one(string_1, string_2) -> int | None:
+    """
+    # Given two strings, it checks if they differ by only one char that is not 'e', and it return its position
+    # It is checking if the gates can be merged: if they differ in only one control
+    """
+
     differ = 0  # difference count
     for i in range(len(string_1)):
         if string_1[i] != string_2[i]:
@@ -38,11 +51,11 @@ def where_diff_one(string_1, string_2):
             position = i
             # if they differ with the char 'e' we can't merge
             if string_1[position] == "e" or string_2[position] == "e":
-                return False
+                return None
         if differ > 1:
-            return False
+            return None
     if differ == 0:
-        return False
+        return None
     return position
 
 
@@ -66,7 +79,7 @@ def phase_angle_dict(vector):
 
     for qbit in range(n_qubit):
         dict_angles = {}
-        dict_phase = {}
+        # dict_phase = {}
 
         # Compute the angles recursively
         phase_vector = [
@@ -121,7 +134,7 @@ def phase_angle_dict(vector):
 def optimize_dict(dictionary):
     Merging_success = True  # Initialization value
     # Continue until everything that can be merged is merged
-    while (Merging_success == True) & (len(dictionary) > 1):
+    while Merging_success and len(dictionary) > 1:
         for k1, k2 in combinations(dictionary.keys(), 2):
             v1 = dictionary[k1]
             v2 = dictionary[k2]
@@ -133,7 +146,7 @@ def optimize_dict(dictionary):
 
             position = where_diff_one(k1, k2)
 
-            if position == False:
+            if position is None:
                 continue
 
             # Replace the different char with 'e' and remove the old items
@@ -149,9 +162,59 @@ def optimize_dict(dictionary):
     return dictionary
 
 
-# Build the circuit of the state preparation with as input the list of dictonaries (good to check if the preparation is succesfull)
-# Return the final state and the number of gates needed (Number of Toffoli gates, 2qubits gate and 1qubit gate)
 def circuit(dict_list):
+    r"""
+    The Algorithm
+    =============
+
+    The goal of the algorithm the preparation of the state
+
+    .. image:: https://github.com/Damuna/qubrabench/assets/80634171/9ad94311-21e4-4922-99db-d90abedf54b6
+
+    At each step, the algorithm performs a controlled y-rotation and a controlled phase-shift gate:
+
+    .. image:: https://github.com/Damuna/qubrabench/assets/80634171/fa88c0ba-63f6-4d2f-bf95-f155888c85bc
+
+
+    The implemented circuit is (in the case of 3 qubits):
+
+    .. image:: https://github.com/Damuna/qubrabench/assets/80634171/70cf9a3f-93bd-4155-96d9-1f2deaa5ed4a
+
+
+    Note that the rotation gates are indicated only with :math:`\theta` instead of :math:`R_\theta` and :math:`\phi` instead of :math:`P_\phi`.
+    Furthermore, in this notation, the subscript of each angle also indicates which controls the respective rotation is subjected to (for example :math:`R_{\theta_{11}}` is controlled by the state :math:`\ket{11}`), which makes the circuit easier to code.
+
+    Gate count
+    ----------
+    Since every k-controlled unitary can be decomposed in :math:`2(k-1)` Toffoli gates and :math:`1` controlled unitary (2 qubit gate), and since every control zeros can be written as :math:`1` control one and two :math:`X` gates, the total numbers of elemental gates in each vertical layer are given by:
+
+    .. image:: https://github.com/Damuna/qubrabench/assets/80634171/96626e09-6804-44f0-8707-3a836cda54dc
+
+    where :math:`n_0` is the number of control zeros in the layer, and :math:`n_1` of control ones.
+
+
+    The Code
+    --------
+    Each series of angles is saved in a dictionary, where the angle is the value and the key is the controls, and the dictionaries all together are saved in a list.
+    In the previous case the resulting list is:
+
+    .. math::
+
+        \{ '':\theta \} , \{ '1':\theta_{1}, '0':\theta_{0} \} , \{ '11':\theta_{11}, '10':\theta_{10}, '01':\theta_{01}, '00':\theta_{00} \}
+
+    When the angle is the same and the controls only differ by one, the gates can be merged:
+
+    .. image:: https://github.com/Damuna/qubrabench/assets/80634171/9e129504-a5cc-465e-a57f-59090b84661d
+
+    In this example, :math:`\{ '11': \alpha ,\ '10': \alpha \} \rightarrow \{ '1e': \alpha \}`, where 'e' means no controls (identity)
+
+    The same procedure is applied to the phases, and at the end the two dictionaries are merged together, taking into account the commutation rules.
+    Build the circuit of the state preparation with as input the list of dictonaries (good to check if the preparation is succesfull)
+
+    Returns:
+         The final state and the number of gates needed (Number of Toffoli gates, 2qubits gate and 1qubit gate)
+    """
+
     # Vector to apply the circuit to
     psi = np.zeros(2 ** len(dict_list))
     psi[0] = float(1)
@@ -162,7 +225,7 @@ def circuit(dict_list):
     P0 = np.outer(e0, e0)  # Projector
     P1 = np.outer(e1, e1)
 
-    I = np.eye(2)
+    Id = np.eye(2)
 
     N_toffoli = 0
     N_2_gate = 0
@@ -177,7 +240,7 @@ def circuit(dict_list):
             count0 = 0  # count 0 gate
             count1 = 0  # count 1 gate
 
-            if theta == None:
+            if theta is None:
                 R = np.eye(2)
             else:
                 R = np.array(
@@ -187,7 +250,7 @@ def circuit(dict_list):
                     ]
                 )
 
-            if phase == None:
+            if phase is None:
                 P_phase = np.eye(2)
             else:
                 P_phase = np.array([[1.0, 0.0], [0.0, np.exp(1j * phase)]])
@@ -195,7 +258,7 @@ def circuit(dict_list):
             P = 1  # Projector P which controls R
             for s in k:
                 if s == "e":
-                    P = np.kron(P, I)
+                    P = np.kron(P, Id)
 
                 elif s == "0":
                     P = np.kron(P, P0)
@@ -205,14 +268,14 @@ def circuit(dict_list):
                     P = np.kron(P, P1)
                     count1 += 1
 
-            U = np.kron(P, P_phase @ R) + np.kron(np.eye(2**i) - P, I)
+            U = np.kron(P, P_phase @ R) + np.kron(np.eye(2**i) - P, Id)
 
             for n in range(len(dict_list) - i - 1):
-                U = np.kron(U, I)
+                U = np.kron(U, Id)
 
             psi = U @ psi
 
-            if np.any(np.isnan(psi)) == True:
+            if np.any(np.isnan(psi)):
                 print("NAN", R, P_phase, theta, phase)
 
             if count0 + count1 == 0:
