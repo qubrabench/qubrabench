@@ -1,7 +1,6 @@
 """This module provides the Schöning example for solving SAT instances."""
 from typing import Optional
 import numpy as np
-import itertools
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
 from qubrabench.algorithms.search import search
@@ -33,15 +32,26 @@ def schoening_solve(
 
     # prepare search domain (all randomness used by Schoening's algorithm)
     n = inst.n
-    assignments = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
-    steps = [np.array(s, dtype=int) for s in itertools.product([0, 1, 2], repeat=3 * n)]
-    domain = itertools.product(assignments, steps)
+
+    # this function returns a pair of integers
+    def domain(i):
+        k = i % (2**n)
+        assignment = list(
+            map(
+                lambda x: (int(x) == 0) * -1 + (not (int(x) == 0)) * int(x),
+                list(f"{k:0{inst.n}b}"),
+            )
+        )
+        steps = list(map(int, np.base_repr(i - k, base=3).zfill(3 * inst.n)))
+        return (assignment, steps)
+
+    size = 2 ** (n) * 3 ** (3*n)
 
     # find a choice of randomness that makes Schoening's algorithm accept
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    randomness = search(domain, pred, error=error, stats=stats, rng=rng)
+    randomness = search(domain, pred, size, 100000, error=error, stats=stats, rng=rng)
 
     # return satisfying assignment (if any was found)
     if randomness is not None:
@@ -61,6 +71,7 @@ def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignm
         Satisfying assignment if found, None otherwise.
     """
     # split randomness into initial assignment and steps
+    # branchless way to convert zeroes into -1. Done for easier handling with instance
     assignment, steps = randomness
     assignment = np.copy(assignment)
 
