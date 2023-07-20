@@ -1,7 +1,6 @@
 """This module collects test functions for the examples.sat.schoening module."""
 
 import pytest
-import numpy as np
 from qubrabench.stats import QueryStats
 from sat import SatInstance
 from schoening import schoening_solve
@@ -14,10 +13,7 @@ def test_solve(rng) -> None:
         rng (np.rng): Source of randomness provided by test fixtures
     """
     # solve a simple SAT instance
-    inst = SatInstance(
-        k=3,
-        clauses=np.array([[1, 1, -1], [1, -1, 1], [-1, 1, 1], [1, -1, -1]], dtype=int),
-    )
+    inst = SatInstance.random(3, 20, 30, rng=rng)
     stats = QueryStats()
     x = schoening_solve(inst, rng=rng, error=10**-5, stats=stats)
     assert x is not None

@@ -1,7 +1,6 @@
 """ This module provides a generic search interface that executes classically 
     and calculates the expected quantum query costs to a predicate function
 """
-
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from ..stats import QueryStats
@@ -16,6 +15,8 @@ E = TypeVar("E")
 def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
+    estimated_size: int,
+    estimated_hits: int,
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
@@ -41,7 +42,6 @@ def search(
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
     """
-    iterable = list(iterable)
 
     # collect stats
     if stats:
@@ -49,8 +49,8 @@ def search(
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
             )
-        N = len(iterable)
-        T = sum(1 for x in iterable if key(x))
+        N = estimated_size
+        T = estimated_hits
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += (
             cade_et_al_expected_classical_queries(N, T, max_classical_queries)
@@ -59,13 +59,16 @@ def search(
             N, T, error, max_classical_queries
         )
 
+    chunk_size = 100
+
     # run the classical sampling-without-replacement algorithms
-    rng.shuffle(iterable)  # type: ignore
-    for x in iterable:
-        if stats:
-            stats.classical_actual_queries += 1
-        if key(x):
-            return x
+    # does sampling in chunks, to avoid enumerating in the size of domain.
+    for i in range(0, estimated_size // chunk_size):
+        samples = rng.choice(estimated_size, chunk_size, replace=True)
+        for j in samples:
+            x = iterable(j)
+            if key(x):
+                return x
 
     return None
 
