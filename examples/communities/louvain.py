@@ -21,12 +21,34 @@ class Louvain:
         self.keep_history = keep_history
         self.history = []
         self.update_graph(G)
-        self.C = self.single_partition()
+        self.C = self.single_partition()  # node to community map
+
+        # caches
+        self.Sigma_cache = {}  # map caching Sigma values for communities
+        self.S_cache = {}  # map caching the S values of node-community pairs
+        self.strength_cache = {}  # map caching the strength of nodes
 
     def update_graph(self, new_graph):
         self.G = nx.relabel.convert_node_labels_to_integers(new_graph)
         self.A = nx.adjacency_matrix(new_graph)
         self.W = self.A.sum() / 2
+
+        # drop the strength cache only here since its not affected by communities
+        self.strength_cache = {}
+
+    def update_communities(self, node, new_community):
+        """Moves a given node into a new community and updates caches.
+
+        Args:
+            node (int): the desired node to move
+            new_community (int): target community for node
+        """
+        # reassign community
+        self.C[node] = new_community
+
+        # drop caches
+        self.Sigma_cache = {}
+        self.S_cache = {}
 
     def record_history(self):
         """Take a record snapshot of the current adjacency matrix and community mapping."""
@@ -69,7 +91,7 @@ class Louvain:
                 )
                 if max_modularity_increase > 0:
                     # reassign u to community of v
-                    self.C[u] = v_community
+                    self.update_communities(u, v_community)
                     done = False
                 # terminate when there is no modularity increase
 
@@ -141,9 +163,21 @@ class Louvain:
         Returns:
             The resulting strength
         """
-        return sum(
-            [self.A[u, v] for v, community in self.C.items() if community == alpha]
-        )
+        try:
+            # cache first
+            return self.S_cache[alpha][u]
+        except KeyError:
+            # cache miss
+            s = sum(
+                [self.A[u, v] for v, community in self.C.items() if community == alpha]
+            )
+
+            # update cache
+            if alpha not in self.S_cache.keys():
+                self.S_cache[alpha] = {}
+            self.S_cache[alpha][u] = s
+
+            return s
 
     def Sigma(self, alpha: int) -> float:
         """Calculates sum of all weights on edges incident to vertices contained in a community
@@ -154,17 +188,32 @@ class Louvain:
         Returns:
             Sum of weights
         """
-        sigma = 0
-        for v, community in self.C.items():
-            if community == alpha:
-                for _, _, weight in self.G.edges(v, data="weight", default=1):
-                    sigma += weight
+        try:
+            # cache first
+            return self.Sigma_cache[alpha]
+        except KeyError:
+            # cache miss
+            sigma = 0
+            for v, community in self.C.items():
+                if community == alpha:
+                    for _, _, weight in self.G.edges(v, data="weight", default=1):
+                        sigma += weight
 
-        return sigma
+            # add to cache
+            self.Sigma_cache[alpha] = sigma
+            return sigma
 
     def strength(self, u: int) -> float:
         """Calculate the strength of a given node index."""
-        return self.G.degree(u, weight="weight")
+        try:
+            # cache first
+            return self.strength_cache[u]
+        except KeyError:
+            # cache miss
+            strength = self.G.degree(u, weight="weight")
+            # add to cache
+            self.strength_cache[u] = strength
+            return strength
 
     def modularity(self, node_community_map: Optional[dict] = None) -> float:
         """Calculate the modularity of self.G and a node to community mapping
