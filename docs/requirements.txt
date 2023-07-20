@@ -6,3 +6,4 @@ scipy
 networkx
 sphinx
 sphinxcontrib-napoleon
+myst-parser
