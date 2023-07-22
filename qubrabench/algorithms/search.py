@@ -4,7 +4,7 @@
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
 from ..stats import QueryStats
-
+from bitarray.util import urandom
 
 __all__ = ["search"]
 
@@ -59,16 +59,13 @@ def search(
             N, T, error, max_classical_queries
         )
 
-    chunk_size = 100
 
     # run the classical sampling-without-replacement algorithms
-    # does sampling in chunks, to avoid enumerating in the size of domain.
-    for i in range(0, estimated_size // chunk_size):
-        samples = rng.choice(estimated_size, chunk_size, replace=True)
-        for j in samples:
-            x = iterable(j)
-            if key(x):
-                return x
+    for _ in range(0, estimated_size):
+        sample = urandom(int(np.ceil(np.log2(float(estimated_size)))))
+        x = iterable(sample)
+        if key(x):
+            return x
 
     return None
 
@@ -85,6 +82,7 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> f
     Returns:
         the upper bound on the number of quantum queries
     """
+    N = float(N)
     if T == 0:
         return 9.2 * np.ceil(np.log(1 / eps) / np.log(3)) * np.sqrt(N)  # type: ignore
 
@@ -103,6 +101,7 @@ def cade_et_al_expected_classical_queries(N: int, T: int, K: int) -> float:
     Returns:
         float: the upper bound on the number of classical queries
     """
+    N = float(N)
     if T == 0:
         return K
 
@@ -113,6 +112,7 @@ def cade_et_al_F(N: int, T: int) -> float:
     """
     Return quantity F defined in Eq. (3) of Cade et al.
     """
+    N = float(N)
     F: float = 2.0344
     if 1 <= T < (N / 4):
         term: float = N / (2 * np.sqrt((N - T) * T))
