@@ -33,16 +33,15 @@ def schoening_solve(
     # prepare search domain (all randomness used by Schoening's algorithm)
     n = inst.n
 
-    # this function returns a pair of integers
     def domain(i):
-        k = i % (2**n)
+        assignment = i[:n]
+        steps = i[-n:]
         assignment = list(
             map(
-                lambda x: (int(x) == 0) * -1 + (not (int(x) == 0)) * int(x),
-                list(f"{k:0{inst.n}b}"),
+                lambda x: (x == 0) * -1 + (not (x == 0)) * x,
+                assignment
             )
         )
-        steps = list(map(int, np.base_repr(i - k, base=3).zfill(3 * inst.n)))
         return (assignment, steps)
 
     size = 2 ** (n) * 3 ** (3*n)
@@ -51,6 +50,7 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
+    #TODO: T_estimator for schoening
     randomness = search(domain, pred, size, 100000, error=error, stats=stats, rng=rng)
 
     # return satisfying assignment (if any was found)
