@@ -44,7 +44,7 @@ GitHub provides a [Quickstart Article](https://docs.github.com/en/get-started/qu
 ## Testing
 
 This library uses the [pytest](https://docs.pytest.org/) library, which makes testing very simple.
-You can use the predefined [tests](tests), or write your own tests.
+You can use the predefined [tests](https://github.com/qubrabench/qubrabench/tree/development/tests), or write your own tests.
 To execute all tests in the project, by simply executing the following command in the project root:
 
 ```shell
@@ -67,7 +67,7 @@ See `pytest --markers` for a list of all available markers.
 
 ### Run Existing Benchmarks
 
-To benchmark the example hillclimber algorithm for MAX-k-SAT with multiple input sizes, you can run the [bench_hillclimber.py](examples/sat/bench_hillclimber.py) script.
+To benchmark the example hillclimber algorithm for MAX-k-SAT with multiple input sizes, you can run the [bench_hillclimber.py](https://github.com/qubrabench/qubrabench/blob/development/examples/sat/bench_hillclimber.py) script.
 Run `./examples/sat/bench_hillclimber.py -h` to obtain an overview over the available commands of this example.
 
 To aggregate benchmarking data, run you can run the following example to produce 5 runs of `k=3` SAT problems. In this example, `k` is the number of literals in a clause, `n` is the total number of variables and `r` is a factor for determining the number of clauses `m = r * n`. A path to the desired output can be provided after the `--save` flag.
@@ -79,21 +79,21 @@ To aggregate benchmarking data, run you can run the following example to produce
 In this case, the generated data is stored in the `sat.json` file.
 
 As one will often want to benchmark algorithms for multiple choices of problem sizes and other parameters, using a shell script to execute multiple benchmarks in a batch can be useful.
-See [Makefile](Makefile) for an example.
+See [Makefile](https://github.com/qubrabench/qubrabench/blob/development/Makefile) for an example.
 
 ### View Benchmark Results
 
 To generate a plot, you first need to run benchmarks and thereby populate a JSON output file, like the `sat.json` file in the example above.
 Once this is done, you can generate a plot based on this file by running the script `./examples/sat/bench_hillclimber.py plot <path-to-file>`.
 
-You can also use the targets of the [Makefile](Makefile) to run predefined benchmarking sets and view the plots.
+You can also use the targets of the [Makefile](https://github.com/qubrabench/qubrabench/blob/development/Makefile) to run predefined benchmarking sets and view the plots.
 The following plot is produced by the command:
 ```shell
 make bench-hillclimber-quick
 ```
 
 
-![Example plot](docs/img/bench_hillclimber_quick.png "Generated plot based on sat.json")
+![Example plot](https://github.com/qubrabench/qubrabench/blob/development/docs/img/bench_hillclimber_quick.png?raw=true)
 
 ## Logging
 
@@ -113,7 +113,7 @@ Some algorithms and examples operate on randomly generated instances.
 To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
 RNG function parameters should never have default values.
 
-For testing purposes, there is a [fixture](conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
+For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/development/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
 
 ## Code Style
 
