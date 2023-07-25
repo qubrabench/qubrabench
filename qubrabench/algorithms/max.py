@@ -62,24 +62,19 @@ def max(
             )
         max_elem = default
 
-    max_elem_occurrences = 0
-    for elem in iterable:
-        if key(elem) == key(max_elem):
-            max_elem_occurrences += 1
-
     if stats:
         if error is None:
             raise ValueError(
                 "max() parameter 'error' not provided, cannot compute quantum query statistics"
             )
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), max_elem_occurrences, 1, error
+            len(iterable), error
         )
 
     return max_elem
 
 
-def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, error: float) -> float:
+def cade_et_al_expected_quantum_queries(N: int, error: float) -> float:
     """Upper bound on the number of quantum queries made by Cade et al's quantum max algorithm.
 
     Args:
@@ -94,6 +89,6 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, error: float) -
     """
     # assume cq corresponds to the number of classical comparisons corresponding to oracle O_{f_i} in paper
     sum_of_ts: float = 0
-    for i in range(1, N):
-        sum_of_ts += cade_et_al_F(N, i) / (i + 1)
-    return np.ceil(np.log(1 / error) / np.log(3)) * 3 * (cq * sum_of_ts)  # type: ignore
+    for t in range(1, N):
+        sum_of_ts += cade_et_al_F(N, t) / (t + 1)
+    return np.ceil(np.log(1 / error) / np.log(3)) * 3 * sum_of_ts  # type: ignore
