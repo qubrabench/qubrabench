@@ -49,9 +49,7 @@ def hill_climber(
 
     # error probability per hillclimb step, assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
     if error is not None:
-        error_per_step = error / n
-    else:
-        error_per_step = None
+        error /= n
 
     while True:
         # compute all Hamming neighbors (row by row) and their weights
@@ -77,7 +75,7 @@ def hill_climber(
             result = max(
                 zip(neighbors, weights),
                 key=lambda it: it[1],
-                error=error_per_step,
+                error=error,
                 stats=stats,
             )
             nx, nw = result
@@ -89,7 +87,7 @@ def hill_climber(
             result = search(
                 zip(neighbors, weights),
                 pred,
-                error=error_per_step,
+                error=error,
                 stats=stats,
                 rng=rng,
             )
