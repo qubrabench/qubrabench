@@ -109,11 +109,8 @@ def cade_et_al_F(N: int, T: int) -> float:
     """
     Return quantity F defined in Eq. (3) of Cade et al.
     """
-    F = 2.0344
+    F: float = 2.0344
     if 1 <= T < (N / 4):
-        F = (
-            (9 / 4) * (N / (np.sqrt((N - T) * T)))
-            + np.ceil(np.log((N / (2 * np.sqrt((N - T) * T)))) / np.log(6 / 5))
-            - 3
-        )
+        term: float = N / (2 * np.sqrt((N - T) * T))
+        F = 9 / 2 * term + np.ceil(np.log(term) / np.log(6 / 5)) - 3
     return F

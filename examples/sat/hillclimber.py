@@ -47,6 +47,10 @@ def hill_climber(
     x = rng.choice([-1, 1], n)
     w = inst.weight(x)
 
+    # error probability per hillclimb step, assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
+    if error is not None:
+        error /= n
+
     while True:
         # compute all Hamming neighbors (row by row) and their weights
         neighbors = flip_mat * np.outer(ones, x)
@@ -69,7 +73,10 @@ def hill_climber(
 
         if steep:
             result = max(
-                zip(neighbors, weights), key=lambda it: it[1], error=error, stats=stats
+                zip(neighbors, weights),
+                key=lambda it: it[1],
+                error=error,
+                stats=stats,
             )
             nx, nw = result
             if nw > w:
@@ -78,7 +85,11 @@ def hill_climber(
                 return x
         else:
             result = search(
-                zip(neighbors, weights), pred, error=error, stats=stats, rng=rng
+                zip(neighbors, weights),
+                pred,
+                error=error,
+                stats=stats,
+                rng=rng,
             )
             if result is None:
                 return x
