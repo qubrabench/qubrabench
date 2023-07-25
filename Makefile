@@ -5,7 +5,7 @@ ci:
 	black --quiet --check .
 	ruff .
 	pytest --doctest-modules
-	cd docs && make html
+	cd docs && make clean && make html
 
 bench-hillclimber-quick:
 	$(eval FNAME = data/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
