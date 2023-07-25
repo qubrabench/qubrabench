@@ -94,6 +94,6 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, cq: int, error: float) -
     """
     # assume cq corresponds to the number of classical comparisons corresponding to oracle O_{f_i} in paper
     sum_of_ts: float = 0
-    for i in range(T, N):
+    for i in range(1, N):
         sum_of_ts += cade_et_al_F(N, i) / (i + 1)
     return np.ceil(np.log(1 / error) / np.log(3)) * 3 * (cq * sum_of_ts)  # type: ignore
