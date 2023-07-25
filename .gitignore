@@ -17,7 +17,6 @@ __pycache__
 /docs/source/*
 # but don't exclude manually configured sources
 !/docs/source/conf.py
-!/docs/source/index.rst
+!/docs/source/index.md
 !/docs/source/license.rst
-!docs/source/readme.md
 !/docs/source/develop.md

@@ -50,7 +50,7 @@ To further familiarize yourself with this approach and workflow, we recommend lo
 
 ## Contributing & Development
 
-Please see [DEVELOP.md](https://github.com/qubrabench/qubrabench/blob/development/DEVELOP.md) for documentation on how to contribute to this project.
+Please see [DEVELOP.md](https://qubrabench.github.io/qubrabench/develop.html) for documentation on how to contribute to this project.
 
 ---
 
