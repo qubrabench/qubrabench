@@ -52,8 +52,8 @@ class PlottingStrategy(ABC):
                     self.get_parameters_to_group_by(), param_val_tuple
                 )
             )
-            ax.set_xlim(10 ** 2, 10 ** 4)
-            ax.set_ylim(300, 10 ** y_scale_exponent)
+            ax.set_xlim(10**2, 10**4)
+            ax.set_ylim(300, 10**y_scale_exponent)
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_xlabel(self.get_x_label())
@@ -147,7 +147,9 @@ class PlottingStrategy(ABC):
         if impl in colors:
             return colors[impl]
 
-        mcolor_names: list = [c for c in mcolors.CSS4_COLORS if c not in colors.values()]
+        mcolor_names: list = [
+            c for c in mcolors.CSS4_COLORS if c not in colors.values()
+        ]
         new_color = np.random.choice(mcolor_names)
         colors[impl] = new_color
         return new_color
