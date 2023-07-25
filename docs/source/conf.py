@@ -33,14 +33,16 @@ exclude_patterns = []
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
 html_theme = "alabaster"
-# html_static_path = ["_static"]
+html_static_path = ["../img"]
 
 # -- HTML navigation bar -----------------------------------------------------
 html_theme_options = {
     "github_user": "qubrabench",
     "github_repo": "qubrabench",
     "description": "A framework to benchmark the advantage of quantum algorithms.",
-    "github_banner": True,
+    "github_banner": "forkme_right_darkblue_121621.png",
+    "logo": "logo.png",
+    "logo_name": True,
     "github_type": "star",
     "extra_nav_links": {
         "GitHub": "https://github.com/qubrabench/qubrabench/",
