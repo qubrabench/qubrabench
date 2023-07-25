@@ -43,3 +43,6 @@ class HillClimberPlottingStrategy(PlottingStrategy):
 
     def get_plot_point_symbol(self, label):
         return "x" if "Quantum" in label else "o"
+
+    def get_reserved_colors(self):
+        return {"QuBRA": "blue", "Cade": "orange"}

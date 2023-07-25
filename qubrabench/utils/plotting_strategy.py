@@ -52,8 +52,8 @@ class PlottingStrategy(ABC):
                     self.get_parameters_to_group_by(), param_val_tuple
                 )
             )
-            ax.set_xlim(10**2, 10**4)
-            ax.set_ylim(300, 10**y_scale_exponent)
+            ax.set_xlim(10 ** 2, 10 ** 4)
+            ax.set_ylim(300, 10 ** y_scale_exponent)
             ax.set_xscale("log")
             ax.set_yscale("log")
             ax.set_xlabel(self.get_x_label())
@@ -77,14 +77,14 @@ class PlottingStrategy(ABC):
                         means[col],
                         self.get_plot_point_symbol(label),
                         label=text,
-                        color=color_for_impl(name),
+                        color=self.color_for_impl(name),
                     )
                     ax.fill_between(
                         means.index,
                         means[col] + errors[col],
                         means[col] - errors[col],
                         alpha=0.4,
-                        color=color_for_impl(name),
+                        color=self.color_for_impl(name),
                     )
 
         fig.legend(loc="upper center")
@@ -127,22 +127,30 @@ class PlottingStrategy(ABC):
     def get_plot_point_symbol(self, label):
         return "o"
 
+    @abstractmethod
+    def get_reserved_colors(self):
+        """
+        TODO: explain what this does lol
+        Returns:
 
-def color_for_impl(impl):
-    """
-    Returns a color given a key. Does not duplicate colors so it might run
-    out of colors.
-    """
+        """
+        return {}
 
-    # quantum algorithms in jupyter notebooks
-    colors = {"QuBRA": "blue", "Cade": "orange"}
-    if impl in colors:
-        return colors[impl]
+    def color_for_impl(self, impl):
+        """
+        Returns a color given a key. Does not duplicate colors so it might run
+        out of colors.
+        """
 
-    mcolor_names: list = [c for c in mcolors.CSS4_COLORS if c not in colors.values()]
-    new_color = np.random.choice(mcolor_names)
-    colors[impl] = new_color
-    return new_color
+        # quantum algorithms in jupyter notebooks
+        colors = self.get_reserved_colors()
+        if impl in colors:
+            return colors[impl]
+
+        mcolor_names: list = [c for c in mcolors.CSS4_COLORS if c not in colors.values()]
+        new_color = np.random.choice(mcolor_names)
+        colors[impl] = new_color
+        return new_color
 
 
 def convert_parameter_tuple_to_string(name_tuple, value_tuple):
