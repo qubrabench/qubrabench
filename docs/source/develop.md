@@ -126,3 +126,41 @@ For formatting, make use of the [black](https://black.readthedocs.io/en/stable/)
 
 Linting will be checked by GitHub actions.
 This projects uses the [ruff](https://beta.ruff.rs/docs/) linter. 
+
+
+# 2. Extending Qubrabench
+
+This section is for QuBRA project members. Please follow the instructions below if you...
+1. ...have developed new subroutines that you want to add to qubrabench. 
+2. ...have improved analyses/formulas for bounds on existing subroutines in qubrabench.
+3. ...want to add a new use-case to the qubrabench ecosystem.
+
+## Usecases
+Benchmarkes for new use-cases relevant to QuBRA that use qubrabench can be added to the `qubrabench` organization.
+Please look at repository [qubrabench/usecase-template](https://github.com/qubrabench/usecase-template/) for a detailed example on how to organize the benchmark.
+
+## Workflow: Add new subroutine to qubrabench
+
+### Step 1. Identify the subroutine
+To start, you will pick out the key subroutine(s) that you are interested in adding to qubrabench,
+and push the relevant code to a repository in the [qubrabench organization](https://github.com/qubrabench). 
+To make things maximally easy for all parties, please make sure all relevant code, scripts, documentation etc. are made available in this repository.
+
+### Step 2. Install qubrabench
+Install qubrabench as a dependency in the above repository.
+Take a look at the [example use-case](https://github.com/qubrabench/usecase-template/) repository for a detailed explanation on how to do this.
+
+### Step 3. Isolate subroutine
+We (both you and the Qubrabench dev. team) together will isolate the core subroutine(s) of interest.
+
+In this process, the Qubrabench team may request some minor changes to the subroutine to make it suitable for integration.
+
+### Step 4. Integrate subroutine
+Once both parties are happy with the subroutine and design, the Qubrabench team will now extract the relevant subroutine code and add it to qubrabench via a pull-request.
+We (qubrabench team) will then clean up the code, set up unittests and make sure the CI passes.
+Once this is in order, the subroutine will be merged into qubrabench.
+
+### Step 5. Use qubrabench
+Now you can delete the extracted subroutine code from your repository, and instead import the exact same method from `qubrabench.algorithms`, and use that in your benchmark.
+
+In case there are some issues, feel free to raise an issue in [qubrabench](https://github.com/qubrabench/qubrabench/) with the relevant information, and we can work together to fix it.
