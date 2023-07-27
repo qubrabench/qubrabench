@@ -13,7 +13,7 @@ def test_solve(rng) -> None:
         rng (np.rng): Source of randomness provided by test fixtures
     """
     # solve a simple SAT instance
-    inst = SatInstance.random(3, 30, 20, rng=rng)
+    inst = SatInstance.random(3, 70, 20, rng=rng)
     stats = QueryStats()
     x = schoening_solve(inst, rng=rng, error=10**-5, stats=stats)
     assert x is not None

@@ -64,6 +64,8 @@ def search(
     for _ in range(0, estimated_size):
         sample = urandom(int(np.ceil(np.log2(float(estimated_size)))))
         x = iterable(sample)
+        if stats:
+            stats.classical_actual_queries += 1
         if key(x):
             return x
 
