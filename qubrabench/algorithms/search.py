@@ -23,6 +23,7 @@ def search(
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+
     >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
     2
 
