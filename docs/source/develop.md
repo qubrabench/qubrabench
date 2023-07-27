@@ -95,7 +95,9 @@ make bench-hillclimber-quick
 
 ![Example plot](https://github.com/qubrabench/qubrabench/blob/development/docs/img/bench_hillclimber_quick.png?raw=true)
 
-## Logging
+## Best Practices
+
+### Logging
 
 You can chose two options when running the qubrabench script:
 
@@ -107,7 +109,7 @@ Annotation - logging levels: `ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL 
 Please keep this functionality in mind when writing new code for QuBRA Bench, use `logging.info()` for relevant information outside of debug mode and use `logging.debug()` for messages with debug interest.
 Refrain from using the default `print` function.
 
-## Randomness
+### Randomness
 
 Some algorithms and examples operate on randomly generated instances.
 To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
@@ -115,9 +117,8 @@ RNG function parameters should never have default values.
 
 For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/development/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
 
-## Code Style
+### Code Style
 
-Please provide docstrings in the [Google Python Style](https://google.github.io/styleguide/pyguide.html) for every module, class and method that you write. 
 Public facing API functions should also contain `mypy` type hints.
 When type hints are present in the method declaration, they may be omitted from the docstring.
 For an extensive example see [here](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
@@ -127,40 +128,74 @@ For formatting, make use of the [black](https://black.readthedocs.io/en/stable/)
 Linting will be checked by GitHub actions.
 This projects uses the [ruff](https://beta.ruff.rs/docs/) linter. 
 
+### Documentation
 
-# 2. Extending Qubrabench
+Please provide docstrings in the [Google Python Style](https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings) for every module, class and method that you write. 
+
+#### Latex Math
+For latex math, use the following directives:
+```rst
+Inline math :math:`O(\sqrt{N/T})`.
+
+.. math::
+
+       \text{Grover} = O \left(\sqrt{\frac{N}{T}} \right)
+```
+This will render as:
+```{eval-rst}
+Inline math :math:`O(\sqrt{N/T})`.
+
+.. math::
+
+       \text{Grover} = O \left(\sqrt{\frac{N}{T}} \right)
+```
+
+Always leave a newline after the directive (like `.. math::`) and indent the equation for it to render correctly.
+
+#### Images
+To include images:
+```rst
+.. image:: path/to/image.png
+```
+
+Place all images in `docs/img/`.
+
+Check [Math support in Sphinx](https://sphinx-rtd-trial.readthedocs.io/en/latest/ext/math.html) and [reStructuredText Derivatives](https://docutils.sourceforge.io/docs/ref/rst/directives.html) for more detailed examples.
+
+
+## Extending Qubrabench
 
 This section is for QuBRA project members. Please follow the instructions below if you...
 1. ...have developed new subroutines that you want to add to qubrabench. 
 2. ...have improved analyses/formulas for bounds on existing subroutines in qubrabench.
 3. ...want to add a new use-case to the qubrabench ecosystem.
 
-## Usecases
+### Usecases
 Benchmarkes for new use-cases relevant to QuBRA that use qubrabench can be added to the `qubrabench` organization.
 Please look at repository [qubrabench/usecase-template](https://github.com/qubrabench/usecase-template/) for a detailed example on how to organize the benchmark.
 
-## Workflow: Add new subroutine to qubrabench
+### Workflow: Add new subroutine to qubrabench
 
-### Step 1. Identify the subroutine
+#### Step 1. Identify the subroutine
 To start, you will pick out the key subroutine(s) that you are interested in adding to qubrabench,
 and push the relevant code to a repository in the [qubrabench organization](https://github.com/qubrabench). 
 To make things maximally easy for all parties, please make sure all relevant code, scripts, documentation etc. are made available in this repository.
 
-### Step 2. Install qubrabench
+#### Step 2. Install qubrabench
 Install qubrabench as a dependency in the above repository.
 Take a look at the [example use-case](https://github.com/qubrabench/usecase-template/) repository for a detailed explanation on how to do this.
 
-### Step 3. Isolate subroutine
+#### Step 3. Isolate subroutine
 We (both you and the Qubrabench dev. team) together will isolate the core subroutine(s) of interest.
 
 In this process, the Qubrabench team may request some minor changes to the subroutine to make it suitable for integration.
 
-### Step 4. Integrate subroutine
+#### Step 4. Integrate subroutine
 Once both parties are happy with the subroutine and design, the Qubrabench team will now extract the relevant subroutine code and add it to qubrabench via a pull-request.
 We (qubrabench team) will then clean up the code, set up unittests and make sure the CI passes.
 Once this is in order, the subroutine will be merged into qubrabench.
 
-### Step 5. Use qubrabench
+#### Step 5. Use qubrabench
 Now you can delete the extracted subroutine code from your repository, and instead import the exact same method from `qubrabench.algorithms`, and use that in your benchmark.
 
 In case there are some issues, feel free to raise an issue in [qubrabench](https://github.com/qubrabench/qubrabench/) with the relevant information, and we can work together to fix it.
