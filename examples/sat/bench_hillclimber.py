@@ -131,24 +131,26 @@ def setup_default_logger(verbose: bool):
 
 @cli.command()
 @click.argument(
-    "src",
+    "qubra-data-file",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
     required=True,
 )
 @click.argument(
-    "ref-path",
-    type=click.Path(dir_okay=True, readable=True, path_type=Path),
-    required=True,
-)
-@click.argument(
-    "ref-file",
+    "ref-data-file",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
     required=True,
 )
-def plot(src, ref_path, ref_file):
+def plot(qubra_data_file, ref_data_file):
+    # load data
+    history = []
+    for data_file in [qubra_data_file, ref_data_file]:
+        data_block = pd.read_json(data_file, orient="split")
+        history.append(data_block)
+    data = pd.concat(history)
+
     # could switch strategy here based on src input
-    ps = HillClimberPlottingStrategy()
-    ps.plot(src, ref_path, ref_file)
+    plotter = HillClimberPlottingStrategy()
+    plotter.plot(data, quantum_factor=2)
 
 
 if __name__ == "__main__":

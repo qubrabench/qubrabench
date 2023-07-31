@@ -1,6 +1,5 @@
 import math
 from abc import ABC, abstractmethod
-from os import path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,51 +7,47 @@ import matplotlib.colors as mcolors
 
 
 class PlottingStrategy(ABC):
+    """
+    Generic plotting strategy to visualize benchmarking data.
+
+    Assumes data is given as a pandas dataframe.
+
+    TODO explain usage in detail
+    """
+
     # colors for each dataset in the plot
     colors: dict[str, str] = {}
 
-    def plot(self, src, ref_path, ref_file):
+    def plot(self, data: pd.DataFrame, *, quantum_factor: float = 2):
         """
-        Plot data
+        Plot benchmarking data.
 
-        TODO explain usage in detail
+        Args:
+            data: a pandas DataFrame containing all the benchmark data.
+            quantum_factor: conversion factor for the cost of a quantum query (w.r.t. classical queries).
         """
-        # read in data to plot
-        history = pd.read_json(src, orient="split")
-        # read in references
-        ref_path = path.join(
-            path.dirname(path.realpath(__file__)),
-            ref_path,
-            ref_file,
-        )
-        reference = pd.read_json(ref_path, orient="split")
-        history = pd.concat([history, reference])
 
-        history = self.make_history_adjustments(history)
-
-        # define lines to plot
-        lines = self.get_line_plotting_dict()
+        data = self.compute_aggregates(data, quantum_factor=2)
 
         seen_labels = []  # keep track to ensure proper legends
 
-        # group plots by combinations of k and r
-        groups = history.groupby(list(self.get_parameters_to_group_by()))
         # calculate the maximum value of the four relevant value columns
         max_val_in_graph = (
-            history[self.get_plotted_column_name_list()].max(numeric_only=True).max()
+            data[list(self.columns_to_plot().keys())].max(numeric_only=True).max()
         )
         # calculate the necessary exponent for the y-axis scaling
         y_scale_exponent = len(str(math.ceil(max_val_in_graph)))
 
+        # make groups to generate plots for
+        groups = data.groupby(self.columns_to_group_for_plots())
+
         fig, axs = plt.subplots(1, len(groups), sharey=True)
         if len(groups) == 1:
             axs = [axs]
-        for ax, (param_val_tuple, group) in zip(axs, groups):
-            ax.set_title(
-                convert_parameter_tuple_to_string(
-                    self.get_parameters_to_group_by(), param_val_tuple
-                )
-            )
+
+        for ax, (plot_params, group) in zip(axs, groups):
+            ax.set_title(self.make_plot_title(plot_params))
+
             ax.set_xlim(10**2, 10**4)
             ax.set_ylim(300, 10**y_scale_exponent)
             ax.set_xscale("log")
@@ -62,12 +57,15 @@ class PlottingStrategy(ABC):
             ax.grid(which="both")
 
             # group lines by implementation
-            impls = group.groupby("impl")
-            for name, impl in impls:
-                means = self.calculate_means(impl)
-                errors = self.calculate_errors(impl)
-                for col, label in lines.items():
-                    text = f"{label} ({name})"
+            impls = group.groupby(self.columns_to_group_in_a_plot())
+            for impl_params, impl in impls:
+                plot_data = impl.groupby(self.get_x_axis_column())
+                means = plot_data.mean(numeric_only=True)
+                errors = plot_data.sem(numeric_only=True)
+
+                impl_name = self.serialize_impl_params(impl_params)
+                for col, (col_name, marker) in self.columns_to_plot().items():
+                    text = f"{col_name} ({impl_name})"
                     if text in seen_labels:
                         text = "__nolabel__"
                     else:
@@ -76,16 +74,16 @@ class PlottingStrategy(ABC):
                     ax.plot(
                         means.index,
                         means[col],
-                        self.get_plot_point_symbol(label),
+                        marker,
                         label=text,
-                        color=self.color_for_impl(name),
+                        color=self.color_for_impl(impl_name),
                     )
                     ax.fill_between(
                         means.index,
                         means[col] + errors[col],
                         means[col] - errors[col],
                         alpha=0.4,
-                        color=self.color_for_impl(name),
+                        color=self.color_for_impl(impl_name),
                     )
 
         fig.legend(loc="upper center")
@@ -101,36 +99,57 @@ class PlottingStrategy(ABC):
         return "default y label"
 
     @abstractmethod
-    def get_parameters_to_group_by(self):
-        return ()
+    def columns_to_group_for_plots(self) -> list[str]:
+        """
+        TODO better name
 
-    @abstractmethod
-    def make_history_adjustments(self, history):
-        return history
+        Generate a plot for each unique tuple of values for the specified columns.
+        Example: ["k", "n"] - a plot will be generated for each unique tuple value (k, n).
+        Example: [] - generate a single plot with the entire data.
 
-    @abstractmethod
-    def get_line_plotting_dict(self):
-        return {}
-
-    @abstractmethod
-    def get_plotted_column_name_list(self):
+        Returns:
+            List of column names to group by.
+        """
         return []
 
     @abstractmethod
-    def calculate_means(self, impl):
-        pass
+    def columns_to_group_in_a_plot(self):
+        """
+        TODO better name
+
+        Generate a data line for each unique value in the specified columns.
+
+        Example: ["impl"] - a line will be generated for each unique `impl` label.
+        """
 
     @abstractmethod
-    def calculate_errors(self, impl):
-        pass
+    def compute_aggregates(self, data, *, quantum_factor):
+        return data
 
     @abstractmethod
-    def get_plot_point_symbol(self, label):
-        return "o"
+    def get_x_axis_column(self) -> str:
+        """
+        TODO better name
+        Column to plot along x axis
+        """
+        return ""
+
+    @abstractmethod
+    def columns_to_plot(self) -> dict[str, tuple[str, str]]:
+        """
+        Dictionary of columns to display in the plot.
+            Key: is the column name in the dataframe
+            Value: Column display name, Marker to use in the plot
+
+        Example:
+            {"c": ("Classical", "o"), "q": ("Quantum", "x")}
+        """
+        return {}
 
     def color_for_impl(self, impl):
         """
-        Returns a color for a given key `impl`, and generates a new unique color if it does not exist.
+        Returns:
+             a color for a given key `impl`, and generates a new unique color if it does not exist.
         """
 
         if impl in self.colors:
@@ -143,11 +162,12 @@ class PlottingStrategy(ABC):
         self.colors[impl] = new_color
         return new_color
 
+    def make_plot_title(self, plot_params) -> str:
+        columns = [
+            f"{column} = {value}"
+            for (column, value) in zip(self.columns_to_group_for_plots(), plot_params)
+        ]
+        return ", ".join(columns)
 
-def convert_parameter_tuple_to_string(name_tuple, value_tuple):
-    string = ""
-    for name, item in zip(name_tuple, value_tuple):
-        if string != "":
-            string = string + ", "
-        string = string + f"{name} = {item}"
-    return string
+    def serialize_impl_params(self, impl_params: list) -> str:
+        return ", ".join(impl_params)
