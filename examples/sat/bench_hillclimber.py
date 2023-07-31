@@ -82,6 +82,9 @@ def hill_climb(k, r, seed, n, runs, dest, verbose, steep):
         error=10**-5,
         steep=steep,
     )
+    history.insert(0, "impl", "QuBRA")
+
+    logging.info(history.groupby(["k", "r", "n"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
