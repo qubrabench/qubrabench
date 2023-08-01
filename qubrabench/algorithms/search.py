@@ -1,22 +1,55 @@
 """ This module provides a generic search interface that executes classically 
     and calculates the expected quantum query costs to a predicate function
 """
-from typing import Callable, Iterable, Optional, TypeVar
+from abc import ABC, abstractmethod
+from collections.abc import Iterable
+from typing import Callable, Optional, TypeVar, Generic
 import numpy as np
 from ..stats import QueryStats
-from bitarray.util import urandom
 
-__all__ = ["search"]
+__all__ = ["search", "SearchDomain"]
 
 
 E = TypeVar("E")
 
 
+class SearchDomain(ABC, Generic[E]):
+    @abstractmethod
+    def N(self) -> float:
+        pass
+
+    @abstractmethod
+    def T(self, key) -> float:
+        pass
+
+    @abstractmethod
+    def get_sample(self, rng: np.random.Generator) -> E:
+        pass
+
+
+class ListDomain(SearchDomain[E], Generic[E]):
+    def __init__(self, it: Iterable[E], rng):
+        self.it = list(it)
+        rng.shuffle(self.it)
+        self.sample_it = iter(self.it)
+
+    def N(self):
+        return len(self.it)
+
+    def T(self, key):
+        return len([1 for x in self.it if key(x)])
+
+    def get_sample(self, rng: np.random.Generator) -> E:
+        try:
+            x = next(self.sample_it)
+        except StopIteration:
+            x = None
+        return x
+
+
 def search(
-    iterable: Iterable[E],
+    seq: Iterable[E] | SearchDomain[E],
     key: Callable[[E], bool],
-    estimated_size: int,
-    estimated_hits: int,
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
@@ -29,7 +62,7 @@ def search(
     2
 
     Args:
-        iterable: iterable to be searched over
+        seq: Sequence to be searched over
         key: function to test if an element satisfies the predicate
         rng: np.random.Generator instance as source of randomness
         error: upper bound on the failure probability of the quantum algorithm.
@@ -43,14 +76,20 @@ def search(
         An element that satisfies the predicate, or None if no such argument can be found.
     """
 
+    if isinstance(seq, Iterable):
+        seq = ListDomain(seq, rng)
+
+    N = seq.N()
+
     # collect stats
     if stats:
         if error is None:
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
             )
-        N = estimated_size
-        T = estimated_hits
+
+        T = seq.T(key)
+
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += (
             cade_et_al_expected_classical_queries(N, T, max_classical_queries)
@@ -59,20 +98,21 @@ def search(
             N, T, error, max_classical_queries
         )
 
-
     # run the classical sampling-without-replacement algorithms
-    for _ in range(0, estimated_size):
-        sample = urandom(int(np.ceil(np.log2(float(estimated_size)))))
-        x = iterable(sample)
+    while True:
+        x = seq.get_sample(rng)
+        if x is None:
+            return None
+
         if stats:
             stats.classical_actual_queries += 1
         if key(x):
             return x
 
-    return None
 
-
-def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> float:
+def cade_et_al_expected_quantum_queries(
+    N: float, T: float, eps: float, K: int
+) -> float:
     """Upper bound on the number of *quantum* queries made by Cade et al's quantum search algorithm.
 
     Args:
@@ -92,7 +132,7 @@ def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> f
     return (1 - (T / N)) ** K * F * (1 + (1 / (1 - (F / (9.2 * np.sqrt(N))))))  # type: ignore
 
 
-def cade_et_al_expected_classical_queries(N: int, T: int, K: int) -> float:
+def cade_et_al_expected_classical_queries(N: float, T: float, K: int) -> float:
     """Upper bound on the number of *classical* queries made by Cade et al's quantum search algorithm.
 
     Args:
@@ -110,7 +150,7 @@ def cade_et_al_expected_classical_queries(N: int, T: int, K: int) -> float:
     return (N / T) * (1 - (1 - (T / N)) ** K)
 
 
-def cade_et_al_F(N: int, T: int) -> float:
+def cade_et_al_F(N: float, T: float) -> float:
     """
     Return quantity F defined in Eq. (3) of Cade et al.
     """
