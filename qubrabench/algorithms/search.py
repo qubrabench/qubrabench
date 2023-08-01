@@ -39,7 +39,7 @@ class ListDomain(SearchDomain[E], Generic[E]):
     def get_number_of_solutions(self, key):
         return len([1 for x in self.it if key(x)])
 
-    def get_random_sample(self, rng: np.random.Generator) -> E:
+    def get_random_sample(self, rng: np.random.Generator) -> Optional[E]:
         try:
             x = next(self.sample_it)
         except StopIteration:
@@ -98,16 +98,15 @@ def search(
             N, T, error, max_classical_queries
         )
 
-    # run the classical sampling-without-replacement algorithms
-    while True:
-        x = seq.get_random_sample(rng)
-        if x is None:
-            return None
-
+    # run the classical sampling algorithm
+    # TODO when sampling with replacement, should break after reaching some limit (so that an input with no solutions does not loop infinitely)
+    while (x := seq.get_random_sample(rng)) is not None:
         if stats:
             stats.classical_actual_queries += 1
         if key(x):
             return x
+
+    return None
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: float, eps: float, K: int) -> float:
