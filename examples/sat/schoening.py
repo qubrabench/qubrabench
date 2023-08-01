@@ -12,15 +12,15 @@ class SchoeningDomain(SearchDomain):
     def __init__(self, n):
         self.n = n
 
-    def N(self):
-        a = 2**self.n
-        b = 3 ** (3 * self.n)
-        return a * b
+    def get_size(self):
+        N_assignment = 2**self.n
+        N_steps = 3 ** (3 * self.n)
+        return N_assignment * N_steps
 
-    def T(self, _) -> float:
-        return pow(0.75, self.n) * self.N()
+    def get_number_of_solutions(self, _) -> float:
+        return pow(0.75, self.n) * self.get_size()
 
-    def get_sample(self, rng):
+    def get_random_sample(self, rng) -> tuple[np.ndarray, np.ndarray]:
         assignment = rng.integers(2, size=self.n) * 2 - 1
         steps = rng.integers(3, size=3 * self.n)
         return assignment, steps
@@ -55,7 +55,6 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    # TODO: T_estimator for schoening
     randomness = search(
         domain,
         pred,
@@ -70,7 +69,9 @@ def schoening_solve(
     return None
 
 
-def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignment]:
+def schoening_with_randomness(
+    randomness: tuple[np.ndarray, np.ndarray], inst: SatInstance
+) -> Optional[Assignment]:
     """
     Run Schoening's algorithm with fixed random choices.
 
@@ -81,17 +82,15 @@ def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignm
     Returns:
         Satisfying assignment if found, None otherwise.
     """
-    # split randomness into initial assignment and steps
-    # branchless way to convert zeroes into -1. Done for easier handling with instance
     assignment, steps = randomness
-    assignment = np.copy(assignment)
+    assignment = np.copy(assignment)  # to avoid editing the input
 
     for step in steps:
         # done?
         if inst.evaluate(assignment):
             return assignment
 
-        # choose an unsatisfied clause
+        # find the first unsatisfied clause
         unsat_clauses = (inst.clauses @ assignment.T) == -inst.k
         unsat_clause = inst.clauses[unsat_clauses][0]
 
