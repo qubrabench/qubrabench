@@ -11,8 +11,7 @@ class PlottingStrategy(ABC):
     Generic plotting strategy to visualize benchmarking data.
 
     Assumes data is given as a pandas dataframe.
-
-    TODO explain usage in detail
+    See the abstract methods below for configuration options.
     """
 
     # colors for each dataset in the plot
@@ -126,7 +125,7 @@ class PlottingStrategy(ABC):
                 means = plot_data.mean(numeric_only=True)
                 errors = plot_data.sem(numeric_only=True)
 
-                impl_name = self.serialize_impl_params(impl_params)
+                impl_name = self.make_plot_label(impl_params)
                 for col, (col_name, marker) in self.columns_to_plot().items():
                     text = f"{col_name} ({impl_name})"
                     if text in seen_labels:
@@ -170,11 +169,17 @@ class PlottingStrategy(ABC):
         return new_color
 
     def make_plot_title(self, plot_params: list) -> str:
+        """
+        Generate the heading of each plot from the list of values in columns `self.columns_to_group_for_plots()`
+        """
         columns = [
             f"{column} = {value}"
             for (column, value) in zip(self.columns_to_group_for_plots(), plot_params)
         ]
         return ", ".join(columns)
 
-    def serialize_impl_params(self, impl_params: list) -> str:
+    def make_plot_label(self, impl_params: list) -> str:
+        """
+        Generate the label for each line from the list of values in columns `self.columns_to_group_in_a_plot()`
+        """
         return ", ".join(map(lambda param: f"{param}", impl_params))
