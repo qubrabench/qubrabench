@@ -139,10 +139,10 @@ class HillClimberPlottingStrategy(PlottingStrategy):
         self.colors["QuBRA"] = "blue"
         self.colors["Cade"] = "orange"
 
-    def columns_to_group_for_plots(self):
+    def get_plot_group_column_names(self):
         return ["k", "r"]
 
-    def columns_to_group_in_a_plot(self):
+    def get_data_group_column_names(self):
         return ["impl"]
 
     def compute_aggregates(self, data, *, quantum_factor):
@@ -161,11 +161,14 @@ class HillClimberPlottingStrategy(PlottingStrategy):
     def y_axis_label(self):
         return "Queries"
 
-    def columns_to_plot(self):
+    def get_column_names_to_plot(self):
         return {
             "classical_actual_queries": ("Classical Queries", "o"),
             "quantum_cost": ("Quantum Queries", "x"),
         }
+
+    def make_plot_label(self, impl):
+        return impl[0]
 
 
 @cli.command()

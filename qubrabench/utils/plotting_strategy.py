@@ -39,10 +39,8 @@ class PlottingStrategy(ABC):
         return ""
 
     @abstractmethod
-    def columns_to_group_for_plots(self) -> list[str]:
+    def get_plot_group_column_names(self) -> list[str]:
         """
-        TODO better name
-
         Generate a plot for each unique tuple of values for the specified columns.
         Example: ["k", "n"] - a plot will be generated for each unique tuple value (k, n).
         Example: [] - generate a single plot with the entire data.
@@ -53,11 +51,10 @@ class PlottingStrategy(ABC):
         return []
 
     @abstractmethod
-    def columns_to_group_in_a_plot(self) -> list[str]:
+    def get_data_group_column_names(self) -> list[str]:
         """
-        TODO better name
-
         Generate a data line for each unique value in the specified columns.
+        Useful if you the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.
 
         Example: ["impl"] - a line will be generated for each unique `impl` label.
         """
@@ -69,7 +66,7 @@ class PlottingStrategy(ABC):
         return data
 
     @abstractmethod
-    def columns_to_plot(self) -> dict[str, tuple[str, str]]:
+    def get_column_names_to_plot(self) -> dict[str, tuple[str, str]]:
         """
         Dictionary of columns to display in the plot.
             Key: is the column name in the dataframe
@@ -95,13 +92,15 @@ class PlottingStrategy(ABC):
 
         # calculate the maximum value of the four relevant value columns
         max_val_in_graph = (
-            data[list(self.columns_to_plot().keys())].max(numeric_only=True).max()
+            data[list(self.get_column_names_to_plot().keys())]
+            .max(numeric_only=True)
+            .max()
         )
         # calculate the necessary exponent for the y-axis scaling
         y_scale_exponent = len(str(math.ceil(max_val_in_graph)))
 
         # make groups to generate plots for
-        groups = data.groupby(self.columns_to_group_for_plots())
+        groups = data.groupby(self.get_plot_group_column_names())
 
         fig, axs = plt.subplots(1, len(groups), sharey=True)
         if len(groups) == 1:
@@ -119,14 +118,14 @@ class PlottingStrategy(ABC):
             ax.grid(which="both")
 
             # group lines by implementation
-            impls = group.groupby(self.columns_to_group_in_a_plot())
+            impls = group.groupby(self.get_data_group_column_names())
             for impl_params, impl in impls:
                 plot_data = impl.groupby(self.x_axis_column())
                 means = plot_data.mean(numeric_only=True)
                 errors = plot_data.sem(numeric_only=True)
 
                 impl_name = self.make_plot_label(impl_params)
-                for col, (col_name, marker) in self.columns_to_plot().items():
+                for col, (col_name, marker) in self.get_column_names_to_plot().items():
                     text = f"{col_name} ({impl_name})"
                     if text in seen_labels:
                         text = "__nolabel__"
@@ -138,48 +137,62 @@ class PlottingStrategy(ABC):
                         means[col],
                         marker,
                         label=text,
-                        color=self.color_for_impl(impl_name),
+                        color=self.color_for_data_group(impl_name),
                     )
                     ax.fill_between(
                         means.index,
                         means[col] + errors[col],
                         means[col] - errors[col],
                         alpha=0.4,
-                        color=self.color_for_impl(impl_name),
+                        color=self.color_for_data_group(impl_name),
                     )
 
         fig.legend(loc="upper center")
         plt.subplots_adjust(top=0.7)
         plt.show()
 
-    def color_for_impl(self, impl: str):
+    def make_plot_title(self, plot_params: list) -> str:
         """
+        Generate the heading of each plot from the list of values in columns ``self.get_plot_group_column_names()``
+        """
+        return self.serialize_value_tuple(
+            self.get_plot_group_column_names(), plot_params
+        )
+
+    def color_for_data_group(self, data_group: str):
+        """
+        data_group is a tuple of values in columns ``self.get_data_group_column_names()``
+
         Returns:
-             a color for a given key `impl`, and generates a new unique color if it does not exist.
+             a color for a given key, and generates a new unique color if it does not exist.
         """
 
-        if impl in self.colors:
-            return self.colors[impl]
+        if data_group in self.colors:
+            return self.colors[data_group]
 
         mcolor_names: list = [
             c for c in mcolors.CSS4_COLORS if c not in self.colors.values()
         ]
         new_color = np.random.choice(mcolor_names)
-        self.colors[impl] = new_color
+        self.colors[data_group] = new_color
         return new_color
 
-    def make_plot_title(self, plot_params: list) -> str:
+    def make_plot_label(self, data_params: list) -> str:
         """
-        Generate the heading of each plot from the list of values in columns `self.columns_to_group_for_plots()`
+        Generate the label for each line from the list of values in columns `self.get_data_group_column_names()`
         """
-        columns = [
-            f"{column} = {value}"
-            for (column, value) in zip(self.columns_to_group_for_plots(), plot_params)
-        ]
-        return ", ".join(columns)
+        return self.serialize_value_tuple(
+            self.get_data_group_column_names(), data_params
+        )
 
-    def make_plot_label(self, impl_params: list) -> str:
+    @staticmethod
+    def serialize_value_tuple(columns: list[str], values: list[str]) -> str:
         """
-        Generate the label for each line from the list of values in columns `self.columns_to_group_in_a_plot()`
+        Serialize a set of column values from a given table row to display.
+
+        Args:
+            columns: column header names
+            values: column values in the row of interest
         """
-        return ", ".join(map(lambda param: f"{param}", impl_params))
+        columns = [f"{column} = {value}" for (column, value) in zip(columns, values)]
+        return ", ".join(columns)
