@@ -3,9 +3,27 @@ from typing import Optional
 import numpy as np
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
-from qubrabench.algorithms.search import search
+from qubrabench.algorithms.search import search, SearchDomain
 
 __all__ = ["schoening_solve"]
+
+
+class SchoeningDomain(SearchDomain):
+    def __init__(self, n):
+        self.n = n
+
+    def N(self):
+        a = 2**self.n
+        b = 3 ** (3 * self.n)
+        return a * b
+
+    def T(self, _) -> float:
+        return pow(0.75, self.n) * self.N()
+
+    def get_sample(self, rng):
+        assignment = rng.integers(2, size=self.n) * 2 - 1
+        steps = rng.integers(3, size=3 * self.n)
+        return assignment, steps
 
 
 def schoening_solve(
@@ -31,27 +49,20 @@ def schoening_solve(
     assert inst.k == 3
 
     # prepare search domain (all randomness used by Schoening's algorithm)
-    n = inst.n
-
-    def domain(i):
-        assignment = i[:n]
-        steps = i[-n:]
-        assignment = list(
-            map(
-                lambda x: (x == 0) * -1 + (not (x == 0)) * x,
-                assignment
-            )
-        )
-        return (assignment, steps)
-
-    size = 2 ** (n) * 3 ** (3*n)
+    domain = SchoeningDomain(inst.n)
 
     # find a choice of randomness that makes Schoening's algorithm accept
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    #TODO: T_estimator for schoening
-    randomness = search(domain, pred, size, 100000, error=error, stats=stats, rng=rng)
+    # TODO: T_estimator for schoening
+    randomness = search(
+        domain,
+        pred,
+        error=error,
+        stats=stats,
+        rng=rng,
+    )
 
     # return satisfying assignment (if any was found)
     if randomness is not None:
@@ -75,7 +86,7 @@ def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignm
     assignment, steps = randomness
     assignment = np.copy(assignment)
 
-    for i in range(0, len(steps)):
+    for step in steps:
         # done?
         if inst.evaluate(assignment):
             return assignment
@@ -86,7 +97,7 @@ def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignm
 
         # select a variable that appears in unsatisfied clause, and flip it
         vars_ = np.argwhere(unsat_clause != 0)
-        var = vars_[steps[i]]
+        var = vars_[step]
         assignment[var] *= -1
 
     return None
