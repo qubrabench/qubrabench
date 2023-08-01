@@ -1,5 +1,4 @@
 """This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
-
 from dataclasses import asdict
 from typing import Optional, Tuple, Callable
 import logging
@@ -137,13 +136,13 @@ def run(
 
         # save record to history
         rec = asdict(stats)
-        rec["impl"] = "QuBRA"
         rec["n"] = n
         rec["k"] = k
         rec["r"] = r
         history.append(rec)
 
     # return pandas dataframe
-    df = pd.DataFrame([list(row.values()) for row in history], columns=list(history[0]))
-    logging.info(df.groupby(["k", "r", "n"]).mean(numeric_only=True))
+    df = pd.DataFrame(
+        [list(row.values()) for row in history], columns=list(history[0].keys())
+    )
     return df
