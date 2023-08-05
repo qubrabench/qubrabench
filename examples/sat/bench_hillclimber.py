@@ -192,7 +192,7 @@ def plot(qubra_data_file, ref_data_file):
 
     # could switch strategy here based on src input
     plotter = HillClimberPlottingStrategy()
-    plotter.plot(data, quantum_factor=2)
+    plotter.plot(data, quantum_factor=2, y_lower_lim=300)
 
 
 if __name__ == "__main__":
