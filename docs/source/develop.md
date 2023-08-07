@@ -18,17 +18,16 @@ pip install -e '.[dev]'
 ├── qubrabench      # qubrabench package (quantum subroutines with benchmarking support)
 ├── tests           # unit tests
 ├── conftest.py     # pytest configuration
-├── DEVELOP.md
 ├── LICENSE
 ├── Makefile
 ├── pyproject.toml
 └── README.md
 ```
 
-Examples contain different problem sets (SAT, community detection, ...), which may have multiple programmatic solvers, shared data structures, user interfaces and outputs.
+Folder `examples` contains different problem sets (SAT, community detection, ...), which may have multiple programmatic solvers, shared data structures, user interfaces and outputs.
 Tests for the example solvers should be placed in a new Python file next to the solver, instead of inside the project's `tests` directory.
 
-`qubrabench` contains the benchmarking related code.
+Folder `qubrabench` contains the benchmarking related code.
 This includes statistics classes as well as _quantumizable_ algorithms that execute classically, while estimating quantum cost (or bounds) theoretically during runtime.
 
 ## Contributing
@@ -37,7 +36,7 @@ To contribute to the repository, [fork](https://docs.github.com/en/get-started/q
 Make sure to format, lint and test your code.
 More details on the individual actions are below, but you can quickly evaluate the project the same way our GitHub actions are performed by simply running `make` in the root of this repository.
 
-After you finished testing your implementation, create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) to start the integration of your changes into this repository.
+After you finish testing your implementation, create a [pull request](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests) to start the integration of your changes into this repository.
 GitHub provides a [Quickstart Article](https://docs.github.com/en/get-started/quickstart/contributing-to-projects) on how to contribute to projects, including step-by-step guides for everything mentioned above.
 
 
@@ -63,37 +62,7 @@ def test_that_runs_for_a_long_time():
 ```
 
 You can then single out certain tests to run by a certain marker with the `-m` parameter, for example `pytest -m slow` to run only tests marked as `slow`, or `pytest -m "not slow"` to run all but those tests.
-See `pytest --markers` for a list of all available markers.
-
-### Run Existing Benchmarks
-
-To benchmark the example hillclimber algorithm for MAX-k-SAT with multiple input sizes, you can run the [bench_hillclimber.py](https://github.com/qubrabench/qubrabench/blob/development/examples/sat/bench_hillclimber.py) script.
-Run `./examples/sat/bench_hillclimber.py -h` to obtain an overview over the available commands of this example.
-
-To aggregate benchmarking data, run you can run the following example to produce 5 runs of `k=3` SAT problems. In this example, `k` is the number of literals in a clause, `n` is the total number of variables and `r` is a factor for determining the number of clauses `m = r * n`. A path to the desired output can be provided after the `--save` flag.
-
-```shell
-./examples/sat/bench_hillclimber.py hill-climb -k 3 -r 3 -n 100 --runs 5 --save sat.json
-```
-
-In this case, the generated data is stored in the `sat.json` file.
-
-As one will often want to benchmark algorithms for multiple choices of problem sizes and other parameters, using a shell script to execute multiple benchmarks in a batch can be useful.
-See [Makefile](https://github.com/qubrabench/qubrabench/blob/development/Makefile) for an example.
-
-### View Benchmark Results
-
-To generate a plot, you first need to run benchmarks and thereby populate a JSON output file, like the `sat.json` file in the example above.
-Once this is done, you can generate a plot based on this file by running the script `./examples/sat/bench_hillclimber.py plot <path-to-file>`.
-
-You can also use the targets of the [Makefile](https://github.com/qubrabench/qubrabench/blob/development/Makefile) to run predefined benchmarking sets and view the plots.
-The following plot is produced by the command:
-```shell
-make bench-hillclimber-quick
-```
-
-
-![Example plot](https://github.com/qubrabench/qubrabench/blob/development/docs/img/bench_hillclimber_quick.png?raw=true)
+Run `pytest --markers` for a list of all available markers.
 
 ## Best Practices
 
