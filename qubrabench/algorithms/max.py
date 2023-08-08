@@ -46,10 +46,11 @@ def max(
 
         key = default_key
 
-    iterable = list(iterable)
+    N = 0  # number of elements in `iterable`
 
     max_elem: Optional[E] = None
     for elem in iterable:
+        N += 1
         if stats:
             stats.classical_actual_queries += 1
         if max_elem is None or key(elem) > key(max_elem):
@@ -67,8 +68,9 @@ def max(
             raise ValueError(
                 "max() parameter 'error' not provided, cannot compute quantum query statistics"
             )
+        stats.classical_expected_queries += N
         stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            len(iterable), error
+            N, error
         )
 
     return max_elem
@@ -79,8 +81,6 @@ def cade_et_al_expected_quantum_queries(N: int, error: float) -> float:
 
     Args:
         N: number of elements of search space
-        T: number of solutions (marked elements)
-        cq: the quantum cost factor
         error: upper bound on the failure probability of the quantum algorithm.
 
 

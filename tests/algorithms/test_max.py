@@ -38,3 +38,18 @@ def test_max_raises_on_stats_requested_and_eps_missing():
 
 def test_max_on_empty_with_default():
     assert max([], error=10**-5, default=42) == 42
+
+
+def test_max_stats():
+    stats = QueryStats()
+    result = max(
+        range(100), key=lambda x: -((x - 50) ** 2), error=10**-5, stats=stats
+    )
+    assert result == 50
+    assert stats == QueryStats(
+        classical_control_method_calls=0,
+        classical_actual_queries=100,
+        classical_expected_queries=100,
+        quantum_expected_classical_queries=0,
+        quantum_expected_quantum_queries=pytest.approx(1405.3368),
+    )
