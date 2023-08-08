@@ -78,6 +78,7 @@ def max(
 
 def cade_et_al_expected_quantum_queries(N: int, error: float) -> float:
     """Upper bound on the number of quantum queries made by Cade et al's quantum max algorithm.
+    https://doi.org/10.48550/arXiv.2203.04975, Corollary 1
 
     Args:
         N: number of elements of search space
@@ -87,8 +88,5 @@ def cade_et_al_expected_quantum_queries(N: int, error: float) -> float:
     Returns:
         the upper bound on the number of quantum queries
     """
-    # assume cq corresponds to the number of classical comparisons corresponding to oracle O_{f_i} in paper
-    sum_of_ts: float = 0
-    for t in range(1, N):
-        sum_of_ts += cade_et_al_F(N, t) / (t + 1)
-    return np.ceil(np.log(1 / error) / np.log(3)) * 3 * sum_of_ts  # type: ignore
+    sum_of_ts: float = sum([cade_et_al_F(N, t) / (t + 1) for t in range(1, N)])
+    return np.ceil(np.log(1 / error) / np.log(3)) * 3 * sum_of_ts
