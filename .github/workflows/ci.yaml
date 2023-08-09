@@ -65,7 +65,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Install Python project and dependencies
+      - name: Install project and dependencies
         run: |
           python -m pip install --upgrade pip
           pip install .[dev]
@@ -97,10 +97,19 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
-      - name: Build Sphinx
-        uses: ammaraskar/sphinx-action@master
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
         with:
-          docs-folder: "docs/"
+          python-version: "3.10"
+
+      - name: Install project and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[dev]
+
+      - name: Build Sphinx
+        run: |
+          cd docs/ && make html
 
       - name: Deploy to GH pages
         uses: peaceiris/actions-gh-pages@v3
