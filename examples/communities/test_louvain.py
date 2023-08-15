@@ -122,18 +122,21 @@ def test_modularity():
     solver = louvain.Louvain(G)
     solver.C = node_community_map
     initial_modularity = solver.modularity()
+    print(initial_modularity)
 
     # move node
     node = 2
     target_community = 1
     initial_community = solver.C[node]
     delta_modularity_move = solver.delta_modularity(node, target_community, exact=False)
-    solver.C[node] = target_community
+    solver.update_communities(node, target_community)
     move_modularity = solver.modularity()
     delta_modularity_back = solver.delta_modularity(
         node, initial_community, exact=False
     )
-    solver.C[node] = initial_community
+    solver.update_communities(node, initial_community)
+
+    print(delta_modularity_move, delta_modularity_back)
 
     assert delta_modularity_move == delta_modularity_back * -1
     assert move_modularity == pytest.approx(initial_modularity + delta_modularity_move)
