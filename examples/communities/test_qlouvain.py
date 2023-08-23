@@ -2,10 +2,9 @@
 from dataclasses import asdict
 import pytest
 
-import qlouvain, louvain
+import qlouvain
 from graph_instances import random_fcs_graph
-from test_louvain import sanity_check_input, graph_a
-import networkx as nx
+from test_louvain import sanity_check_input
 
 
 @pytest.fixture()
