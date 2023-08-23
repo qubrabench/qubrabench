@@ -31,9 +31,15 @@ def random_lfr_graph(
         average_degree=average_degree,
         seed=rng,
     )
+
+    graph = remove_self_loops(graph)
+    return graph
+
+
+def remove_self_loops(graph):
     graph.remove_edges_from(nx.selfloop_edges(graph))
     graph.remove_nodes_from(list(nx.isolates(graph)))
-    graph = nx.relabel.convert_node_labels_to_integers(graph)
+    graph = nx.relabel.convert_node_labels_to_integers(graph, first_label=1)
     return graph
 
 
@@ -85,6 +91,7 @@ def random_fcs_graph(
             graph.add_edge(u, v)
             k -= 1
 
+    graph = remove_self_loops(graph)
     return graph
 
 

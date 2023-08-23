@@ -8,7 +8,7 @@ import pytest
 import louvain
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def small_adjacency_matrix():
     """Fixture creating a small 10 node adjacency matrix"""
     return np.array(
@@ -27,7 +27,7 @@ def small_adjacency_matrix():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture()
 def graph_a():
     """Fixture creating a graph instance with 15 nodes"""
     # Create a graph with 15 nodes

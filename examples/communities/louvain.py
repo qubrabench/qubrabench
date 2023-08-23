@@ -2,10 +2,11 @@
 
 from networkx.algorithms.community import quality
 import networkx as nx
+from abc import ABC
 from typing import Optional
 
 
-class Louvain:
+class Louvain(ABC):
     """
     This class implements the classical Louvain algorithm like Cade et al. do in their community detection paper.
     It is initialized using an undirected networkx graph instance without selfloops.
