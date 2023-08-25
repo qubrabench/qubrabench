@@ -26,6 +26,31 @@ def num_solutions(instance, key) -> int:
     """ Typeclass definition to get the (estimated) number of solutions for domain."""
 
 
+# counter for iteration of lists
+i = 0
+
+#TODO: Doesnt use rng yet
+@sample.instance(list)
+def sample_list(instance : list, rng) -> E:
+    """ Default sampling for iterables."""
+    global i
+
+    result = None
+    if i < size(instance):
+        result = instance[i]
+        i += 1
+    return result
+
+@size.instance(list)
+def size_list(instance: list) -> int:
+    return len(instance)
+
+
+@num_solutions.instance(list)
+def num_solutions_list(instance: list, key) -> int:
+    return sum(1 for x in instance if key(x))
+
+
 
 def search(
     seq: Iterable[E],
