@@ -3,27 +3,30 @@ from typing import Optional
 import numpy as np
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
-from qubrabench.algorithms.search import search, SearchDomain
+from qubrabench.algorithms.search import search, sample, size, num_solutions
 
 __all__ = ["schoening_solve"]
 
 
-class SchoeningDomain(SearchDomain):
+class Schoening:
     def __init__(self, n):
         self.n = n
 
-    def get_size(self):
-        N_assignment = 2**self.n
-        N_steps = 3 ** (3 * self.n)
-        return N_assignment * N_steps
+@sample.instance(Schoening)
+def schoening_sample(instance : Schoening, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
+    assignment = rng.integers(2, size=instance.n) * 2 - 1
+    steps = rng.integers(3, size=3 * instance.n)
+    return assignment, steps
 
-    def get_number_of_solutions(self, _) -> float:
-        return pow(0.75, self.n) * self.get_size()
+@size.instance(Schoening)
+def schoening_size(instance: Schoening) -> int:
+    N_assignment = 2 ** instance.n
+    N_steps = 3 ** (3 * instance.n)
+    return N_assignment * N_steps
 
-    def get_random_sample(self, rng) -> tuple[np.ndarray, np.ndarray]:
-        assignment = rng.integers(2, size=self.n) * 2 - 1
-        steps = rng.integers(3, size=3 * self.n)
-        return assignment, steps
+@num_solutions.instance(Schoening)
+def schoening_num_solutions(instance: Schoening, _) -> float:
+    return pow(0.75, instance.n) * size(instance)
 
 
 def schoening_solve(
@@ -49,7 +52,7 @@ def schoening_solve(
     assert inst.k == 3
 
     # prepare search domain (all randomness used by Schoening's algorithm)
-    domain = SchoeningDomain(inst.n)
+    domain = Schoening(inst.n)
 
     # find a choice of randomness that makes Schoening's algorithm accept
     def pred(x):

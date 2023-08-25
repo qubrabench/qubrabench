@@ -6,49 +6,29 @@ from collections.abc import Iterable
 from typing import Callable, Optional, TypeVar, Generic
 import numpy as np
 from ..stats import QueryStats
+from classes import typeclass
 
-__all__ = ["search", "SearchDomain"]
+__all__ = ["search", "sample", "size", "num_solutions"]
 
 
 E = TypeVar("E")
 
+@typeclass
+def sample(instance, rng) -> E:
+    """ Typeclass definition to sample a domain."""
 
-class SearchDomain(ABC, Generic[E]):
-    @abstractmethod
-    def get_size(self) -> int:
-        pass
+@typeclass
+def size(instance) -> int:
+    """ Typeclass definition to get domain size. """
 
-    @abstractmethod
-    def get_number_of_solutions(self, key) -> float:
-        pass
+@typeclass
+def num_solutions(instance, key) -> int:
+    """ Typeclass definition to get the (estimated) number of solutions for domain."""
 
-    @abstractmethod
-    def get_random_sample(self, rng: np.random.Generator) -> E:
-        pass
-
-
-class ListDomain(SearchDomain[E], Generic[E]):
-    def __init__(self, it: Iterable[E], rng):
-        self.it = list(it)
-        rng.shuffle(self.it)
-        self.sample_it = iter(self.it)
-
-    def get_size(self):
-        return len(self.it)
-
-    def get_number_of_solutions(self, key):
-        return len([1 for x in self.it if key(x)])
-
-    def get_random_sample(self, rng: np.random.Generator) -> Optional[E]:
-        try:
-            x = next(self.sample_it)
-        except StopIteration:
-            x = None
-        return x
 
 
 def search(
-    seq: Iterable[E] | SearchDomain[E],
+    seq: Iterable[E],
     key: Callable[[E], bool],
     *,
     rng: np.random.Generator,
@@ -75,11 +55,7 @@ def search(
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
     """
-
-    if isinstance(seq, Iterable):
-        seq = ListDomain(seq, rng)
-
-    N = seq.get_size()
+    N = size(seq)
 
     # collect stats
     if stats:
@@ -88,7 +64,7 @@ def search(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
             )
 
-        T = seq.get_number_of_solutions(key)
+        T = num_solutions(seq, key)
 
         stats.classical_expected_queries += (N + 1) / (T + 1)
         stats.quantum_expected_classical_queries += (
@@ -100,7 +76,7 @@ def search(
 
     # run the classical sampling algorithm
     # TODO when sampling with replacement, should break after reaching some limit (so that an input with no solutions does not loop infinitely)
-    while (x := seq.get_random_sample(rng)) is not None:
+    while (x := sample(seq, rng)) is not None:
         if stats:
             stats.classical_actual_queries += 1
         if key(x):
