@@ -5,7 +5,6 @@ Script/Module that provides benchmarking functions for hillclimbing and bench_pl
 """
 import logging
 from datetime import datetime
-from os import path, makedirs
 from pathlib import Path
 import click
 import numpy as np
@@ -113,17 +112,14 @@ def setup_default_logger(verbose: bool):
 
     if verbose:
         root_logger.setLevel(logging.DEBUG)
-        log_directory = "../../data/logs"
+        log_directory = Path(__file__).parents[2] / "data" / "logs"
 
         # create log dir in case it doesn't exist
-        if not path.exists(log_directory):
-            makedirs(log_directory)
+        log_directory.mkdir(parents=True, exist_ok=True)
 
         file_handler = logging.FileHandler(
-            "{0}/{1}.log".format(
-                log_directory,
-                "qubra-bench-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S"),
-            )
+            log_directory
+            / ("qubra-bench-" + datetime.now().strftime("%Y-%m-%d-%H-%M-%S") + ".log")
         )
         file_handler.setFormatter(log_formatter)
         root_logger.addHandler(file_handler)
