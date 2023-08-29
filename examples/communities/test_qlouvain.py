@@ -33,7 +33,7 @@ def test_qlouvain_sg(graph_b, rng):
     }
 
 
-def test_simgple_qlouvain_sg(graph_b, rng):
+def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.SimpleQLouvainSG(graph_b, rng=rng)
     sanity_check_input(solver.A)
 
