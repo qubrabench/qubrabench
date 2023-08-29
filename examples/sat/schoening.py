@@ -12,17 +12,22 @@ class Schoening:
     def __init__(self, n):
         self.n = n
 
+
 @sample.instance(Schoening)
-def schoening_sample(instance : Schoening, rng: np.random.Generator) -> tuple[np.ndarray, np.ndarray]:
+def schoening_sample(
+    instance: Schoening, rng: np.random.Generator
+) -> tuple[np.ndarray, np.ndarray]:
     assignment = rng.integers(2, size=instance.n) * 2 - 1
     steps = rng.integers(3, size=3 * instance.n)
     return assignment, steps
 
+
 @size.instance(Schoening)
 def schoening_size(instance: Schoening) -> int:
-    N_assignment = 2 ** instance.n
+    N_assignment = 2**instance.n
     N_steps = 3 ** (3 * instance.n)
     return N_assignment * N_steps
+
 
 @num_solutions.instance(Schoening)
 def schoening_num_solutions(instance: Schoening, _) -> float:

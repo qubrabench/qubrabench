@@ -1,9 +1,8 @@
 """ This module provides a generic search interface that executes classically 
     and calculates the expected quantum query costs to a predicate function
 """
-from abc import ABC, abstractmethod
 from collections.abc import Iterable
-from typing import Callable, Optional, TypeVar, Generic
+from typing import Callable, Optional, TypeVar
 import numpy as np
 from ..stats import QueryStats
 from classes import typeclass
@@ -13,26 +12,30 @@ __all__ = ["search", "sample", "size", "num_solutions"]
 
 E = TypeVar("E")
 
+
 @typeclass
 def sample(instance, rng) -> E:
-    """ Typeclass definition to sample a domain."""
+    """Typeclass definition to sample a domain."""
+
 
 @typeclass
 def size(instance) -> int:
-    """ Typeclass definition to get domain size. """
+    """Typeclass definition to get domain size."""
+
 
 @typeclass
 def num_solutions(instance, key) -> int:
-    """ Typeclass definition to get the (estimated) number of solutions for domain."""
+    """Typeclass definition to get the (estimated) number of solutions for domain."""
 
 
 # counter for iteration of lists
 i = 0
 
-#TODO: Doesnt use rng yet
+
+# TODO: Doesnt use rng yet
 @sample.instance(list)
-def sample_list(instance : list, rng) -> E:
-    """ Default sampling for iterables."""
+def sample_list(instance: list, rng) -> E:
+    """Default sampling for iterables."""
     global i
 
     result = None
@@ -40,6 +43,7 @@ def sample_list(instance : list, rng) -> E:
         result = instance[i]
         i += 1
     return result
+
 
 @size.instance(list)
 def size_list(instance: list) -> int:
@@ -49,7 +53,6 @@ def size_list(instance: list) -> int:
 @num_solutions.instance(list)
 def num_solutions_list(instance: list, key) -> int:
     return sum(1 for x in instance if key(x))
-
 
 
 def search(
