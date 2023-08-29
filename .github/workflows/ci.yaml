@@ -16,6 +16,8 @@ jobs:
 
       - name: Check source code formatting
         uses: psf/black@stable
+        with:
+          jupyter: true
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
