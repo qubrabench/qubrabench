@@ -24,10 +24,10 @@ class Louvain(ABC):
         self.update_graph(G)
         self.C = self.single_partition()  # node to community map
 
-        # caches
-        self.Sigma_cache = {}  # map caching Sigma values for communities
-        self.S_cache = {}  # map caching the S values of node-community pairs
-        self.strength_cache = {}  # map caching the strength of nodes
+        # caches for `Sigma(u)`, `S(u, v)` and node strengths `strength(u)`
+        self.cache_Sigma: dict[int, int] = {}
+        self.cache_S: dict[(int, int), int] = {}
+        self.cache_strength: dict[int, int] = {}
 
     def update_graph(self, new_graph):
         self.G = nx.relabel.convert_node_labels_to_integers(new_graph)
@@ -35,7 +35,7 @@ class Louvain(ABC):
         self.W = self.A.sum() / 2
 
         # drop the strength cache only here since its not affected by communities
-        self.strength_cache = {}
+        self.cache_strength = {}
 
     def update_communities(self, node, new_community):
         """Moves a given node into a new community and updates caches.
@@ -48,8 +48,8 @@ class Louvain(ABC):
         self.C[node] = new_community
 
         # drop caches
-        self.Sigma_cache = {}
-        self.S_cache = {}
+        self.cache_Sigma = {}
+        self.cache_S = {}
 
     def record_history(self):
         """Take a record snapshot of the current adjacency matrix and community mapping."""
@@ -166,7 +166,7 @@ class Louvain(ABC):
         """
         try:
             # cache first
-            return self.S_cache[alpha][u]
+            return self.cache_S[alpha, u]
         except KeyError:
             # cache miss
             s = sum(
@@ -174,9 +174,7 @@ class Louvain(ABC):
             )
 
             # update cache
-            if alpha not in self.S_cache.keys():
-                self.S_cache[alpha] = {}
-            self.S_cache[alpha][u] = s
+            self.cache_S[alpha, u] = s
 
             return s
 
@@ -191,7 +189,7 @@ class Louvain(ABC):
         """
         try:
             # cache first
-            return self.Sigma_cache[alpha]
+            return self.cache_Sigma[alpha]
         except KeyError:
             # cache miss
             sigma = 0
@@ -201,19 +199,19 @@ class Louvain(ABC):
                         sigma += weight
 
             # add to cache
-            self.Sigma_cache[alpha] = sigma
+            self.cache_Sigma[alpha] = sigma
             return sigma
 
     def strength(self, u: int) -> float:
         """Calculate the strength of a given node index."""
         try:
             # cache first
-            return self.strength_cache[u]
+            return self.cache_strength[u]
         except KeyError:
             # cache miss
             strength = self.G.degree(u, weight="weight")
             # add to cache
-            self.strength_cache[u] = strength
+            self.cache_strength[u] = strength
             return strength
 
     def modularity(self, node_community_map: Optional[dict] = None) -> float:
