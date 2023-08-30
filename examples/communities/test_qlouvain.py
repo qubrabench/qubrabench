@@ -18,6 +18,7 @@ def graph_b(rng):
     )
 
 
+@pytest.mark.slow
 def test_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng)
     sanity_check_input(solver.A)
@@ -33,6 +34,7 @@ def test_qlouvain_sg(graph_b, rng):
     }
 
 
+@pytest.mark.slow
 def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.SimpleQLouvainSG(graph_b, rng=rng)
     sanity_check_input(solver.A)
@@ -48,6 +50,7 @@ def test_simple_qlouvain_sg(graph_b, rng):
     }
 
 
+@pytest.mark.slow
 def test_edge_qlouvain(graph_b, rng):
     solver = qlouvain.EdgeQLouvain(graph_b, rng=rng)
     sanity_check_input(solver.A)

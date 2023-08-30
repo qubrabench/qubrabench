@@ -14,7 +14,7 @@ authors = [
 description = "QuBRA Benchmarking Framework"
 readme = "README.md"
 requires-python = ">=3.10"
-license = {file = "LICENSE"}
+license = { file = "LICENSE" }
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
@@ -46,7 +46,7 @@ dev = [
     "ruff~=0.0",
     "sphinx~=7.0.1",
     "sphinxcontrib-napoleon~=0.7",
-    "myst-parser~=2.0"
+    "myst-parser~=2.0",
 ]
 
 [tool.setuptools.dynamic]
@@ -56,7 +56,7 @@ version = { attr = "qubrabench.__version__" }
 include = ["qubrabench"]
 
 [tool.pytest.ini_options]
-markers = []
+markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.ruff]
 line-length = 100000 # 88 enforced by black, ignore for comments.
