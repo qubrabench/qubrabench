@@ -85,7 +85,7 @@ class Louvain(ABC):
                 # calculate maximum increase of modularity
                 max_modularity_increase, v_community = max(
                     [
-                        (self.delta_modularity(u, self.C[v], exact=True), self.C[v])
+                        (self.delta_modularity(u, self.C[v]), self.C[v])
                         for v in self.G[u]
                     ],
                     key=lambda entry: entry[0],
@@ -127,13 +127,12 @@ class Louvain(ABC):
             community_set[node] = node
         return community_set
 
-    def delta_modularity(self, u: int, alpha: int, *, exact: bool = False) -> float:
+    def delta_modularity(self, u: int, alpha: int) -> float:
         """Calculate the change in modularity that would occur if u was moved into community alpha
 
         Args:
             u: Integer label of the nx.Node to be moved
             alpha: Integer label of the target community
-            exact (bool, optional): If true, calculate two full graph modularities and subtract them to receive delta, otherwise use one-move delta-formula. Defaults to False.
 
         Returns:
             The resulting change in modularity
@@ -141,13 +140,6 @@ class Louvain(ABC):
         # moving a node to its current community should not change modularity
         if self.C[u] == alpha:
             return 0
-
-        if exact:
-            current_modularity = self.modularity()
-            mapping_after_move = self.C.copy()
-            mapping_after_move[u] = alpha
-            modularity_after_move = self.modularity(mapping_after_move)
-            return modularity_after_move - current_modularity
 
         return ((self.S(u, alpha) - self.S(u, self.C[u])) / self.W) - (
             self.strength(u)

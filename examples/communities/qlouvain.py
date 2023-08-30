@@ -109,7 +109,7 @@ class SimpleQLouvainSG(QLouvain):
 class EdgeQLouvain(QLouvain):
     """Quantum version of Louvain but search space of edges instead of nodes"""
 
-    def pred(self):
+    def pred(self, node: int) -> bool:
         pass  # not needed for this variant
 
     def move_nodes(self):
@@ -120,10 +120,10 @@ class EdgeQLouvain(QLouvain):
             # calculate maximum increase of modularity
             node, max_modularity_increase, v_community = qmax(
                 [
-                    (u, self.delta_modularity(u, self.C[v], exact=True), self.C[v])
+                    (u, self.delta_modularity(u, self.C[v]), self.C[v])
                     for u, v in self.G.edges
                 ],
-                key=lambda entry: entry[0],
+                key=lambda entry: entry[1],
                 stats=self.stats,
                 error=self.error,
             )

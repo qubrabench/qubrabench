@@ -128,12 +128,10 @@ def test_modularity():
     node = 2
     target_community = 1
     initial_community = solver.C[node]
-    delta_modularity_move = solver.delta_modularity(node, target_community, exact=False)
+    delta_modularity_move = solver.delta_modularity(node, target_community)
     solver.update_communities(node, target_community)
     move_modularity = solver.modularity()
-    delta_modularity_back = solver.delta_modularity(
-        node, initial_community, exact=False
-    )
+    delta_modularity_back = solver.delta_modularity(node, initial_community)
     solver.update_communities(node, initial_community)
 
     print(delta_modularity_move, delta_modularity_back)
@@ -205,9 +203,9 @@ def test_one_pass_louvain(graph_a):
     assert len(solver.G) == 4
     # the edge weights should equal the number edges between communities
     assert solver.G.get_edge_data(0, 1)["weight"] == 2
-    assert solver.G.get_edge_data(0, 3)["weight"] == 4
-    assert solver.G.get_edge_data(1, 2)["weight"] == 3
-    assert solver.G.get_edge_data(1, 3)["weight"] == 1
+    assert solver.G.get_edge_data(0, 2)["weight"] == 3
+    assert solver.G.get_edge_data(0, 3)["weight"] == 1
+    assert solver.G.get_edge_data(1, 3)["weight"] == 4
     # no further edges exist
     assert len(solver.G.edges) == 4
 
