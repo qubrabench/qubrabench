@@ -3,3 +3,4 @@ repos:
   rev: 2.2.10
   hooks:
   - id: nbdev_clean
+    args: ['--fname=./examples/sat/hillclimber.ipynb', '--clear_all']
