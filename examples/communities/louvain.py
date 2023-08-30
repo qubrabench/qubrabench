@@ -22,7 +22,7 @@ class Louvain(ABC):
         self.keep_history = keep_history
         self.history = []
         self.update_graph(G)
-        self.C = self.single_partition()  # node to community map
+        self.C: dict[int, int] = self.single_partition()  # node to community map
 
         # caches for `Sigma(u)`, `S(u, v)` and node strengths `strength(u)`
         self.cache_Sigma: dict[int, int] = {}
