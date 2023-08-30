@@ -40,6 +40,7 @@ def hill_climber(
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
     ones = np.ones(n, dtype=int)
+    # produce nxn matrix, where all diagonal entries are -1, all other entries are 1
     flip_mat = np.outer(ones, ones) - 2 * np.eye(n, dtype=int)
 
     # start with a random assignment
@@ -52,6 +53,7 @@ def hill_climber(
 
     while True:
         # compute all Hamming neighbors (row by row) and their weights
+        # flip_matrix used to flip values on diagonal to compute all possible neighbours
         neighbors = flip_mat * np.outer(ones, x)
 
         # find improved directions
