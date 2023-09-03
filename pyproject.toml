@@ -59,7 +59,8 @@ include = ["qubrabench"]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 
 [tool.ruff]
-line-length = 100000 # 88 enforced by black, ignore for comments.
+# Never enforce `E501` (line length violations). Length = 88 auto-checked by black.
+ignore = ["E501"]
 
 [tool.mypy]
 plugins = ["numpy.typing.mypy_plugin"]
