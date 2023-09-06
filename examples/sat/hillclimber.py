@@ -18,14 +18,15 @@ from qubrabench.algorithms.max import max
 #     return x
 # x, w = result, inst.weight(result)
 
+
 # OPTION 2: faster implementation (for our instance sizes)
 def hill_climber(
-        inst: WeightedSatInstance,
-        *,
-        rng: np.random.Generator,
-        error: Optional[float] = None,
-        stats: Optional[QueryStats] = None,
-        steep: bool = False,
+    inst: WeightedSatInstance,
+    *,
+    rng: np.random.Generator,
+    error: Optional[float] = None,
+    stats: Optional[QueryStats] = None,
+    steep: bool = False,
 ) -> Optional[Assignment]:
     """A hillclimbing heuristic to find maximizing assignments to weighted SAT instances
         by progressively transitioning to better solutions using neighborhood search.
@@ -106,15 +107,15 @@ def hill_climber(
 
 
 def run(
-        k: int,
-        r: int,
-        n: int,
-        *,
-        n_runs: int,
-        rng: np.random.Generator,
-        error: Optional[float] = None,
-        random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
-        steep: bool = False,
+    k: int,
+    r: int,
+    n: int,
+    *,
+    n_runs: int,
+    rng: np.random.Generator,
+    error: Optional[float] = None,
+    random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
+    steep: bool = False,
 ) -> pd.DataFrame:
     """External interface to generate weighted sat instances, run the hillclimber algorithm and return statistics.
 
