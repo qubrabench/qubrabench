@@ -12,13 +12,20 @@ from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
 
 
+# OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
+# result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
+# if result is None:
+#     return x
+# x, w = result, inst.weight(result)
+
+# OPTION 2: faster implementation (for our instance sizes)
 def hill_climber(
-    inst: WeightedSatInstance,
-    *,
-    rng: np.random.Generator,
-    error: Optional[float] = None,
-    stats: Optional[QueryStats] = None,
-    steep: bool = False,
+        inst: WeightedSatInstance,
+        *,
+        rng: np.random.Generator,
+        error: Optional[float] = None,
+        stats: Optional[QueryStats] = None,
+        steep: bool = False,
 ) -> Optional[Assignment]:
     """A hillclimbing heuristic to find maximizing assignments to weighted SAT instances
         by progressively transitioning to better solutions using neighborhood search.
@@ -39,34 +46,35 @@ def hill_climber(
 
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
+    # generates a 1xN matrix containing only ones
     ones = np.ones(n, dtype=int)
     # produce nxn matrix, where all diagonal entries are -1, all other entries are 1
+    # 1. np.outer generates outer product, which results in matrix containing only ones
+    # 2. np.eye generates identity matrix, this is multiplied by 2 and then subtracted from the ones matrix
     flip_mat = np.outer(ones, ones) - 2 * np.eye(n, dtype=int)
 
-    # start with a random assignment
+    # start with a random assignment, -1 represents false, 1 represents true
     x = rng.choice([-1, 1], n)
     w = inst.weight(x)
 
-    # error probability per hillclimb step, assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
+    # error probability per hillclimb step,
+    # assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
     if error is not None:
         error /= n
 
     while True:
-        # compute all Hamming neighbors (row by row) and their weights
+        # compute all Hamming neighbors (row by row)
+        # np.outer(ones, x) generates matrix containing the current assignment x in n rows
         # flip_matrix used to flip values on diagonal to compute all possible neighbours
+        # this only takes into account neighbours with a hamming distance of 1
+        # uses numpys __mul__ operation, which performs element-wise multiplication, not matrix multiplication
         neighbors = flip_mat * np.outer(ones, x)
 
         # find improved directions
         if stats:
             stats.classical_control_method_calls += 1
 
-        # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
-        # result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
-        # if result is None:
-        #     return x
-        # x, w = result, inst.weight(result)
-
-        # OPTION 2: faster implementation (for our instance sizes)
+        # computes the weight for each possible neighbour, returns values in array
         weights = inst.weight(neighbors)
 
         def pred(it: Tuple[Assignment, np.float_]) -> bool:
@@ -98,15 +106,15 @@ def hill_climber(
 
 
 def run(
-    k: int,
-    r: int,
-    n: int,
-    *,
-    n_runs: int,
-    rng: np.random.Generator,
-    error: Optional[float] = None,
-    random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
-    steep: bool = False,
+        k: int,
+        r: int,
+        n: int,
+        *,
+        n_runs: int,
+        rng: np.random.Generator,
+        error: Optional[float] = None,
+        random_weights: Optional[Callable[[int], npt.NDArray[W]]] = None,
+        steep: bool = False,
 ) -> pd.DataFrame:
     """External interface to generate weighted sat instances, run the hillclimber algorithm and return statistics.
 
