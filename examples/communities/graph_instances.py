@@ -46,7 +46,7 @@ def remove_self_loops(graph):
 def random_fcs_graph(
     n: int,
     *,
-    community_size: float = 50,
+    community_size: int = 50,
     mu: float = 0.3,
     average_degree: float = 5,
     rng: np.random.Generator,
@@ -67,7 +67,7 @@ def random_fcs_graph(
     graph.add_nodes_from(list(range(1, n + 1)))
 
     community_labels = list(range(1, math.ceil(n / community_size)))
-    C = {}
+    C: dict[int, int] = {}
 
     label_group_a = list(range(1, math.floor(n / community_size)))
 
@@ -77,15 +77,20 @@ def random_fcs_graph(
         else:
             C[u] = math.ceil(n / community_size)
 
-    # remaining edges counter k
+    # number of edges to add
     k = average_degree * n
     while k > 0:
+        # pick a random target community
         label = rng.choice(community_labels)
-        u = rng.choice(graph.nodes)
-        V_l, V_others = get_community_node_lists(label, C)
 
-        # draw from either V_l or V_others depending on randomness and mu
-        v = rng.choice(V_l) if rng.uniform() < 1 - mu else rng.choice(V_others)
+        # pick first node at random
+        u = rng.choice(graph.nodes)
+
+        # pick second node from the above community `label` with probability `1 - mu`, otherwise from outside.
+        pick_from_community = rng.uniform() < 1 - mu
+        v = rng.choice(
+            [node for node in C if (C[node] == label) == pick_from_community]
+        )
 
         if not graph.has_edge(u, v):
             graph.add_edge(u, v)
@@ -93,16 +98,3 @@ def random_fcs_graph(
 
     graph = remove_self_loops(graph)
     return graph
-
-
-def get_community_node_lists(label: int, community_mapping: dict):
-    """Returns two lists of nodes, V_l and V_others, where V_l is the list of nodes in community label and V_others are all others"""
-    V_l = []
-    V_others = []
-    for k, v in community_mapping.items():
-        if v == label:
-            V_l.append(k)
-        else:
-            V_others.append(k)
-
-    return V_l, V_others
