@@ -4,6 +4,8 @@ import numpy as np
 import networkx as nx
 import math
 
+__all__ = ["random_lfr_graph", "random_fcs_graph"]
+
 
 def remove_self_loops_and_index_from_one(graph: nx.Graph) -> nx.Graph:
     graph.remove_edges_from(nx.selfloop_edges(graph))
