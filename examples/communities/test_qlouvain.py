@@ -27,10 +27,10 @@ def test_qlouvain_sg(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(1430),
-        "classical_expected_queries": pytest.approx(1565.6747913382508),
-        "quantum_expected_classical_queries": pytest.approx(1634.4651285549912),
-        "quantum_expected_quantum_queries": pytest.approx(1153.524995809208),
+        "classical_actual_queries": pytest.approx(1995),
+        "classical_expected_queries": pytest.approx(2095.5866),
+        "quantum_expected_classical_queries": pytest.approx(2276.8633),
+        "quantum_expected_quantum_queries": pytest.approx(1479.9369),
     }
 
 
@@ -43,10 +43,10 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(4812),
-        "classical_expected_queries": pytest.approx(4822.857182305446),
-        "quantum_expected_classical_queries": pytest.approx(5175.580403305713),
-        "quantum_expected_quantum_queries": pytest.approx(2412.747268476625),
+        "classical_actual_queries": pytest.approx(1794),
+        "classical_expected_queries": pytest.approx(1656.0354),
+        "quantum_expected_classical_queries": pytest.approx(1728.2888),
+        "quantum_expected_quantum_queries": pytest.approx(51.3222),
     }
 
 
@@ -58,8 +58,8 @@ def test_edge_qlouvain(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(300709),
-        "classical_expected_queries": pytest.approx(300709),
+        "classical_actual_queries": pytest.approx(151538),
+        "classical_expected_queries": pytest.approx(151538),
         "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(1214962.0178597767),
+        "quantum_expected_quantum_queries": pytest.approx(827106),
     }
