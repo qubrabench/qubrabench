@@ -1,51 +1,63 @@
 """This module provides a classical louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
-
+import numpy as np
 from networkx.algorithms.community import quality
 import networkx as nx
-from abc import ABC
 from typing import Optional
 
 
-class Louvain(ABC):
+class Louvain:
     """
     This class implements the classical Louvain algorithm like Cade et al. do in their community detection paper.
     It is initialized using an undirected networkx graph instance without selfloops.
     """
 
-    def __init__(self, G, *, keep_history: bool = False) -> None:
+    G: nx.Graph
+    A: np.ndarray
+    W: float
+    C: dict[int, int]
+
+    history: list[tuple[np.ndarray, dict[int, int]]] | None
+
+    cache_Sigma: dict[int, int]
+    cache_S: dict[tuple[int, int], int]
+    cache_strength: dict[int, int]
+
+    def __init__(self, graph, *, keep_history: bool = False) -> None:
         """Initialize Louvain algorithm based on a graph instance
 
         Args:
-            G (nx.Graph): The initial graph where communities should be detected.
+            graph: The initial graph where communities should be detected.
             keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
         """
-        self.keep_history = keep_history
-        self.history = []
-        self.update_graph(G)
-        self.C: dict[int, int] = self.single_partition()  # node to community map
+        self.history = [] if keep_history else None
 
         # caches for `Sigma(u)`, `S(u, v)` and node strengths `strength(u)`
-        self.cache_Sigma: dict[int, int] = {}
-        self.cache_S: dict[(int, int), int] = {}
-        self.cache_strength: dict[int, int] = {}
+        self.cache_Sigma = {}
+        self.cache_S = {}
+        self.cache_strength = {}
 
-    def update_graph(self, new_graph):
+        self.update_graph(graph)
+        self.C = self.single_partition()  # node to community map
+
+    def update_graph(self, new_graph: nx.Graph):
         self.G = nx.relabel.convert_node_labels_to_integers(new_graph)
         self.A = nx.adjacency_matrix(new_graph)
         self.W = self.A.sum() / 2
 
-        # drop the strength cache only here since its not affected by communities
+        # drop caches
         self.cache_strength = {}
+        # self.cache_Sigma = {}
+        # self.cache_S = {}
 
-    def update_communities(self, node, new_community):
+    def update_community(self, node: int, label: int):
         """Moves a given node into a new community and updates caches.
 
         Args:
-            node (int): the desired node to move
-            new_community (int): target community for node
+            node: the desired node to move
+            label: target community for node
         """
         # reassign community
-        self.C[node] = new_community
+        self.C[node] = label
 
         # drop caches
         self.cache_Sigma = {}
@@ -53,9 +65,8 @@ class Louvain(ABC):
 
     def record_history(self):
         """Take a record snapshot of the current adjacency matrix and community mapping."""
-        if not self.keep_history:
-            return
-        self.history.append((self.A.copy(), self.C.copy()))
+        if self.history is not None:
+            self.history.append((self.A.copy(), self.C.copy()))
 
     def louvain(self):
         """
@@ -92,7 +103,7 @@ class Louvain(ABC):
                 )
                 if max_modularity_increase > 0:
                     # reassign u to community of v
-                    self.update_communities(u, v_community)
+                    self.update_community(u, v_community)
                     done = False
                 # terminate when there is no modularity increase
 
@@ -122,10 +133,7 @@ class Louvain(ABC):
 
     def single_partition(self):
         """Assign every node to its own unique community"""
-        community_set = {}
-        for node in self.G:
-            community_set[node] = node
-        return community_set
+        return {node: node for node in self.G}
 
     def delta_modularity(self, u: int, alpha: int) -> float:
         """Calculate the change in modularity that would occur if u was moved into community alpha
@@ -161,9 +169,7 @@ class Louvain(ABC):
             return self.cache_S[alpha, u]
         except KeyError:
             # cache miss
-            s = sum(
-                [self.A[u, v] for v, community in self.C.items() if community == alpha]
-            )
+            s = sum(self.A[u, v] for v, label in self.C.items() if label == alpha)
 
             # update cache
             self.cache_S[alpha, u] = s

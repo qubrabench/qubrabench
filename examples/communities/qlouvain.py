@@ -70,7 +70,7 @@ class QLouvain(Louvain):
             if node:
                 # reassign node to community of neighbor
                 community_of_neighbor = self.C[self.last_predicate_neighbor]
-                self.update_communities(node, community_of_neighbor)
+                self.update_community(node, community_of_neighbor)
                 done = False
 
 

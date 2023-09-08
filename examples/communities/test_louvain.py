@@ -129,10 +129,10 @@ def test_modularity():
     target_community = 1
     initial_community = solver.C[node]
     delta_modularity_move = solver.delta_modularity(node, target_community)
-    solver.update_communities(node, target_community)
+    solver.update_community(node, target_community)
     move_modularity = solver.modularity()
     delta_modularity_back = solver.delta_modularity(node, initial_community)
-    solver.update_communities(node, initial_community)
+    solver.update_community(node, initial_community)
 
     print(delta_modularity_move, delta_modularity_back)
 
