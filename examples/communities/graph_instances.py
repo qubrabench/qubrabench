@@ -16,7 +16,7 @@ def random_lfr_graph(
     max_degree: int = 100,
     average_degree: float = 5,
     rng: np.random.Generator,
-):
+) -> nx.Graph:
     """
     Generates an LFR benchmark graph instance with defaults similar to Cade et al.
     Sacrifices exact node number for ensuring no self loops
@@ -36,7 +36,7 @@ def random_lfr_graph(
     return graph
 
 
-def remove_self_loops(graph):
+def remove_self_loops(graph: nx.Graph) -> nx.Graph:
     graph.remove_edges_from(nx.selfloop_edges(graph))
     graph.remove_nodes_from(list(nx.isolates(graph)))
     graph = nx.relabel.convert_node_labels_to_integers(graph, first_label=1)
@@ -50,7 +50,7 @@ def random_fcs_graph(
     mu: float = 0.3,
     average_degree: float = 5,
     rng: np.random.Generator,
-):
+) -> nx.Graph:
     """Generate an FCS type graph according to Cade et al.'s community detection paper (Appx.D)
 
     Args:
