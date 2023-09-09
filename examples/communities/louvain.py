@@ -2,7 +2,6 @@
 import numpy as np
 from networkx.algorithms.community import quality
 import networkx as nx
-from typing import Optional
 
 
 class Louvain:
@@ -212,41 +211,23 @@ class Louvain:
             self.cache_strength[u] = strength
             return strength
 
-    def modularity(self, node_community_map: Optional[dict] = None) -> float:
+    def modularity(self) -> float:
         """Calculate the modularity of self.G and a node to community mapping
-
-        Args:
-            node_community_map: A node to community mapping. Defaults to self.C
 
         Returns:
             The modularity value [-1/2, 1)
         """
+        return quality.modularity(self.G, self.communities_as_set())
 
-        # Calculate the modularity
-        modularity = quality.modularity(
-            self.G, self.communities_as_set(node_community_map)
-        )
-
-        return modularity
-
-    def communities_as_set(self, node_community_map: Optional[dict] = None):
+    def communities_as_set(self) -> list[set[int]]:
         """Transform the node_community_map into a list of sets, containing the node levels.
 
-        Args:
-            node_community_map: A node to community mapping. Defaults to self.C
-
         Returns:
-            The list of sets of nodes, where each inner set is a community
+            A list of communities (set of nodes), in arbitrary order.
         """
-        if node_community_map is None:
-            node_community_map = self.C
-
-        # Convert the dictionary to a list of sets
-        communities = [set() for _ in range(max(node_community_map.values()) + 1)]
-        for node, community in node_community_map.items():
-            communities[community].add(node)
+        communities: dict[int, set[int]] = {label: set() for label in self.C.values()}
+        for node, label in self.C.items():
+            communities[label].add(node)
 
         # discard empty sets
-        communities = [s for s in communities if s]
-
-        return communities
+        return [s for s in communities.values() if s]
