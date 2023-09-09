@@ -67,7 +67,7 @@ class Louvain:
         if self.history is not None:
             self.history.append((self.A.copy(), self.C.copy()))
 
-    def louvain(self):
+    def run(self):
         """
         Start the Louvain heuristic algorithm for community detection.
         """

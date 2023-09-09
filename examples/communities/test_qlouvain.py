@@ -23,7 +23,7 @@ def test_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng)
     sanity_check_input(solver.A)
 
-    solver.louvain()
+    solver.run()
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
@@ -39,7 +39,7 @@ def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.SimpleQLouvainSG(graph_b, rng=rng)
     sanity_check_input(solver.A)
 
-    solver.louvain()
+    solver.run()
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
@@ -54,7 +54,7 @@ def test_edge_qlouvain(graph_b, rng):
     solver = qlouvain.EdgeQLouvain(graph_b, rng=rng)
     sanity_check_input(solver.A)
 
-    solver.louvain()
+    solver.run()
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),

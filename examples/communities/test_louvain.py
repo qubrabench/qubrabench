@@ -211,7 +211,7 @@ def test_one_pass_louvain(graph_a):
 
     # finally, do an entire louvain pass start to finish
     solver = louvain.Louvain(graph_a, keep_history=True)
-    solver.louvain()
+    solver.run()
     G_check = nx.from_numpy_array(solver.history[-1][0])
     assert G_check.get_edge_data(0, 1)["weight"] == 3
 
