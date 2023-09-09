@@ -128,6 +128,5 @@ class EdgeQLouvain(QLouvain):
                 error=self.error,
             )
             if max_modularity_increase > 0:
-                # reassign u to community of v
-                self.C[node] = v_community
+                self.update_community(node, v_community)
                 done = False

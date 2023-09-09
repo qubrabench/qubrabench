@@ -58,8 +58,8 @@ def test_edge_qlouvain(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(153079),
-        "classical_expected_queries": pytest.approx(153079),
+        "classical_actual_queries": pytest.approx(147938),
+        "classical_expected_queries": pytest.approx(147938),
         "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(842707.9681),
+        "quantum_expected_quantum_queries": pytest.approx(825655.7432),
     }
