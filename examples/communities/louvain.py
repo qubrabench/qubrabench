@@ -46,8 +46,8 @@ class Louvain:
 
         # drop caches
         self.cache_strength = {}
-        # self.cache_Sigma = {}
-        # self.cache_S = {}
+        self.cache_Sigma = {}
+        self.cache_S = {}
 
     def update_community(self, node: int, label: int):
         """Moves a given node into a new community and updates caches.
