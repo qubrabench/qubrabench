@@ -157,7 +157,7 @@ def test_move_nodes():
 
     # Call louvain method to detect communities
     solver = louvain.Louvain(G)
-    sanity_check_input(solver.A)
+    sanity_check_input(solver.A())
 
     # verify initial modularity
     initial_modularity = solver.modularity()
@@ -185,7 +185,7 @@ def test_one_pass_louvain(graph_a):
     """
     # Call louvain method to detect communities
     solver = louvain.Louvain(graph_a)
-    sanity_check_input(solver.A)
+    sanity_check_input(solver.A())
 
     # verify initial modularity
     initial_modularity = solver.modularity()

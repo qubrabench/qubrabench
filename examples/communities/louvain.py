@@ -12,8 +12,6 @@ class Louvain:
     """
 
     G: nx.Graph
-    # A: np.ndarray
-    # W: float
     C: dict[int, int]
 
     history: list[tuple[np.ndarray, dict[int, int]]] | None
@@ -27,24 +25,17 @@ class Louvain:
         """
         self.history = [] if keep_history else None
 
-        self.update_graph(graph)
+        self.set_graph(graph)
 
-    @cached_property
     def A(self) -> np.ndarray:
         return nx.adjacency_matrix(self.G)
 
     @cached_property
     def W(self) -> float:
-        return self.A.sum() / 2
+        return self.A().sum() / 2
 
-    def update_graph(self, new_graph: nx.Graph):
+    def set_graph(self, new_graph: nx.Graph):
         self.G = nx.relabel.convert_node_labels_to_integers(new_graph)
-        # self.A = nx.adjacency_matrix(self.G)
-        # self.W = self.A.sum() / 2
-        try:
-            del self.__dict__["A"]
-        except KeyError:
-            pass
 
         try:
             del self.__dict__["W"]
@@ -75,7 +66,7 @@ class Louvain:
     def record_history(self):
         """Take a record snapshot of the current adjacency matrix and community mapping."""
         if self.history is not None:
-            self.history.append((self.A.copy(), self.C.copy()))
+            self.history.append((self.A().copy(), self.C.copy()))
 
     def run(self):
         """
@@ -137,7 +128,7 @@ class Louvain:
                 # update weight
                 G_new.get_edge_data(w, x)["weight"] += weight
 
-        self.update_graph(G_new)
+        self.set_graph(G_new)
 
     def delta_modularity(self, u: int, alpha: int) -> float:
         """Calculate the change in modularity that would occur if u was moved into community alpha
@@ -169,7 +160,9 @@ class Louvain:
         Returns:
             The resulting strength
         """
-        return sum(self.A[u, v] for v, label in self.C.items() if label == alpha)
+        return sum(
+            e.get("weight", 1) for v, e in self.G.adj[u].items() if self.C[v] == alpha
+        )
 
     @lru_cache()
     def Sigma(self, alpha: int) -> float:
@@ -213,3 +206,7 @@ class Louvain:
 
         # discard empty sets
         return [s for s in communities.values() if s]
+
+    @staticmethod
+    def single_partition(graph: nx.Graph):
+        return {u: u for u in graph}
