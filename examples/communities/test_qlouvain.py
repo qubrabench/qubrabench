@@ -27,10 +27,10 @@ def test_qlouvain_sg(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(848),
-        "classical_expected_queries": pytest.approx(961.59),
-        "quantum_expected_classical_queries": pytest.approx(1123.1942),
-        "quantum_expected_quantum_queries": pytest.approx(361.041),
+        "classical_actual_queries": pytest.approx(2639),
+        "classical_expected_queries": pytest.approx(2803.2384),
+        "quantum_expected_classical_queries": pytest.approx(3165.9861),
+        "quantum_expected_quantum_queries": pytest.approx(2804.6201),
     }
 
 
@@ -43,10 +43,10 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(1794),
-        "classical_expected_queries": pytest.approx(1655.7614),
-        "quantum_expected_classical_queries": pytest.approx(1728.011),
-        "quantum_expected_quantum_queries": pytest.approx(51.3222),
+        "classical_actual_queries": pytest.approx(3564),
+        "classical_expected_queries": pytest.approx(3471.3446),
+        "quantum_expected_classical_queries": pytest.approx(3887.4299),
+        "quantum_expected_quantum_queries": pytest.approx(2701.0092),
     }
 
 

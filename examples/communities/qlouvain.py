@@ -56,9 +56,7 @@ class QLouvain(Louvain):
         pass
 
     def move_nodes(self):
-        done = False
-        while not done:
-            done = True
+        while True:
             node = qsearch(
                 self.G.nodes,
                 self.pred,
@@ -67,11 +65,12 @@ class QLouvain(Louvain):
                 error=self.error,
             )
 
-            if node:
-                # reassign node to community of neighbor
-                community_of_neighbor = self.C[self.last_predicate_neighbor]
-                self.update_community(node, community_of_neighbor)
-                done = False
+            if node is None:
+                break
+
+            # reassign node to community of neighbor
+            community_of_neighbor = self.C[self.last_predicate_neighbor]
+            self.update_community(node, community_of_neighbor)
 
 
 class QLouvainSG(QLouvain):
@@ -113,10 +112,7 @@ class EdgeQLouvain(QLouvain):
         pass  # not needed for this variant
 
     def move_nodes(self):
-        done = False
-        while not done:
-            done = True
-
+        while True:
             # calculate maximum increase of modularity
             node, max_modularity_increase, v_community = qmax(
                 [
@@ -127,6 +123,9 @@ class EdgeQLouvain(QLouvain):
                 stats=self.stats,
                 error=self.error,
             )
+
+            if max_modularity_increase <= 0:
+                break
+
             if max_modularity_increase > 0:
                 self.update_community(node, v_community)
-                done = False
