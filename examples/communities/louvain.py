@@ -219,4 +219,4 @@ class Louvain(ABC):
     def compose_labellings(
         first: dict[int, int], second: dict[int, int]
     ) -> dict[int, int]:
-        return {u: second[label] for u, label in first.items()}
+        return {u: second[first[u]] for u in first}
