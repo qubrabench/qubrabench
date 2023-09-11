@@ -1,11 +1,13 @@
 """This module contains tests for the classical louvain community detection example."""
+from typing import Optional
+
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 import pytest
 
-import louvain
+from louvain import LouvainGraph, Louvain
 
 
 @pytest.fixture()
@@ -29,8 +31,7 @@ def small_adjacency_matrix():
 
 @pytest.fixture()
 def graph_a():
-    """Fixture creating a graph instance with 15 nodes"""
-    # Create a graph with 15 nodes
+    """Small graph with 16 nodes, and two communities [0, 7] and [8, 15]"""
     G = nx.Graph()
     G.add_nodes_from(range(16))
 
@@ -56,10 +57,11 @@ def graph_a():
     return G
 
 
-def sanity_check_input(A):
+def sanity_check_input(G: nx.Graph):
     """
     checks that a given adjacency matrix has 0 for all diagonal elements, as required by Cade et al. (Community Detection)
     """
+    A = nx.adjacency_matrix(G)
     assert sum(A.diagonal()) == 0
 
 
@@ -68,80 +70,75 @@ def test_node_to_community_strength(small_adjacency_matrix):
     Test the various calculations used in Louvain algorithms
     """
     # generate graph instance
-    G = nx.from_numpy_array(small_adjacency_matrix)
-    solver = louvain.Louvain(G)
+    graph = LouvainGraph(nx.from_numpy_array(small_adjacency_matrix))
 
-    # setup community
-    split_index = int(G.order() / 2)  # split initial communities into halves
+    # setup community labels
+    split_index = int(
+        graph.number_of_nodes() / 2
+    )  # split initial communities into halves
     community_alpha = 0
     community_beta = 1
-    C = {}
-    for n in G:
-        C[n] = community_alpha if n < split_index else community_beta
-    solver.C = C
+    for u in graph:
+        graph.nodes[u]["label"] = community_alpha if u < split_index else community_beta
 
-    # compute strength of node and neighbors in community alpha
-    target_node = 0
-    com_node_str = 0
-    for value in small_adjacency_matrix[0][:split_index]:
-        com_node_str += value
-    assert solver.S(target_node, community_alpha) == com_node_str
+    for target_node in range(split_index):
+        # check strength of node and neighbors in community alpha
+        assert (
+            graph.S(target_node, community_alpha)
+            == small_adjacency_matrix[target_node, :split_index].sum()
+        )
+        # check node strength
+        assert (
+            graph.strength(target_node) == small_adjacency_matrix[target_node, :].sum()
+        )
 
-    # compute strength of all nodes in community alpha
-    com_str = 0
-    for row in small_adjacency_matrix[:split_index]:
-        for value in row:
-            com_str += value
-    assert solver.Sigma(community_alpha) == com_str
+    # check strength of all nodes in community alpha
+    assert graph.Sigma(community_alpha) == small_adjacency_matrix[:split_index, :].sum()
+    assert graph.Sigma(community_beta) == small_adjacency_matrix[split_index:, :].sum()
 
-    # compute W
-    W = 0
-    for row in small_adjacency_matrix:
-        for value in row:
-            W += value
-    W /= 2
-    assert solver.W == W
+    # check W
+    assert graph.W == small_adjacency_matrix.sum() / 2
 
-    # validate strength
-    assert solver.strength(target_node) == sum(small_adjacency_matrix[target_node])
-
-    # determine delta modularity for moving node 0 to beta
-    assert solver.delta_modularity(target_node, community_alpha) == 0
-    assert solver.delta_modularity(target_node, community_beta) == -0.035976331360946745
+    # check change in modularity when moving node 0
+    assert graph.delta_modularity(0, community_alpha) == 0
+    assert graph.delta_modularity(0, community_beta) == -0.035976331360946745
 
 
 def test_modularity():
     """Test that calculating the (full) modularity of a graph yields an expected value"""
     # Example graph
-    G = nx.barbell_graph(3, 0)
+    G = LouvainGraph(nx.barbell_graph(3, 0))
 
     # Dictionary of node to community mappings
     node_community_map = {0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1}
 
+    for u in G:
+        G.nodes[u]["label"] = node_community_map[u]
+
     # setup our Louvain solver instance
-    solver = louvain.Louvain(G)
-    solver.C = node_community_map
-    initial_modularity = solver.modularity()
-    print(initial_modularity)
+    initial_modularity = G.modularity()
 
     # move node
-    node = 2
-    target_community = 1
-    initial_community = solver.C[node]
-    delta_modularity_move = solver.delta_modularity(node, target_community)
-    solver.update_community(node, target_community)
-    move_modularity = solver.modularity()
-    delta_modularity_back = solver.delta_modularity(node, initial_community)
-    solver.update_community(node, initial_community)
+    for node in G:
+        initial_community = node_community_map[node]
+        target_community = 1 - initial_community
 
-    print(delta_modularity_move, delta_modularity_back)
+        delta_modularity_move = G.delta_modularity(node, target_community)
+        G.update_community(node, target_community)
 
-    assert delta_modularity_move == delta_modularity_back * -1
-    assert move_modularity == pytest.approx(initial_modularity + delta_modularity_move)
-    assert solver.modularity() == initial_modularity
-    assert solver.modularity() == pytest.approx(move_modularity + delta_modularity_back)
+        move_modularity = G.modularity()
 
-    assert solver.modularity() == 0.35714285714285715
+        delta_modularity_back = G.delta_modularity(node, initial_community)
+        G.update_community(node, initial_community)
+
+        assert delta_modularity_move + delta_modularity_back == 0
+        assert move_modularity == pytest.approx(
+            initial_modularity + delta_modularity_move
+        )
+        assert G.modularity() == initial_modularity
+        assert G.modularity() == pytest.approx(move_modularity + delta_modularity_back)
+
+    assert G.modularity() == 0.35714285714285715
 
 
 def test_move_nodes():
@@ -155,27 +152,29 @@ def test_move_nodes():
     G.add_edges_from([(8, 9), (8, 10), (9, 10), (9, 11), (10, 11)])
     G.add_edges_from([(12, 13), (12, 14), (13, 14)])
 
+    sanity_check_input(G)
+
     # Call louvain method to detect communities
-    solver = louvain.Louvain(G)
-    sanity_check_input(solver.A())
+    solver = Louvain(G)
+    solver.single_partition(solver.G)
 
     # verify initial modularity
-    initial_modularity = solver.modularity()
+    initial_modularity = solver.G.modularity()
     assert initial_modularity == -0.06944444444444445
 
     solver.move_nodes()
-    communities = solver.communities_as_set()
+    communities = solver.G.communities()
 
     # Assert that the number of detected communities is 4
     assert len(communities) == 4
 
     # verify changed graph modularity
-    assert solver.modularity() != initial_modularity
-    assert solver.modularity() == 0.7407407407407407
+    assert solver.G.modularity() > initial_modularity
+    assert solver.G.modularity() == 0.7407407407407407
 
     # Assert that all nodes belong to exactly one community
     nodes_in_communities = sum([len(c) for c in communities])
-    assert nodes_in_communities == len(G.nodes())
+    assert nodes_in_communities == G.number_of_nodes()
 
 
 def test_one_pass_louvain(graph_a):
@@ -184,15 +183,17 @@ def test_one_pass_louvain(graph_a):
     the entire algorithm and investigating the graph state before termination.
     """
     # Call louvain method to detect communities
-    solver = louvain.Louvain(graph_a)
-    sanity_check_input(solver.A())
+    solver = Louvain(graph_a)
+    sanity_check_input(solver.G)
 
     # verify initial modularity
-    initial_modularity = solver.modularity()
-    assert initial_modularity == -0.07133058984910837
+    initial_modularity = solver.G.modularity()
+    assert initial_modularity == nx.algorithms.community.modularity(
+        graph_a, communities=[{u} for u in graph_a]
+    )
 
     solver.move_nodes()
-    communities = solver.communities_as_set()
+    communities = solver.G.communities()
 
     # Assert that the number of detected communities is 4
     assert len(communities) == 4
@@ -200,28 +201,33 @@ def test_one_pass_louvain(graph_a):
     # aggregate the graph
     solver.aggregate_graph()
     # four nodes should result from the four communities
-    assert len(solver.G) == 4
+    assert solver.G.number_of_nodes() == 4
     # the edge weights should equal the number edges between communities
-    assert solver.G.get_edge_data(0, 1)["weight"] == 2
-    assert solver.G.get_edge_data(0, 2)["weight"] == 3
-    assert solver.G.get_edge_data(0, 3)["weight"] == 1
-    assert solver.G.get_edge_data(1, 3)["weight"] == 4
+    assert solver.G.get_edge_data(0, 1)["weight"] == 4
+    assert solver.G.get_edge_data(0, 3)["weight"] == 2
+    assert solver.G.get_edge_data(1, 3)["weight"] == 1
+    assert solver.G.get_edge_data(2, 3)["weight"] == 3
     # no further edges exist
-    assert len(solver.G.edges) == 4
-
-    # finally, do an entire louvain pass start to finish
-    solver = louvain.Louvain(graph_a, keep_history=True)
-    solver.run()
-    G_check = nx.from_numpy_array(solver.history[-1][0])
-    assert G_check.get_edge_data(0, 1)["weight"] == 3
+    assert solver.G.number_of_edges() == 4
 
 
-def debug_draw_communities(G, communities=None):
+def test_louvain(graph_a):
+    solver = Louvain(graph_a)
+    labels = solver.run()
+    assert solver.G.number_of_nodes() == 1
+
+    actual_communities = LouvainGraph.community_list_from_labels(labels)
+    expected_communities = nx.algorithms.community.louvain_communities(graph_a)
+
+    assert actual_communities == expected_communities
+
+
+def debug_draw_communities(G: nx.Graph, communities: Optional[list[list[int]]] = None):
     """Draw and display G given the communities mapping for debug purposes.
 
     Args:
-        G (nx.Graph): The input graph
-        communities ([set], Optional): The list of community sets. Defaults to None.
+        G: The input graph
+        communities (Optional): The list of community sets. Defaults to None.
     """
 
     # Draw the graph

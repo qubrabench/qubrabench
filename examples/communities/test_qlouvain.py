@@ -20,8 +20,8 @@ def graph_b(rng):
 
 @pytest.mark.slow
 def test_qlouvain_sg(graph_b, rng):
-    solver = qlouvain.QLouvainSG(graph_b, rng=rng)
-    sanity_check_input(solver.A())
+    solver = qlouvain.QLouvain(graph_b, rng=rng, simple=False)
+    sanity_check_input(solver.G)
 
     solver.run()
 
@@ -36,8 +36,8 @@ def test_qlouvain_sg(graph_b, rng):
 
 @pytest.mark.slow
 def test_simple_qlouvain_sg(graph_b, rng):
-    solver = qlouvain.SimpleQLouvainSG(graph_b, rng=rng)
-    sanity_check_input(solver.A())
+    solver = qlouvain.QLouvain(graph_b, rng=rng, simple=True)
+    sanity_check_input(solver.G)
 
     solver.run()
 
@@ -52,14 +52,14 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
 def test_edge_qlouvain(graph_b, rng):
     solver = qlouvain.EdgeQLouvain(graph_b, rng=rng)
-    sanity_check_input(solver.A())
+    sanity_check_input(solver.G)
 
     solver.run()
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(147938),
-        "classical_expected_queries": pytest.approx(147938),
+        "classical_actual_queries": pytest.approx(148111),
+        "classical_expected_queries": pytest.approx(148111),
         "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(825655.7432),
+        "quantum_expected_quantum_queries": pytest.approx(1007473.7884555325),
     }
