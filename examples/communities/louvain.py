@@ -9,85 +9,14 @@ class LouvainGraph(nx.Graph):
     def get_label(self, u: int) -> int:
         return self.nodes[u]["label"]
 
-    @cached_property
-    def W(self) -> float:
-        return self.size(weight="weight")
-
-    @lru_cache()
-    def S(self, u: int, alpha: int) -> float:
-        """Strength of u to other nodes in the community alpha
-
-        Args:
-            u: Integer label of the nx.Node whose strength should be determined
-            alpha: Integer label of the community that the incident edges of u belong to
-
-        Returns:
-            The resulting strength
-        """
-        return sum(
-            wt
-            for _, v, wt in self.edges(u, data="weight", default=1)
-            if self.get_label(v) == alpha
-        )
-
-    @lru_cache()
-    def Sigma(self, alpha: int) -> float:
-        """Calculates sum of all weights on edges incident to vertices contained in a community
-
-        Args:
-            alpha: Integer label of the community whose Sigma is to be calculated
-
-        Returns:
-            Sum of weights
-        """
-        return sum(
-            wt
-            for v, label in self.nodes.data("label")
-            if label == alpha
-            for _, _, wt in self.edges(v, data="weight", default=1)
-        )
-
-    @lru_cache()
-    def strength(self, u: int) -> float:
-        """Calculate the strength of a given node index."""
-        return self.degree(u, weight="weight")
-
-    def delta_modularity(self, u: int, alpha: int) -> float:
-        """Calculate the change in modularity that would occur if u was moved into community alpha
-
-        Args:
-            u: Integer label of the nx.Node to be moved
-            alpha: Integer label of the target community
-
-        Returns:
-            The resulting change in modularity
-        """
-        # moving a node to its current community should not change modularity
-        if self.get_label(u) == alpha:
-            return 0
-
-        return ((self.S(u, alpha) - self.S(u, self.get_label(u))) / self.W) - (
-            self.strength(u)
-            * (self.Sigma(alpha) - self.Sigma(self.get_label(u)) + self.strength(u))
-        ) / (2 * (self.W**2))
-
-    def update_community(self, u: int, label: int):
-        self.nodes[u]["label"] = label
-
-        # drop invalid caches
-        self.Sigma.cache_clear()
-        self.S.cache_clear()
-
-    def modularity(self) -> float:
-        """Calculate the modularity of self.G and a node to community mapping
-
-        Returns:
-            The modularity value [-1/2, 1)
-        """
-        return nx.algorithms.community.modularity(self, self.communities())
-
     def community_labels(self) -> dict[int, int]:
         return dict(self.nodes.data("label"))
+
+    def neighbouring_communities(self, u: int) -> list[int]:
+        """list of labels of communities of the neighbours of `u`, excluding the community of `u` itself."""
+        labels = {self.get_label(v) for v in self[u]}
+        labels.discard(self.get_label(u))
+        return list(labels)
 
     @staticmethod
     def community_list_from_labels(labels: dict[int, int]) -> list[set[int]]:
@@ -111,6 +40,91 @@ class LouvainGraph(nx.Graph):
     def number_of_communities(self) -> int:
         return len({label for u, label in self.nodes.data("label")})
 
+    @cached_property
+    def W(self) -> float:
+        return self.size(weight="weight")
+
+    @lru_cache()
+    def S(self, u: int, alpha: int) -> float:
+        r"""Strength of u to other nodes in the community alpha
+
+        .. math::
+
+            S_u^{\alpha} = \sum_{v \in C_\alpha} A_{uv}
+
+        Args:
+            u: Integer label of the nx.Node whose strength should be determined
+            alpha: Integer label of the community that the incident edges of u belong to
+
+        Returns:
+            The resulting strength
+        """
+        return sum(
+            A_uv
+            for _, v, A_uv in self.edges(u, data="weight", default=1)
+            if self.get_label(v) == alpha
+        )
+
+    @lru_cache()
+    def Sigma(self, alpha: int) -> float:
+        r"""Calculates sum of all weights on edges incident to vertices contained in a community
+
+        .. math::
+
+            \Sigma_\alpha = \sum_{v \in C_\alpha} s_v
+
+        Args:
+            alpha: Integer label of the community whose Sigma is to be calculated
+
+        Returns:
+            Sum of weights
+        """
+        return sum(
+            self.strength(v) for v, label in self.nodes.data("label") if label == alpha
+        )
+
+    @lru_cache()
+    def strength(self, u: int) -> float:
+        """Calculate the strength of a given node index."""
+        return self.degree(u, weight="weight")
+
+    def delta_modularity(self, u: int, alpha: int) -> float:
+        """Change in modularity when `u` is moved to community `alpha`.
+        `alpha` must be a community of some neighbour of `u`.
+
+        Args:
+            u: node to be moved
+            alpha: community to move `u` to
+
+        Returns:
+            The resulting change in modularity when community[u] <- community[v]
+        """
+        l_u = self.get_label(u)
+        if l_u == alpha:
+            return 0
+
+        s_u = self.strength(u)
+        A_uu = self.get_edge_data(u, u, {"weight": 0})["weight"]
+
+        return (self.S(u, alpha) - self.S(u, l_u) + A_uu) / self.W - (
+            s_u * (self.Sigma(alpha) - self.Sigma(l_u) + s_u)
+        ) / (2 * self.W**2)
+
+    def update_community(self, u: int, label: int):
+        self.nodes[u]["label"] = label
+
+        # drop invalid caches
+        self.Sigma.cache_clear()
+        self.S.cache_clear()
+
+    def modularity(self) -> float:
+        """Calculate the modularity of self.G and a node to community mapping
+
+        Returns:
+            The modularity value [-1/2, 1)
+        """
+        return nx.algorithms.community.modularity(self, self.communities())
+
 
 class Louvain(ABC):
     """
@@ -121,7 +135,7 @@ class Louvain(ABC):
     G: LouvainGraph
     labels: dict[int, int]
 
-    history: list[LouvainGraph] | None
+    history: list[tuple[LouvainGraph, dict[int, int]]] | None
 
     def __init__(self, graph, *, keep_history: bool = False) -> None:
         """Initialize Louvain algorithm based on a graph instance
@@ -137,7 +151,7 @@ class Louvain(ABC):
 
     def record_history(self):
         if self.history is not None:
-            self.history.append(self.G.copy())
+            self.history.append((self.G.copy(), self.labels.copy()))
 
     def run(self):
         """
@@ -170,16 +184,17 @@ class Louvain(ABC):
             done = True
             for u in self.G:
                 # calculate maximum increase of modularity
-                max_modularity_increase, v = max(
+                max_modularity_increase, alpha = max(
                     [
-                        (self.G.delta_modularity(u, self.G.get_label(v)), v)
-                        for v in self.G[u]
+                        (self.G.delta_modularity(u, alpha), alpha)
+                        for alpha in self.G.neighbouring_communities(u)
                     ],
                     key=lambda entry: entry[0],
+                    default=(0, None),
                 )
                 if max_modularity_increase > 0:
                     # reassign u to community of v
-                    self.G.update_community(u, self.G.get_label(v))
+                    self.G.update_community(u, alpha)
                     done = False  # terminate when there is no modularity increase
 
     def aggregate_graph(self):
@@ -201,11 +216,10 @@ class Louvain(ABC):
         for u, v, weight in self.G.edges(data="weight", default=1):
             lu = aggregate_label[u]
             lv = aggregate_label[v]
-            if lu != lv:  # we only care about edges between communities
-                if not G_new.has_edge(lu, lv):
-                    G_new.add_edge(lu, lv, weight=weight)  # create new edge with weight
-                else:
-                    G_new.get_edge_data(lu, lv)["weight"] += weight  # update weight
+            if not G_new.has_edge(lu, lv):
+                G_new.add_edge(lu, lv, weight=weight)  # create new edge with weight
+            else:
+                G_new.get_edge_data(lu, lv)["weight"] += weight  # update weight
 
         self.labels = self.compose_labellings(self.labels, aggregate_label)
         self.G = G_new

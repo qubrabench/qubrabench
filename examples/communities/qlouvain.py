@@ -57,24 +57,32 @@ class QLouvain(QuantumLouvainBase):
 
     def vertex_find(self, nodes: list[int]) -> Optional[int]:
         G = self.G
-        u, _ = qsearch(
-            [
-                (
-                    qsearch(
-                        [G.delta_modularity(u, G.get_label(v)) > 0 for v in G[u]],
-                        key=lambda x: x,
-                        rng=self.rng,
-                        error=self.error,  # TODO check
-                    ),
-                    u,
+
+        vertex_space: list[tuple[bool, int]] = [
+            (
+                qsearch(
+                    [
+                        G.delta_modularity(u, alpha) > 0
+                        for alpha in G.neighbouring_communities(u)
+                    ],
+                    key=lambda x: x,
+                    rng=self.rng,
+                    error=self.error,  # TODO check
                 )
-                for u in nodes
-            ],
-            lambda data: data[0] is True,
+                is True,
+                u,
+            )
+            for u in nodes
+        ]
+
+        result = qsearch(
+            vertex_space,
+            lambda data: data[0],
             rng=self.rng,
             error=self.error,  # TODO check
         )
-        return u
+
+        return result[1] if result else None
 
     def find_first(self) -> Optional[int]:
         raise NotImplementedError()
@@ -90,14 +98,18 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
-            _, v = qmax(
-                [(G.delta_modularity(u, G.get_label(v)), v) for v in G[u]],
+            max_modularity_increase, alpha = qmax(
+                [
+                    (G.delta_modularity(u, alpha), alpha)
+                    for alpha in G.neighbouring_communities(u)
+                ],
                 key=lambda entry: entry[0],
                 stats=self.stats,
                 error=self.error,  # TODO check
             )
 
-            G.update_community(u, G.get_label(v))
+            assert max_modularity_increase > 0
+            G.update_community(u, alpha)
 
 
 class QLouvainSG(QLouvain):
@@ -106,7 +118,10 @@ class QLouvainSG(QLouvain):
         u, _ = qsearch(
             [
                 (
-                    any(G.delta_modularity(u, G.get_label(v)) > 0 for v in G[u]),
+                    any(
+                        G.delta_modularity(u, alpha) > 0
+                        for alpha in G.neighbouring_communities(u)
+                    ),
                     u,
                 )
                 for u in nodes
@@ -125,7 +140,7 @@ class EdgeQLouvain(QuantumLouvainBase):
         G = self.G
         while True:
             # calculate maximum increase of modularity
-            node, max_modularity_increase, v_community = qmax(
+            node, max_modularity_increase, target_community = qmax(
                 [
                     (u, G.delta_modularity(u, G.get_label(v)), G.get_label(v))
                     for u, v in self.G.edges
@@ -136,6 +151,6 @@ class EdgeQLouvain(QuantumLouvainBase):
             )
 
             if max_modularity_increase > 0:
-                G.update_community(node, v_community)
+                G.update_community(node, target_community)
             else:
                 break

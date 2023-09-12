@@ -15,7 +15,7 @@ def small_adjacency_matrix():
     """Fixture creating a small 10 node adjacency matrix"""
     return np.array(
         [  # A, A, A, A, A, B, B, B, B, B
-            [0, 9, 0, 1, 2, 1, 7, 4, 0, 0],  # relations of node 0
+            [0, 9, 0, 1, 2, 1, 7, 4, 0, 0],  # edges of node 0
             [9, 0, 2, 1, 0, 6, 9, 3, 8, 6],
             [0, 2, 0, 1, 1, 2, 4, 8, 4, 9],
             [1, 1, 1, 0, 0, 3, 8, 0, 4, 4],
@@ -76,15 +76,14 @@ def test_node_to_community_strength(small_adjacency_matrix):
     split_index = int(
         graph.number_of_nodes() / 2
     )  # split initial communities into halves
-    community_alpha = 0
-    community_beta = 1
+    alpha, beta = 0, 1
     for u in graph:
-        graph.nodes[u]["label"] = community_alpha if u < split_index else community_beta
+        graph.nodes[u]["label"] = alpha if u < split_index else beta
 
     for target_node in range(split_index):
         # check strength of node and neighbors in community alpha
         assert (
-            graph.S(target_node, community_alpha)
+            graph.S(target_node, alpha)
             == small_adjacency_matrix[target_node, :split_index].sum()
         )
         # check node strength
@@ -93,24 +92,25 @@ def test_node_to_community_strength(small_adjacency_matrix):
         )
 
     # check strength of all nodes in community alpha
-    assert graph.Sigma(community_alpha) == small_adjacency_matrix[:split_index, :].sum()
-    assert graph.Sigma(community_beta) == small_adjacency_matrix[split_index:, :].sum()
+    assert graph.Sigma(alpha) == small_adjacency_matrix[:split_index, :].sum()
+    assert graph.Sigma(beta) == small_adjacency_matrix[split_index:, :].sum()
 
     # check W
     assert graph.W == small_adjacency_matrix.sum() / 2
 
-    # check change in modularity when moving node 0
-    assert graph.delta_modularity(0, community_alpha) == 0
-    assert graph.delta_modularity(0, community_beta) == -0.035976331360946745
+    # check change in modularity when moving node 0 to community beta
+    assert graph.has_edge(0, 7)
+    assert graph.delta_modularity(0, graph.get_label(7)) == -0.035976331360946745
 
 
 def test_modularity():
     """Test that calculating the (full) modularity of a graph yields an expected value"""
     # Example graph
-    G = LouvainGraph(nx.barbell_graph(3, 0))
+    n = 3
+    G = LouvainGraph(nx.barbell_graph(n, 0))
 
     # Dictionary of node to community mappings
-    node_community_map = {0: 0, 1: 0, 2: 0, 3: 1, 4: 1, 5: 1}
+    node_community_map = {u: 0 if u < n else 1 for u in range(2 * n)}
 
     for u in G:
         G.nodes[u]["label"] = node_community_map[u]
@@ -118,25 +118,23 @@ def test_modularity():
     # setup our Louvain solver instance
     initial_modularity = G.modularity()
 
-    # move node
-    for node in G:
-        initial_community = node_community_map[node]
-        target_community = 1 - initial_community
+    # move node l to community of r, and back to itself (i.e. community of w)
+    u, v, w = n - 1, n, 0
+    delta_modularity_move = G.delta_modularity(u, v)
+    G.update_community(u, v)
 
-        delta_modularity_move = G.delta_modularity(node, target_community)
-        G.update_community(node, target_community)
+    move_modularity = G.modularity()
 
-        move_modularity = G.modularity()
+    delta_modularity_back = G.delta_modularity(u, w)
+    G.update_community(u, w)
 
-        delta_modularity_back = G.delta_modularity(node, initial_community)
-        G.update_community(node, initial_community)
+    final_modularity = G.modularity()
 
-        assert delta_modularity_move + delta_modularity_back == 0
-        assert move_modularity == pytest.approx(
-            initial_modularity + delta_modularity_move
-        )
-        assert G.modularity() == initial_modularity
-        assert G.modularity() == pytest.approx(move_modularity + delta_modularity_back)
+    assert initial_modularity == final_modularity
+    assert delta_modularity_move + delta_modularity_back == 0
+    assert move_modularity == pytest.approx(initial_modularity + delta_modularity_move)
+    assert final_modularity == initial_modularity
+    assert final_modularity == pytest.approx(move_modularity + delta_modularity_back)
 
     assert G.modularity() == 0.35714285714285715
 
@@ -203,18 +201,15 @@ def test_one_pass_louvain(graph_a):
     # four nodes should result from the four communities
     assert solver.G.number_of_nodes() == 4
     # the edge weights should equal the number edges between communities
-    assert solver.G.get_edge_data(0, 1)["weight"] == 4
-    assert solver.G.get_edge_data(0, 3)["weight"] == 2
-    assert solver.G.get_edge_data(1, 3)["weight"] == 1
-    assert solver.G.get_edge_data(2, 3)["weight"] == 3
-    # no further edges exist
-    assert solver.G.number_of_edges() == 4
+    assert (
+        nx.adjacency_matrix(solver.G)
+        == np.array([[7, 4, 0, 2], [4, 2, 0, 1], [0, 0, 5, 3], [2, 1, 3, 3]])
+    ).all()
 
 
 def test_louvain(graph_a):
     solver = Louvain(graph_a)
     labels = solver.run()
-    assert solver.G.number_of_nodes() == 1
 
     actual_communities = LouvainGraph.community_list_from_labels(labels)
     expected_communities = nx.algorithms.community.louvain_communities(graph_a)

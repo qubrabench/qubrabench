@@ -20,7 +20,7 @@ def graph_b(rng):
 
 @pytest.mark.slow
 def test_qlouvain_sg(graph_b, rng):
-    solver = qlouvain.QLouvain(graph_b, rng=rng, simple=False)
+    solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=False)
     sanity_check_input(solver.G)
 
     solver.run()
@@ -36,7 +36,7 @@ def test_qlouvain_sg(graph_b, rng):
 
 @pytest.mark.slow
 def test_simple_qlouvain_sg(graph_b, rng):
-    solver = qlouvain.QLouvain(graph_b, rng=rng, simple=True)
+    solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=True)
     sanity_check_input(solver.G)
 
     solver.run()
