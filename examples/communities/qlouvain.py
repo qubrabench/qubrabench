@@ -2,10 +2,10 @@
 This module extends the initial Louvain class with quantum variants that track query statistics.
 Most variants differ only in how the graph is iterated while moving community labels.
 """
-from typing import Optional
-
 import numpy as np
 import networkx as nx
+import math
+from typing import Optional, Iterable
 
 from qubrabench.algorithms.search import search as qsearch
 from qubrabench.algorithms.max import max as qmax
@@ -55,7 +55,7 @@ class QuantumLouvainBase(Louvain):
 class QLouvain(QuantumLouvainBase):
     """Algorithms in sections 3.2.1 (traditional) and 3.2.2 (simple)"""
 
-    def vertex_find(self, nodes: list[int]) -> Optional[int]:
+    def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
         G = self.G
 
         vertex_space: list[tuple[bool, int]] = [
@@ -86,8 +86,33 @@ class QLouvain(QuantumLouvainBase):
 
         return result[1] if result else None
 
-    def find_first(self) -> Optional[int]:
-        raise NotImplementedError()
+    def find_first(self, eps: float) -> Optional[int]:
+        n = self.G.number_of_nodes()
+        log_n = math.ceil(math.log(n))
+
+        lt, rt = 0, 1
+        while True:
+            if lt >= n:
+                return None
+
+            u = self.vertex_find(range(lt, rt + 1), eps / log_n)
+            if u is not None:
+                rt = u
+                break
+
+            lt, rt = rt + 1, min(2 * rt, n - 1)
+
+        # first good node lies in [lt, rt]
+        while True:
+            c = (lt + rt + 1) // 2
+            if lt == c:
+                raise NotImplementedError()
+
+            u = self.vertex_find(range(lt, c + 1), eps / log_n)
+            if u is not None:
+                rt = u
+            else:
+                lt = c + 1
 
     def move_nodes(self):
         G = self.G
@@ -95,7 +120,7 @@ class QLouvain(QuantumLouvainBase):
             if not self.simple:
                 u = self.find_first()
             else:
-                u = self.vertex_find(list(G.nodes))
+                u = self.vertex_find(G.nodes)
 
             if u is None:
                 break
