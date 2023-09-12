@@ -40,7 +40,7 @@ class QuantumLouvainBase(Louvain):
             keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
             rng: Source of randomness
             error: upper bound on the failure probability of the quantum algorithm.
-            simple: whether to run the simple variant of quantum Louvain (when applicable). Defaults to false.
+            simple: whether to run the simple variant of quantum Louvain (when applicable). Defaults to False.
         """
         Louvain.__init__(self, G, keep_history=keep_history)
         self.rng = rng
@@ -53,13 +53,14 @@ class QuantumLouvainBase(Louvain):
 
 
 class QLouvain(QuantumLouvainBase):
-    """Algorithms in sections 3.2.1 and 3.2.2"""
+    """Algorithms in sections 3.2.1 (traditional) and 3.2.2 (simple)"""
 
     def vertex_find(self, nodes: list[int]) -> Optional[int]:
         G = self.G
 
         vertex_space: list[tuple[bool, int]] = [
             (
+                # TODO stats
                 qsearch(
                     [
                         G.delta_modularity(u, alpha) > 0
@@ -75,6 +76,7 @@ class QLouvain(QuantumLouvainBase):
             for u in nodes
         ]
 
+        # TODO stats
         result = qsearch(
             vertex_space,
             lambda data: data[0],
@@ -115,7 +117,8 @@ class QLouvain(QuantumLouvainBase):
 class QLouvainSG(QLouvain):
     def vertex_find(self, nodes: list[int]) -> Optional[int]:
         G = self.G
-        u, _ = qsearch(
+        # TODO stats
+        result = qsearch(
             [
                 (
                     any(
@@ -130,7 +133,8 @@ class QLouvainSG(QLouvain):
             rng=self.rng,
             error=self.error,  # TODO check
         )
-        return u
+
+        return result[1] if result else None
 
 
 class EdgeQLouvain(QuantumLouvainBase):

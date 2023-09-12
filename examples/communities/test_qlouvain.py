@@ -34,7 +34,6 @@ def test_qlouvain_sg(graph_b, rng):
     }
 
 
-@pytest.mark.slow
 def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=True)
     sanity_check_input(solver.G)
@@ -43,10 +42,10 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
     assert asdict(solver.stats) == {
         "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": pytest.approx(3564),
-        "classical_expected_queries": pytest.approx(3471.3446),
-        "quantum_expected_classical_queries": pytest.approx(3887.4299),
-        "quantum_expected_quantum_queries": pytest.approx(2701.0092),
+        "classical_actual_queries": 2146,
+        "classical_expected_queries": pytest.approx(2146),
+        "quantum_expected_classical_queries": pytest.approx(0),
+        "quantum_expected_quantum_queries": pytest.approx(50819.5234),
     }
 
 
