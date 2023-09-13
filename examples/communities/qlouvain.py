@@ -6,6 +6,7 @@ import numpy as np
 import networkx as nx
 import math
 from typing import Optional, Iterable
+from methodtools import lru_cache
 
 from qubrabench.algorithms.search import search as qsearch
 from qubrabench.algorithms.max import max as qmax
@@ -55,6 +56,14 @@ class QuantumLouvainBase(Louvain):
 class QLouvain(QuantumLouvainBase):
     """Algorithms in sections 3.2.1 (traditional) and 3.2.2 (simple)"""
 
+    @lru_cache()
+    def has_good_move(self, u: int) -> bool:
+        """Check if node `u` can be moved to some neighbouring community that increases modularity"""
+        return any(
+            self.G.delta_modularity(u, alpha) > 0
+            for alpha in self.G.neighbouring_communities(u)
+        )
+
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
         G = self.G
 
@@ -68,7 +77,7 @@ class QLouvain(QuantumLouvainBase):
                     ],
                     key=lambda x: x,
                     rng=self.rng,
-                    error=self.error,  # TODO check
+                    # TODO pass `error`
                 )
                 is True,
                 u,
@@ -81,7 +90,7 @@ class QLouvain(QuantumLouvainBase):
             vertex_space,
             lambda data: data[0],
             rng=self.rng,
-            error=self.error,  # TODO check
+            error=zeta,
         )
 
         return result[1] if result else None
@@ -90,37 +99,34 @@ class QLouvain(QuantumLouvainBase):
         n = self.G.number_of_nodes()
         log_n = math.ceil(math.log(n))
 
-        lt, rt = 0, 1
-        while True:
-            if lt >= n:
-                return None
+        lt, rt = 0, n  # find node in [lt, rt)
+        u = self.vertex_find(range(lt, rt), eps / log_n)
 
-            u = self.vertex_find(range(lt, rt + 1), eps / log_n)
+        if u is None:
+            return None
+
+        rt = u + 1
+
+        while rt - lt > 2:
+            c = (lt + rt) // 2
+            u = self.vertex_find(range(lt, c), eps / log_n)
             if u is not None:
-                rt = u
-                break
-
-            lt, rt = rt + 1, min(2 * rt, n - 1)
-
-        # first good node lies in [lt, rt]
-        while True:
-            c = (lt + rt + 1) // 2
-            if lt == c:
-                raise NotImplementedError()
-
-            u = self.vertex_find(range(lt, c + 1), eps / log_n)
-            if u is not None:
-                rt = u
+                rt = u + 1
             else:
-                lt = c + 1
+                lt = c
+
+        if rt - lt == 2:
+            if self.has_good_move(lt + 1):
+                return lt + 1
+        return lt
 
     def move_nodes(self):
         G = self.G
         while True:
             if not self.simple:
-                u = self.find_first()
+                u = self.find_first(self.error)  # TODO check `error`
             else:
-                u = self.vertex_find(G.nodes)
+                u = self.vertex_find(G.nodes, self.error)  # TODO check `error`
 
             if u is None:
                 break
@@ -137,10 +143,11 @@ class QLouvain(QuantumLouvainBase):
 
             assert max_modularity_increase > 0
             G.update_community(u, alpha)
+            self.has_good_move.cache_clear()
 
 
 class QLouvainSG(QLouvain):
-    def vertex_find(self, nodes: list[int]) -> Optional[int]:
+    def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
         G = self.G
         # TODO stats
         result = qsearch(
@@ -156,7 +163,7 @@ class QLouvainSG(QLouvain):
             ],
             lambda data: data[0],
             rng=self.rng,
-            error=self.error,  # TODO check
+            error=zeta,
         )
 
         return result[1] if result else None
