@@ -131,6 +131,7 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
+            # TODO stats
             max_modularity_increase, alpha = qmax(
                 [
                     (G.delta_modularity(u, alpha), alpha)
