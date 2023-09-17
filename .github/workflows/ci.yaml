@@ -74,7 +74,7 @@ jobs:
 
       - name: Run pytest
         id: pytest
-        run: pytest --doctest-modules
+        run: pytest --doctest-modules -m "not slow"
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2

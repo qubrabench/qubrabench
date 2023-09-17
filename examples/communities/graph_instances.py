@@ -1,9 +1,17 @@
 """This module handles different types of graph instance generation for community detection."""
 
-from networkx.generators.community import LFR_benchmark_graph
 import numpy as np
 import networkx as nx
 import math
+
+__all__ = ["random_lfr_graph", "random_fcs_graph"]
+
+
+def remove_self_loops_and_index_from_one(graph: nx.Graph) -> nx.Graph:
+    graph.remove_edges_from(nx.selfloop_edges(graph))
+    graph.remove_nodes_from(list(nx.isolates(graph)))
+    graph = nx.relabel.convert_node_labels_to_integers(graph, first_label=1)
+    return graph
 
 
 def random_lfr_graph(
@@ -16,12 +24,15 @@ def random_lfr_graph(
     max_degree: int = 100,
     average_degree: float = 5,
     rng: np.random.Generator,
-):
+) -> nx.Graph:
     """
     Generates an LFR benchmark graph instance with defaults similar to Cade et al.
     Sacrifices exact node number for ensuring no self loops
+
+    Returns:
+        A 1-indexed graph instance
     """
-    graph = LFR_benchmark_graph(
+    graph = nx.generators.community.LFR_benchmark_graph(
         n,
         tau1=tau1,
         tau2=tau2,
@@ -31,21 +42,20 @@ def random_lfr_graph(
         average_degree=average_degree,
         seed=rng,
     )
-    graph.remove_edges_from(nx.selfloop_edges(graph))
-    graph.remove_nodes_from(list(nx.isolates(graph)))
-    graph = nx.relabel.convert_node_labels_to_integers(graph)
+
+    graph = remove_self_loops_and_index_from_one(graph)
     return graph
 
 
 def random_fcs_graph(
     n: int,
     *,
-    community_size: float = 50,
+    community_size: int = 50,
     mu: float = 0.3,
     average_degree: float = 5,
     rng: np.random.Generator,
-):
-    """Generate an FCS type graph according to Cade et al.'s community detection paper (Appx.D)
+) -> nx.Graph:
+    """Generate an FCS type graph according to Cade et al.'s community detection paper (Appendix D, fixed)
 
     Args:
         n: Number of nodes in the graph
@@ -55,47 +65,37 @@ def random_fcs_graph(
         rng: source of randomness
 
     Returns:
-        nx.Graph: A graph instance
+        A 1-indexed graph instance
     """
     graph = nx.Graph()
-    graph.add_nodes_from(list(range(1, n + 1)))
+    graph.add_nodes_from(range(n))
 
-    community_labels = list(range(1, math.ceil(n / community_size)))
-    C = {}
+    num_communities = math.ceil(n / community_size)
+    # note: community labels \in [0, num_communities), where l_u = u // community_size
 
-    label_group_a = list(range(1, math.floor(n / community_size)))
+    num_edges_to_add = (average_degree * n) // 2
+    while num_edges_to_add > 0:
+        # pick a random target community
+        label = rng.integers(num_communities)
 
-    for u in range(1, n + 1):
-        if u in label_group_a:
-            C[u] = u % community_size
+        # community `label` is the set of nodes [start, end)
+        start = label * community_size
+        end = min(start + community_size, n)
+
+        # pick first node from community `label`
+        u = rng.integers(start, end)
+
+        # pick second node from the above community `label` with probability `1 - mu`, otherwise from outside.
+        if rng.uniform() < 1 - mu:
+            v = rng.integers(start, end)
         else:
-            C[u] = math.ceil(n / community_size)
-
-    # remaining edges counter k
-    k = average_degree * n
-    while k > 0:
-        label = rng.choice(community_labels)
-        u = rng.choice(graph.nodes)
-        V_l, V_others = get_community_node_lists(label, C)
-
-        # draw from either V_l or V_others depending on randomness and mu
-        v = rng.choice(V_l) if rng.uniform() < 1 - mu else rng.choice(V_others)
+            v = rng.integers(n - (end - start))
+            if start <= v < end:
+                v += end - start  # skip this label
 
         if not graph.has_edge(u, v):
             graph.add_edge(u, v)
-            k -= 1
+            num_edges_to_add -= 1
 
+    graph = remove_self_loops_and_index_from_one(graph)
     return graph
-
-
-def get_community_node_lists(label: int, community_mapping: dict):
-    """Returns two lists of nodes, V_l and V_others, where V_l is the list of nodes in community label and V_others are all others"""
-    V_l = []
-    V_others = []
-    for k, v in community_mapping.items():
-        if v == label:
-            V_l.append(k)
-        else:
-            V_others.append(k)
-
-    return V_l, V_others
