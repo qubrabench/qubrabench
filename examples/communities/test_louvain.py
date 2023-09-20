@@ -59,10 +59,9 @@ def graph_a():
 
 def sanity_check_input(G: nx.Graph):
     """
-    checks that a given adjacency matrix has 0 for all diagonal elements, as required by Cade et al. (Community Detection)
+    checks that the graph has no self loops, as required by Cade et al. (Community Detection)
     """
-    A = nx.adjacency_matrix(G)
-    assert sum(A.diagonal()) == 0
+    assert all(not G.has_edge(u, u) for u in G)
 
 
 def test_node_to_community_strength(small_adjacency_matrix):
