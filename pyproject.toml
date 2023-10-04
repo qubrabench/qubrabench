@@ -52,6 +52,7 @@ dev = [
     "jupyter-black~=0.3.4",
     "nbdev~=2.3.12",
     "pre-commit~=3.3.3",
+    "methodtools~=0.4.7"
 ]
 
 [tool.setuptools.dynamic]
