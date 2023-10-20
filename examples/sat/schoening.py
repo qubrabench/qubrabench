@@ -3,7 +3,7 @@ from typing import Optional
 import numpy as np
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
-from qubrabench.algorithms.search import search, SearchDomain
+from qubrabench.algorithms.search import search_custom, SearchDomain
 
 __all__ = ["schoening_solve"]
 
@@ -55,7 +55,7 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    randomness = search(
+    randomness = search_custom(
         domain,
         pred,
         error=error,

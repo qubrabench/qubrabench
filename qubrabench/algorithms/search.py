@@ -14,6 +14,15 @@ E = TypeVar("E")
 
 
 class SearchDomain(ABC, Generic[E]):
+    """
+    Class used for search routines requiring elaborate sampling with replacement. To search against a predicate, please
+    refer to the function search_custom.
+    If your use-case involves simpler search spaces, e.g. ones that can be stored as a list in memory, please use the
+    function search for that.
+    """
+
+    # TODO: refer to 'simple' search function
+    # TODO: instead of size and num. solutions, ask for probability. Requires rewriting stat formulas!
     @abstractmethod
     def get_size(self) -> int:
         pass
@@ -27,28 +36,8 @@ class SearchDomain(ABC, Generic[E]):
         pass
 
 
-class ListDomain(SearchDomain[E], Generic[E]):
-    def __init__(self, it: Iterable[E], rng):
-        self.it = list(it)
-        rng.shuffle(self.it)
-        self.sample_it = iter(self.it)
-
-    def get_size(self):
-        return len(self.it)
-
-    def get_number_of_solutions(self, key):
-        return len([1 for x in self.it if key(x)])
-
-    def get_random_sample(self, rng: np.random.Generator) -> Optional[E]:
-        try:
-            x = next(self.sample_it)
-        except StopIteration:
-            x = None
-        return x
-
-
-def search(
-    seq: Iterable[E] | SearchDomain[E],
+def search_custom(
+    seq: SearchDomain[E],
     key: Callable[[E], bool],
     *,
     rng: np.random.Generator,
@@ -56,13 +45,11 @@ def search(
     max_classical_queries: int = 130,
     stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
-    """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
-
-    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
-    2
+    """
+    Search routine used for search spaces that inherit from the SearchDomain class.
 
     Args:
-        seq: Sequence to be searched over
+        seq: Search space
         key: function to test if an element satisfies the predicate
         rng: np.random.Generator instance as source of randomness
         error: upper bound on the failure probability of the quantum algorithm.
@@ -76,16 +63,13 @@ def search(
         An element that satisfies the predicate, or None if no such argument can be found.
     """
 
-    if isinstance(seq, Iterable):
-        seq = ListDomain(seq, rng)
-
     N = seq.get_size()
 
     # collect stats
     if stats:
         if error is None:
             raise ValueError(
-                "search() parameter 'error' not provided, cannot compute quantum query statistics"
+                "search_custom() parameter 'error' not provided, cannot compute quantum query statistics"
             )
 
         T = seq.get_number_of_solutions(key)
@@ -101,6 +85,63 @@ def search(
     # run the classical sampling algorithm
     # TODO when sampling with replacement, should break after reaching some limit (so that an input with no solutions does not loop infinitely)
     while (x := seq.get_random_sample(rng)) is not None:
+        if stats:
+            stats.classical_actual_queries += 1
+        if key(x):
+            return x
+
+    return None
+
+
+def search(
+    iterable: Iterable[E],
+    key: Callable[[E], bool],
+    *,
+    rng: np.random.Generator,
+    error: Optional[float] = None,
+    max_classical_queries: int = 130,
+    stats: Optional[QueryStats] = None,
+) -> Optional[E]:
+    """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
+    2
+
+    Args:
+        iterable: iterable to be searched over
+        key: function to test if an element satisfies the predicate
+        rng: np.random.Generator instance as source of randomness
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        stats: keeps track of statistics.
+
+    Raises:
+        ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
+
+    Returns:
+        An element that satisfies the predicate, or None if no such argument can be found.
+    """
+    iterable = list(iterable)
+
+    # collect stats
+    if stats:
+        if error is None:
+            raise ValueError(
+                "search() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
+        N = len(iterable)
+        T = sum(1 for x in iterable if key(x))
+        stats.classical_expected_queries += (N + 1) / (T + 1)
+        stats.quantum_expected_classical_queries += (
+            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
+        )
+        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
+            N, T, error, max_classical_queries
+        )
+
+    # run the classical sampling-without-replacement algorithms
+    rng.shuffle(iterable)  # type: ignore
+    for x in iterable:
         if stats:
             stats.classical_actual_queries += 1
         if key(x):
