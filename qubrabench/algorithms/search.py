@@ -13,86 +13,6 @@ __all__ = ["search", "SearchDomain"]
 E = TypeVar("E")
 
 
-class SearchDomain(ABC, Generic[E]):
-    """
-    Class used for search routines requiring elaborate sampling with replacement. To search against a predicate, please
-    refer to the function search_custom.
-    If your use-case involves simpler search spaces, e.g. ones that can be stored as a list in memory, please use the
-    function search for that.
-    """
-
-    # TODO: refer to 'simple' search function
-    # TODO: instead of size and num. solutions, ask for probability. Requires rewriting stat formulas!
-    @abstractmethod
-    def get_size(self) -> int:
-        pass
-
-    @abstractmethod
-    def get_number_of_solutions(self, key) -> float:
-        pass
-
-    @abstractmethod
-    def get_random_sample(self, rng: np.random.Generator) -> E:
-        pass
-
-
-def search_custom(
-    seq: SearchDomain[E],
-    key: Callable[[E], bool],
-    *,
-    rng: np.random.Generator,
-    error: Optional[float] = None,
-    max_classical_queries: int = 130,
-    stats: Optional[QueryStats] = None,
-) -> Optional[E]:
-    """
-    Search routine used for search spaces that inherit from the SearchDomain class.
-
-    Args:
-        seq: Search space
-        key: function to test if an element satisfies the predicate
-        rng: np.random.Generator instance as source of randomness
-        error: upper bound on the failure probability of the quantum algorithm.
-        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
-        stats: keeps track of statistics.
-
-    Raises:
-        ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
-
-    Returns:
-        An element that satisfies the predicate, or None if no such argument can be found.
-    """
-
-    N = seq.get_size()
-
-    # collect stats
-    if stats:
-        if error is None:
-            raise ValueError(
-                "search_custom() parameter 'error' not provided, cannot compute quantum query statistics"
-            )
-
-        T = seq.get_number_of_solutions(key)
-
-        stats.classical_expected_queries += (N + 1) / (T + 1)
-        stats.quantum_expected_classical_queries += (
-            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
-        )
-        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            N, T, error, max_classical_queries
-        )
-
-    # run the classical sampling algorithm
-    # TODO when sampling with replacement, should break after reaching some limit (so that an input with no solutions does not loop infinitely)
-    while (x := seq.get_random_sample(rng)) is not None:
-        if stats:
-            stats.classical_actual_queries += 1
-        if key(x):
-            return x
-
-    return None
-
-
 def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
@@ -142,6 +62,86 @@ def search(
     # run the classical sampling-without-replacement algorithms
     rng.shuffle(iterable)  # type: ignore
     for x in iterable:
+        if stats:
+            stats.classical_actual_queries += 1
+        if key(x):
+            return x
+
+    return None
+
+
+class SearchDomain(ABC, Generic[E]):
+    """
+    Class used for search routines requiring elaborate sampling with replacement. To search against a predicate, please
+    refer to the function search_custom.
+    If your use-case involves simpler search spaces, e.g. ones that can be stored as a list in memory, please use the
+    function search for that.
+    """
+
+    # TODO: refer to 'simple' search function
+    # TODO: instead of size and num. solutions, ask for probability. Requires rewriting stat formulas!
+    @abstractmethod
+    def get_size(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_probability_of_sampling_solution(self, key) -> float:
+        pass
+
+    @abstractmethod
+    def get_random_sample(self, rng: np.random.Generator) -> E:
+        pass
+
+
+def search_by_sampling_with_replacement(
+    seq: SearchDomain[E],
+    key: Callable[[E], bool],
+    *,
+    rng: np.random.Generator,
+    error: Optional[float] = None,
+    max_classical_queries: int = 130,
+    stats: Optional[QueryStats] = None,
+) -> Optional[E]:
+    """
+    Search routine used for search spaces that inherit from the SearchDomain class.
+
+    Args:
+        seq: Search space
+        key: function to test if an element satisfies the predicate
+        rng: np.random.Generator instance as source of randomness
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        stats: keeps track of statistics.
+
+    Raises:
+        ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
+
+    Returns:
+        An element that satisfies the predicate, or None if no such argument can be found.
+    """
+
+    N = seq.get_size()
+
+    # collect stats
+    if stats:
+        if error is None:
+            raise ValueError(
+                "search_custom() parameter 'error' not provided, cannot compute quantum query statistics"
+            )
+
+        T = seq.get_probability_of_sampling_solution(key) * N
+
+        stats.classical_expected_queries += (N + 1) / (T + 1)
+        stats.quantum_expected_classical_queries += (
+            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
+        )
+        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
+            N, T, error, max_classical_queries
+        )
+
+    # run the classical sampling algorithm
+    # TODO when sampling with replacement, should break after reaching some limit (so that an input with no solutions does not loop infinitely)
+    while (x := seq.get_random_sample(rng)) is not None:
         if stats:
             stats.classical_actual_queries += 1
         if key(x):

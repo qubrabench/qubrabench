@@ -3,12 +3,15 @@ from typing import Optional
 import numpy as np
 from sat import SatInstance, Assignment
 from qubrabench.stats import QueryStats
-from qubrabench.algorithms.search import search_custom, SearchDomain
+from qubrabench.algorithms.search import (
+    search_by_sampling_with_replacement,
+    SearchDomain,
+)
 
 __all__ = ["schoening_solve"]
 
 
-class SchoeningDomain(SearchDomain):
+class SchoeningDomain(SearchDomain[tuple[np.ndarray, np.ndarray]]):
     def __init__(self, n):
         self.n = n
 
@@ -17,8 +20,8 @@ class SchoeningDomain(SearchDomain):
         N_steps = 3 ** (3 * self.n)
         return N_assignment * N_steps
 
-    def get_number_of_solutions(self, _) -> float:
-        return pow(0.75, self.n) * self.get_size()
+    def get_probability_of_sampling_solution(self, _) -> float:
+        return pow(0.75, self.n)
 
     def get_random_sample(self, rng) -> tuple[np.ndarray, np.ndarray]:
         assignment = rng.integers(2, size=self.n) * 2 - 1
@@ -55,7 +58,7 @@ def schoening_solve(
     def pred(x):
         return schoening_with_randomness(x, inst) is not None
 
-    randomness = search_custom(
+    randomness = search_by_sampling_with_replacement(
         domain,
         pred,
         error=error,
