@@ -7,7 +7,7 @@ from typing import Callable, Optional, TypeVar, Generic
 import numpy as np
 from ..stats import QueryStats
 
-__all__ = ["search", "SearchDomain"]
+__all__ = ["search", "SearchDomain", "search_by_sampling_with_replacement"]
 
 
 E = TypeVar("E")
