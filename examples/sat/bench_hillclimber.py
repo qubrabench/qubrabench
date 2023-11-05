@@ -10,7 +10,7 @@ import click
 import numpy as np
 import pandas as pd
 
-from qubrabench.utils.plotting_strategy import PlottingStrategy
+from qubrabench.utils.plotting import PlottingStrategy
 
 import hillclimber
 
