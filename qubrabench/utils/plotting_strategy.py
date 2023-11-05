@@ -219,3 +219,11 @@ class PlottingStrategy(ABC):
         """
         columns = [f"{column} = {value}" for (column, value) in zip(columns, values)]
         return ", ".join(columns)
+
+
+class BasicPlottingStrategy(PlottingStrategy, ABC):
+    def get_plot_group_column_names(self) -> list[str]:
+        return []
+
+    def get_data_group_column_names(self) -> list[str]:
+        return []
