@@ -12,14 +12,6 @@ from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
 
 
-# OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
-# result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
-# if result is None:
-#     return x
-# x, w = result, inst.weight(result)
-
-
-# OPTION 2: faster implementation (for our instance sizes)
 def hill_climber(
     inst: WeightedSatInstance,
     *,
@@ -58,8 +50,7 @@ def hill_climber(
     x = rng.choice([-1, 1], n)
     w = inst.weight(x)
 
-    # error probability per hillclimb step,
-    # assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
+    # error probability per hillclimb step, assuming a maximum of `n` rounds (see 4.3.1 in https://arxiv.org/pdf/2203.04975.pdf)
     if error is not None:
         error /= n
 
@@ -75,7 +66,14 @@ def hill_climber(
         if stats:
             stats.classical_control_method_calls += 1
 
-        # computes the weight for each possible neighbour, returns values in array
+        # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
+        # result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
+        # if result is None:
+        #     return x
+        # x, w = result, inst.weight(result)
+
+        # OPTION 2: faster implementation (for our instance sizes)
+        # precompute the weight for each possible neighbour
         weights = inst.weight(neighbors)
 
         def pred(it: Tuple[Assignment, np.float_]) -> bool:
