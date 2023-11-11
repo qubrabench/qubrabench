@@ -39,7 +39,7 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "black",
+    "black[jupyter]",
     "pytest~=7.3",
     "mypy~=1.2",
     "pandas-stubs~=2.0",
@@ -48,6 +48,11 @@ dev = [
     "sphinx~=7.0.1",
     "sphinxcontrib-napoleon~=0.7",
     "myst-parser~=2.0",
+    "jupyter~=1.0",
+    "jupyter-black~=0.3.4",
+    "nbdev~=2.3.12",
+    "pre-commit~=3.3.3",
+    "methodtools~=0.4.7"
 ]
 
 [tool.setuptools.dynamic]

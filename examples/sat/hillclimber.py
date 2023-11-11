@@ -39,10 +39,14 @@ def hill_climber(
 
     # precompute some matrices (see 4.3.2 in Cade et al)
     n = inst.n
+    # generates a 1xN matrix containing only ones
     ones = np.ones(n, dtype=int)
+    # produce nxn matrix, where all diagonal entries are -1, all other entries are 1
+    # 1. np.outer generates outer product, which results in matrix containing only ones
+    # 2. np.eye generates identity matrix, this is multiplied by 2 and then subtracted from the ones matrix
     flip_mat = np.outer(ones, ones) - 2 * np.eye(n, dtype=int)
 
-    # start with a random assignment
+    # start with a random assignment, -1 represents false, 1 represents true
     x = rng.choice([-1, 1], n)
     w = inst.weight(x)
 
@@ -51,7 +55,11 @@ def hill_climber(
         error /= n
 
     while True:
-        # compute all Hamming neighbors (row by row) and their weights
+        # compute all Hamming neighbors (row by row)
+        # np.outer(ones, x) generates matrix containing the current assignment x in n rows
+        # flip_matrix used to flip values on diagonal to compute all possible neighbours
+        # this only takes into account neighbours with a hamming distance of 1
+        # uses numpys __mul__ operation, which performs element-wise multiplication, not matrix multiplication
         neighbors = flip_mat * np.outer(ones, x)
 
         # find improved directions
@@ -65,6 +73,7 @@ def hill_climber(
         # x, w = result, inst.weight(result)
 
         # OPTION 2: faster implementation (for our instance sizes)
+        # precompute the weight for each possible neighbour
         weights = inst.weight(neighbors)
 
         def pred(it: Tuple[Assignment, np.float_]) -> bool:
