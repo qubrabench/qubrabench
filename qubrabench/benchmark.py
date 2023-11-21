@@ -12,7 +12,6 @@ class QueryStats:
     This is the main data model of the framework, holding actual and statistically calculated values.
     """
 
-    classical_control_method_calls: int = 0
     classical_actual_queries: int = 0
     classical_expected_queries: float = 0
     quantum_expected_classical_queries: float = 0
@@ -85,7 +84,7 @@ class BenchmarkFrame:
     ):
         stats = self._get_stats_from_hash(obj_hash)
         stats.quantum_expected_classical_queries += c
-        stats.quantum_expected_classical_queries += q
+        stats.quantum_expected_quantum_queries += q
         stats.benchmarked()
 
 

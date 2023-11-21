@@ -30,7 +30,6 @@ def search(
         rng: np.random.Generator instance as source of randomness
         error: upper bound on the failure probability of the quantum algorithm.
         max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
-        context: benchmarking context
 
     Raises:
         ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
@@ -38,6 +37,10 @@ def search(
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
     """
+    # TODO maybe use Sequence instead of Iterable:
+    #      as Iterable might get consumed during the first iteration,
+    #      making the benchmark implementation a ugly
+    #      Also: the iteration itself can make queries (e.g. when using QList), so this must be captured very carefully.
 
     # collect stats
     if _BenchmarkManager.is_tracking():

@@ -4,7 +4,7 @@ import pytest
 import re
 
 from qubrabench.algorithms.max import max
-from qubrabench.stats import QueryStats
+from qubrabench.benchmark import track_queries, oracle, QueryStats
 
 
 def test_max_return_value():
@@ -32,8 +32,8 @@ def test_max_raises_on_stats_requested_and_eps_missing():
             "max() parameter 'error' not provided, cannot compute quantum query statistics"
         ),
     ):
-        stats = QueryStats()
-        max(range(100), stats=stats)
+        with track_queries():
+            max(range(100))
 
 
 def test_max_on_empty_with_default():
@@ -41,15 +41,18 @@ def test_max_on_empty_with_default():
 
 
 def test_max_stats():
-    stats = QueryStats()
-    result = max(
-        range(100), key=lambda x: -((x - 50) ** 2), error=10**-5, stats=stats
-    )
-    assert result == 50
-    assert stats == QueryStats(
-        classical_control_method_calls=0,
-        classical_actual_queries=100,
-        classical_expected_queries=100,
-        quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=pytest.approx(1405.3368),
-    )
+    with track_queries() as tracker:
+
+        @oracle
+        def key(x):
+            return -((x - 50) ** 2)
+
+        result = max(range(100), key=key, error=10**-5)
+        assert result == 50
+
+        assert tracker.get_stats(key) == QueryStats(
+            classical_actual_queries=100,
+            classical_expected_queries=100,
+            quantum_expected_classical_queries=0,
+            quantum_expected_quantum_queries=pytest.approx(1405.3368),
+        )
