@@ -7,7 +7,6 @@ import numpy.typing as npt
 import pandas as pd
 
 from sat import WeightedSatInstance, Assignment, W
-from qubrabench import BenchmarkContext
 from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
 

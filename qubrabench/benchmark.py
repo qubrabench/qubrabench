@@ -1,5 +1,5 @@
 from typing import TypeAlias
-from functools import wraps
+from functools import wraps, reduce
 from dataclasses import dataclass, field
 
 __all__ = ["QueryStats", "track_queries", "oracle_method", "oracle"]
@@ -17,7 +17,7 @@ class QueryStats:
     quantum_expected_classical_queries: float = 0
     quantum_expected_quantum_queries: float = 0
 
-    __benchmarked: bool = field(default=False, compare=False, repr=False)
+    _benchmarked: bool = field(default=False, compare=False, repr=False)
     """Set this to true when expected query costs have been computed. If false, falls back to actual query counts."""
 
     def get_quantum_expected_queries(self):
@@ -26,19 +26,31 @@ class QueryStats:
                 self.quantum_expected_quantum_queries
                 + self.quantum_expected_classical_queries
             )
-            if self.__benchmarked
+            if self._benchmarked
             else self.classical_actual_queries
         )
 
     def get_classical_expected_queries(self):
         return (
             self.classical_expected_queries
-            if self.__benchmarked
+            if self._benchmarked
             else self.classical_actual_queries
         )
 
     def benchmarked(self):
-        self.__benchmarked = True
+        self._benchmarked = True
+
+    def __add__(self, other: "QueryStats") -> "QueryStats":
+        return QueryStats(
+            classical_actual_queries=self.classical_actual_queries
+            + other.classical_actual_queries,
+            classical_expected_queries=self.get_classical_expected_queries()
+            + other.get_classical_expected_queries(),
+            quantum_expected_classical_queries=0,
+            quantum_expected_quantum_queries=self.get_quantum_expected_queries()
+            + other.get_quantum_expected_queries(),
+            _benchmarked=self._benchmarked or other._benchmarked,
+        )
 
 
 Frame: TypeAlias = dict[str, QueryStats]
@@ -61,8 +73,8 @@ class BenchmarkFrame:
 
     def __get_hash(self, obj: object) -> int:
         """hashing used to store the stats"""
-        # return id(obj)
-        return hash(obj)
+        return id(obj)
+        # return hash(obj)
 
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
@@ -112,7 +124,7 @@ class _BenchmarkManager:
         return _BenchmarkManager.__stack[-1]
 
     @staticmethod
-    def combine_subroutine_costs(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
+    def combine_subroutine_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
         benchmark_objects: set[int] = set()
         for sub_frame in frames:
             benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
@@ -138,6 +150,22 @@ class _BenchmarkManager:
                 ),
             )
 
+        return frame
+
+    @staticmethod
+    def combine_sequence_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
+        benchmark_objects: set[int] = set()
+        for sub_frame in frames:
+            benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
+
+        frame = BenchmarkFrame()
+        frame.stats = {
+            obj_hash: reduce(
+                QueryStats.__add__,
+                [sub_frame._get_stats_from_hash(obj_hash) for sub_frame in frames],
+            )
+            for obj_hash in benchmark_objects
+        }
         return frame
 
 

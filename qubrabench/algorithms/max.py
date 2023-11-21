@@ -65,7 +65,7 @@ def max(
                 key(x)
                 sub_frames.append(sub_frame)
 
-        frame = _BenchmarkManager.combine_subroutine_costs(sub_frames)
+        frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
 
         for obj_hash, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
