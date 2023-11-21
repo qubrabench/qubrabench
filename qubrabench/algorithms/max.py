@@ -7,7 +7,6 @@ from typing import Iterable, TypeVar, Optional, Callable, Any
 import numpy as np
 
 from .search import cade_et_al_F
-from ..stats import QueryStats
 
 __all__ = ["max"]
 
@@ -20,7 +19,6 @@ def max(
     default: Optional[E] = None,
     key: Optional[Callable[[E], Any]] = None,
     error: Optional[float] = None,
-    stats: Optional[QueryStats] = None,
 ) -> E:
     """
     Find the largest element in a list, while keeping track of query statistics.
@@ -30,7 +28,7 @@ def max(
         default: default value to return if iterable is empty.
         key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
         error: upper bound on the failure probability of the quantum algorithm.
-        stats: object that keeps track of statistics.
+        context: benchmarking context
 
     Raises:
         ValueError: Raised when the failure rate `error` is not provided and statistics cannot be calculated.
@@ -46,15 +44,24 @@ def max(
 
         key = default_key
 
+    # if context:
+    #     sub_frames = []
+
     N = 0  # number of elements in `iterable`
 
     max_elem: Optional[E] = None
+    key_of_max_elem = None
     for elem in iterable:
         N += 1
-        if stats:
-            stats.classical_actual_queries += 1
-        if max_elem is None or key(elem) > key(max_elem):
+        # if context:
+        #     with context.recurse() as frame:
+        #         key(elem)
+        #     sub_frames.append(frame)
+
+        key_of_elem = key(elem)
+        if max_elem is None or key_of_elem > key_of_max_elem:
             max_elem = elem
+            key_of_max_elem = key_of_elem
 
     if max_elem is None:
         if default is None:
@@ -63,15 +70,24 @@ def max(
             )
         max_elem = default
 
-    if stats:
-        if error is None:
-            raise ValueError(
-                "max() parameter 'error' not provided, cannot compute quantum query statistics"
-            )
-        stats.classical_expected_queries += N
-        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            N, error
-        )
+    # if context:
+    #     if error is None:
+    #         raise ValueError(
+    #             "max() parameter 'error' not provided, cannot compute quantum query statistics"
+    #         )
+    #
+    #     for oracle, c_queries, q_queries in context.get_subroutine_costs(sub_frames):
+    #         context.add_classical_expected_queries(oracle, c=np.sum(c_queries))
+    #
+    #         # see qubrabench.search for more info
+    #         # [improved] select with uniform access
+    #         # TODO: possibly missing polylog and constant factors
+    #         quantum_query_weight = np.max(q_queries)
+    #
+    #         context.add_quantum_expected_queries(
+    #             oracle,
+    #             q=cade_et_al_expected_quantum_queries(N, error) * quantum_query_weight,
+    #         )
 
     return max_elem
 

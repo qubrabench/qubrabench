@@ -4,11 +4,9 @@
 
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
-from ..stats import QueryStats
-
+from ..benchmark import _BenchmarkManager, BenchmarkFrame, track_queries
 
 __all__ = ["search"]
-
 
 E = TypeVar("E")
 
@@ -20,7 +18,6 @@ def search(
     rng: np.random.Generator,
     error: Optional[float] = None,
     max_classical_queries: int = 130,
-    stats: Optional[QueryStats] = None,
 ) -> Optional[E]:
     """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
 
@@ -33,7 +30,7 @@ def search(
         rng: np.random.Generator instance as source of randomness
         error: upper bound on the failure probability of the quantum algorithm.
         max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
-        stats: keeps track of statistics.
+        context: benchmarking context
 
     Raises:
         ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
@@ -41,29 +38,52 @@ def search(
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
     """
-    iterable = list(iterable)
 
     # collect stats
-    if stats:
+    if _BenchmarkManager.is_tracking():
         if error is None:
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
             )
-        N = len(iterable)
-        T = sum(1 for x in iterable if key(x))
-        stats.classical_expected_queries += (N + 1) / (T + 1)
-        stats.quantum_expected_classical_queries += (
-            cade_et_al_expected_classical_queries(N, T, max_classical_queries)
-        )
-        stats.quantum_expected_quantum_queries += cade_et_al_expected_quantum_queries(
-            N, T, error, max_classical_queries
-        )
+
+        N = 0
+        T = 0
+
+        sub_frames: list[BenchmarkFrame] = []
+        it = iter(iterable)
+        while True:
+            with track_queries() as sub_frame:
+                try:
+                    x = next(it)
+                except StopIteration:
+                    break
+                N += 1
+                if key(x):
+                    T += 1
+                sub_frames.append(sub_frame)
+
+        frame = _BenchmarkManager.combine_subroutine_costs(sub_frames)
+
+        for obj_hash, stats in frame.stats.items():
+            _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                obj_hash, c=(N + 1) / (T + 1) * stats.get_classical_expected_queries()
+            )
+
+            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                obj_hash,
+                c=cade_et_al_expected_classical_queries(N, T, max_classical_queries)
+                * stats.get_quantum_expected_queries(),
+                q=cade_et_al_expected_quantum_queries(
+                    N, T, error, max_classical_queries
+                )
+                * stats.get_quantum_expected_queries(),
+            )
+
+    iterable = list(iterable)
 
     # run the classical sampling-without-replacement algorithms
     rng.shuffle(iterable)  # type: ignore
     for x in iterable:
-        if stats:
-            stats.classical_actual_queries += 1
         if key(x):
             return x
 

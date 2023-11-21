@@ -2,7 +2,9 @@
 
 import pytest
 import numpy as np
-from qubrabench.stats import QueryStats
+
+import qubrabench as qb
+
 from sat import SatInstance
 from bruteforce import bruteforce_solve
 
@@ -18,18 +20,21 @@ def test_solve(rng) -> None:
         k=2,
         clauses=np.array([[1, 1, 0], [1, -1, 0], [0, 1, 1], [0, -1, -1]], dtype=int),
     )
-    stats = QueryStats()
-    x = bruteforce_solve(inst, rng=rng, error=10**-5, stats=stats)
-    assert x is not None
 
-    # check that found a solution
-    assert inst.evaluate(x)
+    @qb.benchmark.oracle
+    def evaluate(y):
+        return inst.evaluate(y)
 
-    # check stats
-    assert stats == QueryStats(
-        classical_control_method_calls=0,
-        classical_actual_queries=2,
-        classical_expected_queries=3,
-        quantum_expected_classical_queries=pytest.approx(4),
-        quantum_expected_quantum_queries=pytest.approx(0),
-    )
+    with qb.benchmark.track_queries() as frame:
+        x = bruteforce_solve(inst, evaluate, rng=rng, error=10**-5)
+        # check that found a solution
+        assert x is not None and inst.evaluate(x)
+
+        # check stats
+        assert frame.get_stats(evaluate) == qb.benchmark.QueryStats(
+            classical_control_method_calls=0,
+            classical_actual_queries=2,
+            classical_expected_queries=3,
+            quantum_expected_classical_queries=pytest.approx(4),
+            quantum_expected_quantum_queries=pytest.approx(0),
+        )
