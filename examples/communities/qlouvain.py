@@ -6,11 +6,11 @@ import numpy as np
 import networkx as nx
 import math
 from typing import Optional, Iterable
+import functools
 from methodtools import lru_cache
 
-from qubrabench.algorithms.search import search as qsearch
-from qubrabench.algorithms.max import max as qmax
-from qubrabench.stats import QueryStats
+import qubrabench as qb
+from qubrabench.benchmark import QueryStats, track_queries
 
 from louvain import Louvain
 
@@ -30,7 +30,7 @@ class QuantumLouvainBase(Louvain):
         G: nx.Graph,
         *,
         rng: np.random.Generator,
-        keep_history: bool = False,
+        # keep_history: bool = False,
         error: float = 1e-5,
         simple: bool = False,
     ) -> None:
@@ -38,19 +38,23 @@ class QuantumLouvainBase(Louvain):
 
         Args:
             G: The initial graph where communities should be detected.
-            keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
+            # keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
             rng: Source of randomness
             error: upper bound on the failure probability of the quantum algorithm.
             simple: whether to run the simple variant of quantum Louvain (when applicable). Defaults to False.
         """
-        Louvain.__init__(self, G, keep_history=keep_history)
+        Louvain.__init__(self, G, keep_history=True)
         self.rng = rng
-        self.stats = QueryStats()
         self.error = error
         self.simple = simple
 
-    def get_stats(self) -> QueryStats:
-        return self.stats
+    def run_with_tracking(self) -> QueryStats:
+        with track_queries() as tracker:
+            self.run()
+            stats = functools.reduce(
+                QueryStats.__add__, [tracker.get_stats(g) for g, _ in self.history]
+            )
+            return stats
 
 
 class QLouvain(QuantumLouvainBase):
@@ -70,7 +74,7 @@ class QLouvain(QuantumLouvainBase):
         vertex_space: list[tuple[bool, int]] = [
             (
                 # TODO stats
-                qsearch(
+                qb.algorithms.search(
                     [
                         G.delta_modularity(u, alpha) > 0
                         for alpha in G.neighbouring_communities(u)
@@ -85,8 +89,7 @@ class QLouvain(QuantumLouvainBase):
             for u in nodes
         ]
 
-        # TODO stats
-        result = qsearch(
+        result = qb.algorithms.search(
             vertex_space,
             lambda data: data[0],
             rng=self.rng,
@@ -131,14 +134,12 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
-            # TODO stats
-            max_modularity_increase, alpha = qmax(
+            max_modularity_increase, alpha = qb.algorithms.max(
                 [
                     (G.delta_modularity(u, alpha), alpha)
                     for alpha in G.neighbouring_communities(u)
                 ],
                 key=lambda entry: entry[0],
-                stats=self.stats,
                 error=self.error,  # TODO check
             )
 
@@ -150,8 +151,7 @@ class QLouvain(QuantumLouvainBase):
 class QLouvainSG(QLouvain):
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
         G = self.G
-        # TODO stats
-        result = qsearch(
+        result = qb.algorithms.search(
             [
                 (
                     any(
@@ -177,17 +177,13 @@ class EdgeQLouvain(QuantumLouvainBase):
         G = self.G
         while True:
             # calculate maximum increase of modularity
-            node, max_modularity_increase, target_community = qmax(
-                [
-                    (u, G.delta_modularity(u, G.get_label(v)), G.get_label(v))
-                    for u, v in self.G.edges
-                ],
-                key=lambda entry: entry[1],
-                stats=self.stats,
+            node, target_community = qb.algorithms.max(
+                [(u, G.get_label(v)) for u, v in self.G.edges],
+                key=lambda it: G.delta_modularity(*it),
                 error=self.error,
             )
 
-            if max_modularity_increase > 0:
+            if G.delta_modularity(node, target_community) > 0:
                 G.update_community(node, target_community)
             else:
                 break
