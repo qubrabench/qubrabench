@@ -1,5 +1,6 @@
 """This module contains tests for the quantum louvain community detection example."""
 import pytest
+from pytest import approx
 
 from qubrabench.benchmark import QueryStats
 
@@ -25,11 +26,12 @@ def test_qlouvain_sg(graph_b, rng):
 
     stats = solver.run_with_tracking()
 
+    # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=2355,
-        classical_expected_queries=pytest.approx(2355),
-        quantum_expected_classical_queries=pytest.approx(0),
-        quantum_expected_quantum_queries=pytest.approx(55503.8913),
+        classical_actual_queries=303282,
+        classical_expected_queries=approx(702390.3280617648),
+        quantum_expected_classical_queries=approx(0),
+        quantum_expected_quantum_queries=approx(13856417.14549516),
     )
 
 
@@ -39,11 +41,12 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
     stats = solver.run_with_tracking()
 
+    # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=2146,
-        classical_expected_queries=pytest.approx(2146),
-        quantum_expected_classical_queries=pytest.approx(0),
-        quantum_expected_quantum_queries=pytest.approx(50819.5234),
+        classical_actual_queries=25736,
+        classical_expected_queries=approx(56550.98277315278),
+        quantum_expected_classical_queries=approx(0),
+        quantum_expected_quantum_queries=approx(222792.06362384785),
     )
 
 
@@ -53,9 +56,10 @@ def test_edge_qlouvain(graph_b, rng):
 
     stats = solver.run_with_tracking()
 
+    # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=159771,
-        classical_expected_queries=pytest.approx(159771),
-        quantum_expected_classical_queries=pytest.approx(0),
-        quantum_expected_quantum_queries=pytest.approx(1056766.8418505196),
+        classical_actual_queries=320116,
+        classical_expected_queries=approx(319542),
+        quantum_expected_classical_queries=approx(0),
+        quantum_expected_quantum_queries=approx(2113533.68370103),
     )

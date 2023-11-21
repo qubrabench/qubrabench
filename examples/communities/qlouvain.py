@@ -21,16 +21,17 @@ class QuantumLouvainBase(Louvain):
     """
 
     rng: np.random.Generator
-    stats: QueryStats
     error: float
     simple: bool
+
+    __graph_hashes: list[int]
 
     def __init__(
         self,
         G: nx.Graph,
         *,
         rng: np.random.Generator,
-        # keep_history: bool = False,
+        keep_history: bool = False,
         error: float = 1e-5,
         simple: bool = False,
     ) -> None:
@@ -38,21 +39,28 @@ class QuantumLouvainBase(Louvain):
 
         Args:
             G: The initial graph where communities should be detected.
-            # keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
+            keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
             rng: Source of randomness
             error: upper bound on the failure probability of the quantum algorithm.
             simple: whether to run the simple variant of quantum Louvain (when applicable). Defaults to False.
         """
-        Louvain.__init__(self, G, keep_history=True)
+        Louvain.__init__(self, G, keep_history=keep_history)
         self.rng = rng
         self.error = error
         self.simple = simple
+
+        self.__graph_hashes = []
+
+    def record_history(self):
+        self.__graph_hashes.append(hash(self.G))
+        Louvain.record_history(self)
 
     def run_with_tracking(self) -> QueryStats:
         with track_queries() as tracker:
             self.run()
             stats = functools.reduce(
-                QueryStats.__add__, [tracker.get_stats(g) for g, _ in self.history]
+                QueryStats.__add__,
+                [tracker.stats.get(h, QueryStats()) for h in self.__graph_hashes],
             )
             return stats
 
@@ -69,34 +77,20 @@ class QLouvain(QuantumLouvainBase):
         )
 
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        G = self.G
-
-        vertex_space: list[tuple[bool, int]] = [
-            (
-                # TODO stats
+        return qb.algorithms.search(
+            nodes,
+            key=lambda u: (
                 qb.algorithms.search(
-                    [
-                        G.delta_modularity(u, alpha) > 0
-                        for alpha in G.neighbouring_communities(u)
-                    ],
-                    key=lambda x: x,
+                    self.G.neighbouring_communities(u),
+                    key=lambda alpha: self.G.delta_modularity(u, alpha) > 0,
                     rng=self.rng,
                     # TODO pass `error`
                 )
-                is True,
-                u,
-            )
-            for u in nodes
-        ]
-
-        result = qb.algorithms.search(
-            vertex_space,
-            lambda data: data[0],
+                is not None
+            ),
             rng=self.rng,
             error=zeta,
         )
-
-        return result[1] if result else None
 
     def find_first(self, eps: float) -> Optional[int]:
         n = self.G.number_of_nodes()
@@ -134,40 +128,28 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
-            max_modularity_increase, alpha = qb.algorithms.max(
-                [
-                    (G.delta_modularity(u, alpha), alpha)
-                    for alpha in G.neighbouring_communities(u)
-                ],
-                key=lambda entry: entry[0],
+            target_alpha = qb.algorithms.max(
+                G.neighbouring_communities(u),
+                key=lambda alpha: G.delta_modularity(u, alpha),
                 error=self.error,  # TODO check
             )
 
-            assert max_modularity_increase > 0
-            G.update_community(u, alpha)
+            assert G.delta_modularity(u, target_alpha) > 0
+            G.update_community(u, target_alpha)
             self.has_good_move.cache_clear()
 
 
 class QLouvainSG(QLouvain):
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        G = self.G
-        result = qb.algorithms.search(
-            [
-                (
-                    any(
-                        G.delta_modularity(u, alpha) > 0
-                        for alpha in G.neighbouring_communities(u)
-                    ),
-                    u,
-                )
-                for u in nodes
-            ],
-            lambda data: data[0],
+        return qb.algorithms.search(
+            nodes,
+            lambda u: any(
+                self.G.delta_modularity(u, alpha) > 0
+                for alpha in self.G.neighbouring_communities(u)
+            ),
             rng=self.rng,
             error=zeta,
         )
-
-        return result[1] if result else None
 
 
 class EdgeQLouvain(QuantumLouvainBase):
