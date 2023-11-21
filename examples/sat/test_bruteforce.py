@@ -32,7 +32,6 @@ def test_solve(rng) -> None:
 
         # check stats
         assert frame.get_stats(evaluate) == qb.benchmark.QueryStats(
-            classical_control_method_calls=0,
             classical_actual_queries=2,
             classical_expected_queries=3,
             quantum_expected_classical_queries=pytest.approx(4),

@@ -1,14 +1,16 @@
 """This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
 from dataclasses import asdict
-from typing import Optional, Tuple, Callable
+from typing import Optional, Callable
 import logging
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from sat import WeightedSatInstance, Assignment, W
 from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
+from qubrabench.benchmark import track_queries, oracle
+
+from sat import WeightedSatInstance, Assignment, W
 
 
 def hill_climber(
@@ -16,7 +18,6 @@ def hill_climber(
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
-    stats: Optional[QueryStats] = None,
     steep: bool = False,
 ) -> Optional[Assignment]:
     """A hillclimbing heuristic to find maximizing assignments to weighted SAT instances
@@ -27,7 +28,6 @@ def hill_climber(
         inst: The SAT instance to be solved.
         rng: Source of randomness
         error: upper bound on the failure probability. Defaults to None.
-        stats: Statistics instance keeping track of costs. Defaults to None.
         steep: True when the neighborhood search is performed greedily, otherwise randomly. Defaults to False.
 
     Returns:
@@ -53,17 +53,16 @@ def hill_climber(
     if error is not None:
         error /= n
 
-    while True:
+    @oracle(store_as=0)
+    def hillclimb_step():
+        nonlocal x, w, inst
+
         # compute all Hamming neighbors (row by row)
         # np.outer(ones, x) generates matrix containing the current assignment x in n rows
         # flip_matrix used to flip values on diagonal to compute all possible neighbours
         # this only takes into account neighbours with a hamming distance of 1
         # uses numpys __mul__ operation, which performs element-wise multiplication, not matrix multiplication
         neighbors = flip_mat * np.outer(ones, x)
-
-        # find improved directions
-        if stats:
-            stats.classical_control_method_calls += 1
 
         # OPTION 1: "realistic" implementation (what should be done in case we cared about really large instances)
         # result = search(neighbors, lambda x: inst.weight(x) > w, error=error, stats=stats)
@@ -75,15 +74,11 @@ def hill_climber(
         # precompute the weight for each possible neighbour
         weights = inst.weight(neighbors)
 
-        def pred(it: Tuple[Assignment, np.float_]) -> bool:
-            return bool(it[1] > w)
-
         if steep:
             result = max(
                 zip(neighbors, weights),
-                key=lambda it: it[1],
+                key=oracle(store_as=inst)(lambda it: it[1]),
                 error=error,
-                stats=stats,
             )
             nx, nw = result
             if nw > w:
@@ -93,14 +88,18 @@ def hill_climber(
         else:
             result = search(
                 zip(neighbors, weights),
-                pred,
+                key=oracle(store_as=inst)(lambda it: it[1] > w),
                 error=error,
-                stats=stats,
                 rng=rng,
             )
             if result is None:
                 return x
             x, w = result
+
+    while True:
+        res = hillclimb_step()
+        if res is not None:
+            return res
 
 
 def run(
@@ -136,18 +135,22 @@ def run(
         logging.debug(f"k={k}, r={r}, n={n}, steep={steep}, #{run_ix}")
 
         # run hill climber on random instance
-        stats = QueryStats()
         inst = WeightedSatInstance.random(
             k=k, n=n, m=r * n, rng=rng, random_weights=random_weights
         )
-        hill_climber(inst, error=error, stats=stats, rng=rng, steep=steep)
+        with track_queries() as tracker:
+            hill_climber(inst, error=error, rng=rng, steep=steep)
+            stats = tracker.get_stats(inst)
 
-        # save record to history
-        rec = asdict(stats)
-        rec["n"] = n
-        rec["k"] = k
-        rec["r"] = r
-        history.append(rec)
+            # save record to history
+            rec = asdict(stats)
+            rec["n"] = n
+            rec["k"] = k
+            rec["r"] = r
+            rec["classical_control_method_calls"] = tracker.get_stats(
+                0
+            ).classical_actual_queries
+            history.append(rec)
 
     # return pandas dataframe
     df = pd.DataFrame(

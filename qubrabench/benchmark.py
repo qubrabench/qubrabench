@@ -73,8 +73,7 @@ class BenchmarkFrame:
 
     def __get_hash(self, obj: object) -> int:
         """hashing used to store the stats"""
-        return id(obj)
-        # return hash(obj)
+        return hash(obj)
 
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
@@ -185,13 +184,20 @@ def oracle_method(fun):
     return wrapped_func
 
 
-def oracle(fun):
+def oracle(func=None, *, store_as=None):
     """Wrapper for functions"""
 
-    @wraps(fun)
-    def wrapped_func(*args, **kwargs):
-        if _BenchmarkManager.is_tracking():
-            _BenchmarkManager.current_frame()._record_classical_query(wrapped_func)
-        return fun(*args, **kwargs)
+    def decorator(fun):
+        @wraps(fun)
+        def wrapped_func(*args, **kwargs):
+            if _BenchmarkManager.is_tracking():
+                _BenchmarkManager.current_frame()._record_classical_query(
+                    store_as if store_as is not None else wrapped_func
+                )
+            return fun(*args, **kwargs)
 
-    return wrapped_func
+        return wrapped_func
+
+    if func is not None:
+        return decorator(func)
+    return decorator
