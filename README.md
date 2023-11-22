@@ -29,22 +29,36 @@ The `qubrabench` library offers [subroutines and algorithms](https://github.com/
 For example, consider the following code which iterates over a list of users to find one with a particular name:
 
 ```python
-for user in users:
-    if user.name == "Peter Shor":
-        break
-else:
-    user = None
+def find_Shor(users):
+    for user in users:
+        if user.name == "Peter Shor":
+            return user
+    return None
 ```
 
-To determine whether a quantum search algorithm can provide any advantage over classically iterating over the list, we can use the [search](https://github.com/qubrabench/qubrabench/blob/development/qubrabench/algorithms/search.py) function and pass a `QueryStats` object that will accumulate the relevant cost metrics (queries to the database).
+We can equivalently write this using the [search](https://github.com/qubrabench/qubrabench/blob/development/qubrabench/algorithms/search.py) function in qubrabench:
 
 ```python
 from qubrabench.algorithms.search import search
-from qubrabench.stats import QueryStats
 
-stats = QueryStats()
-user = search(users, lambda user: user.name == "Peter Shor", stats=stats)
+def find_Shor(users):
+    return search(users, lambda user: user.name == "Peter Shor")
 ```
+
+To determine whether a quantum search algorithm can provide any advantage over classically iterating over the list, we add some minimal annotations to tell qubrabench which object we are interested in counting query stats for:
+
+```python
+from qubrabench.algorithms.search import search
+from qubrabench.benchmark import oracle, track_queries
+
+def find_Shor(users):
+    return search(users, lambda user: oracle(user.name == "Peter Shor"))
+
+with track_queries() as tracker:
+    maybe_Shor = find_Shor(users)
+    print(tracker.all_stats())
+```
+
 
 To further familiarize yourself with this approach and workflow, we recommend looking at the [examples](https://github.com/qubrabench/qubrabench/tree/development/examples).
 
