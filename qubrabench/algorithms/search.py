@@ -4,7 +4,12 @@
 
 from typing import Callable, Iterable, Optional, TypeVar
 import numpy as np
-from ..benchmark import _BenchmarkManager, BenchmarkFrame, track_queries
+from ..benchmark import (
+    _BenchmarkManager,
+    BenchmarkFrame,
+    track_queries,
+    _already_benchmarked,
+)
 
 __all__ = ["search"]
 
@@ -81,17 +86,20 @@ def search(
 
         for obj_hash, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash, c=(N + 1) / (T + 1) * stats.get_classical_expected_queries()
+                obj_hash,
+                base_stats=stats,
+                queries=(N + 1) / (T + 1),
             )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj_hash,
-                c=cade_et_al_expected_classical_queries(N, T, max_classical_queries)
-                * stats.get_quantum_expected_queries(),
-                q=cade_et_al_expected_quantum_queries(
+                base_stats=stats,
+                queries_classical=cade_et_al_expected_classical_queries(
+                    N, T, max_classical_queries
+                ),
+                queries_quantum=cade_et_al_expected_quantum_queries(
                     N, T, error, max_classical_queries
-                )
-                * stats.get_quantum_expected_queries(),
+                ),
             )
 
         # iterable already consumed, account for true queries during iteration into the parent frame
@@ -106,11 +114,12 @@ def search(
     else:
         iterable = list(iterable)
 
-    # run the classical sampling-without-replacement algorithm
-    rng.shuffle(iterable)  # type: ignore
-    for x in iterable:
-        if key(x):
-            return x
+    with _already_benchmarked():
+        # run the classical sampling-without-replacement algorithm
+        rng.shuffle(iterable)  # type: ignore
+        for x in iterable:
+            if key(x):
+                return x
 
     return None
 

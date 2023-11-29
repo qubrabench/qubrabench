@@ -29,5 +29,4 @@ def test_maxsat_values_100(rng) -> None:
         "classical_expected_queries": pytest.approx(407.76382374948906),
         "quantum_expected_classical_queries": pytest.approx(503.9227178372942),
         "quantum_expected_quantum_queries": pytest.approx(1413.1251428188323),
-        "_benchmarked": 1.0,
     }

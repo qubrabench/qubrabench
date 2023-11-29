@@ -30,4 +30,4 @@ def bruteforce_solve(
     domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=inst.n)]
 
     # brute-force search
-    return qb.algorithms.search(domain, evaluate, error=error, rng=rng)
+    return qb.algorithms.search.search(domain, evaluate, error=error, rng=rng)

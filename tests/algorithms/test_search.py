@@ -47,3 +47,23 @@ def test_search_raises_on_stats_requested_and_eps_missing(rng):
     ):
         with track_queries():
             search(range(100), lambda it: it == 42, rng=rng)
+
+
+def test_variable_time_key(rng):
+    @oracle
+    def is_prime(i: int) -> bool:
+        for j in range(2, i):
+            if i % j == 0:
+                return False
+        return True
+
+    with track_queries() as tracker:
+        twin_primes = search(
+            range(2, 10),
+            key=lambda i: is_prime(i) and is_prime(i + 2),
+            rng=rng,
+            error=10**-5,
+        )
+        assert twin_primes == 3  # (3, 5)
+        stats = tracker.get_stats(is_prime)
+        print(stats)

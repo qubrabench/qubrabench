@@ -7,7 +7,12 @@ from typing import Iterable, TypeVar, Optional, Callable, Any
 import numpy as np
 
 from .search import cade_et_al_F
-from ..benchmark import _BenchmarkManager, BenchmarkFrame, track_queries
+from ..benchmark import (
+    _BenchmarkManager,
+    BenchmarkFrame,
+    track_queries,
+    _already_benchmarked,
+)
 
 __all__ = ["max"]
 
@@ -21,8 +26,7 @@ def max(
     key: Optional[Callable[[E], Any]] = None,
     error: Optional[float] = None,
 ) -> E:
-    """
-    Find the largest element in a list, while keeping track of query statistics.
+    """Find the largest element in a list, while keeping track of query statistics.
 
     Args:
         iterable: iterable to find the maximum in
@@ -69,29 +73,31 @@ def max(
 
         for obj_hash, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash, c=N * stats.get_classical_expected_queries()
+                obj_hash, queries=N, base_stats=stats
             )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj_hash,
-                q=cade_et_al_expected_quantum_queries(N, error)
-                * stats.get_quantum_expected_queries(),
+                queries_classical=0,
+                queries_quantum=cade_et_al_expected_quantum_queries(N, error),
+                base_stats=stats,
             )
 
     max_elem: Optional[E] = None
-    key_of_max_elem = None
-    for elem in iterable:
-        key_of_elem = key(elem)
-        if max_elem is None or key_of_elem > key_of_max_elem:
-            max_elem = elem
-            key_of_max_elem = key_of_elem
+    with _already_benchmarked():
+        key_of_max_elem = None
+        for elem in iterable:
+            key_of_elem = key(elem)
+            if max_elem is None or key_of_elem > key_of_max_elem:
+                max_elem = elem
+                key_of_max_elem = key_of_elem
 
-    if max_elem is None:
-        if default is None:
-            raise ValueError(
-                "max() arg is an empty sequence, and no default value provided"
-            )
-        max_elem = default
+        if max_elem is None:
+            if default is None:
+                raise ValueError(
+                    "max() arg is an empty sequence, and no default value provided"
+                )
+            max_elem = default
 
     return max_elem
 

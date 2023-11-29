@@ -9,8 +9,9 @@ from typing import Optional, Iterable
 import functools
 from methodtools import lru_cache
 
-import qubrabench as qb
 from qubrabench.benchmark import QueryStats, track_queries
+from qubrabench.algorithms.search import search as qsearch
+from qubrabench.algorithms.max import max as qmax
 
 from louvain import Louvain
 
@@ -77,10 +78,10 @@ class QLouvain(QuantumLouvainBase):
         )
 
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        return qb.algorithms.search(
+        return qsearch(
             nodes,
             key=lambda u: (
-                qb.algorithms.search(
+                qsearch(
                     self.G.neighbouring_communities(u),
                     key=lambda alpha: self.G.delta_modularity(u, alpha) > 0,
                     rng=self.rng,
@@ -128,7 +129,7 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
-            target_alpha = qb.algorithms.max(
+            target_alpha = qmax(
                 G.neighbouring_communities(u),
                 key=lambda alpha: G.delta_modularity(u, alpha),
                 error=self.error,  # TODO check
@@ -141,7 +142,7 @@ class QLouvain(QuantumLouvainBase):
 
 class QLouvainSG(QLouvain):
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        return qb.algorithms.search(
+        return qsearch(
             nodes,
             lambda u: any(
                 self.G.delta_modularity(u, alpha) > 0
@@ -159,7 +160,7 @@ class EdgeQLouvain(QuantumLouvainBase):
         G = self.G
         while True:
             # calculate maximum increase of modularity
-            node, target_community = qb.algorithms.max(
+            node, target_community = qmax(
                 [(u, G.get_label(v)) for u, v in self.G.edges],
                 key=lambda it: G.delta_modularity(*it),
                 error=self.error,

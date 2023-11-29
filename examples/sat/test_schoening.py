@@ -30,7 +30,7 @@ def test_solve(rng) -> None:
         # check stats
         assert tracker.get_stats(inst) == QueryStats(
             classical_actual_queries=2,
-            classical_expected_queries=pytest.approx(1.0009153259895374),
-            quantum_expected_classical_queries=pytest.approx(1.0009153318077804),
+            classical_expected_queries=pytest.approx(2.0009153259895374),
+            quantum_expected_classical_queries=pytest.approx(2.0009153318077804),
             quantum_expected_quantum_queries=pytest.approx(0),
         )

@@ -29,9 +29,9 @@ def test_qlouvain_sg(graph_b, rng):
     # TODO sanity check these numbers
     assert stats == QueryStats(
         classical_actual_queries=303282,
-        classical_expected_queries=approx(702390.3280617648),
-        quantum_expected_classical_queries=approx(0),
-        quantum_expected_quantum_queries=approx(13856417.14549516),
+        classical_expected_queries=approx(704292.3280617648),
+        quantum_expected_classical_queries=approx(3100142.6167817833),
+        quantum_expected_quantum_queries=approx(10758176.528713377),
     )
 
 
@@ -44,9 +44,9 @@ def test_simple_qlouvain_sg(graph_b, rng):
     # TODO sanity check these numbers
     assert stats == QueryStats(
         classical_actual_queries=25736,
-        classical_expected_queries=approx(56550.98277315278),
-        quantum_expected_classical_queries=approx(0),
-        quantum_expected_quantum_queries=approx(222792.06362384785),
+        classical_expected_queries=approx(57234.98277315276),
+        quantum_expected_classical_queries=approx(58439.22703871587),
+        quantum_expected_quantum_queries=approx(165036.83658513197),
     )
 
 
@@ -59,7 +59,7 @@ def test_edge_qlouvain(graph_b, rng):
     # TODO sanity check these numbers
     assert stats == QueryStats(
         classical_actual_queries=320116,
-        classical_expected_queries=approx(319542),
-        quantum_expected_classical_queries=approx(0),
+        classical_expected_queries=approx(320116),
+        quantum_expected_classical_queries=approx(574),
         quantum_expected_quantum_queries=approx(2113533.68370103),
     )

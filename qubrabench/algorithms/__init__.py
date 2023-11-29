@@ -1,4 +1,3 @@
-from qubrabench.algorithms.search import search
-from qubrabench.algorithms.max import max
+from qubrabench.algorithms import search, max
 
 __all__ = ["search", "max"]
