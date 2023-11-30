@@ -92,10 +92,6 @@ class LouvainGraph(nx.Graph):
 
     @oracle_method
     def delta_modularity(self, u: int, alpha: int) -> float:
-        return self._delta_modularity(u, alpha)
-
-    @lru_cache()
-    def _delta_modularity(self, u: int, alpha: int) -> float:
         """Change in modularity when `u` is moved to community `alpha`.
         `alpha` must be a community of some neighbour of `u`.
 
@@ -123,7 +119,6 @@ class LouvainGraph(nx.Graph):
         # drop invalid caches
         self.Sigma.cache_clear()
         self.S.cache_clear()
-        self._delta_modularity.cache_clear()
 
     def modularity(self) -> float:
         """Calculate the modularity of self.G and a node to community mapping
