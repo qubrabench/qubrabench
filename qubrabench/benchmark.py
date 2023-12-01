@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Generator
 from functools import wraps, reduce
 from dataclasses import dataclass
 from contextlib import contextmanager
@@ -210,7 +210,7 @@ class _BenchmarkManager:
 
 
 @contextmanager
-def track_queries():
+def track_queries() -> Generator[BenchmarkFrame, None, None]:
     """Track queries counts through the execution.
 
     Usage:
