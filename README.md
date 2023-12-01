@@ -29,7 +29,7 @@ The `qubrabench` library offers [subroutines and algorithms](https://github.com/
 For example, consider the following code which iterates over a list of users to find one with a particular name:
 
 ```python
-def find_Shor(users):
+def find_shor(users):
     for user in users:
         if user.name == "Peter Shor":
             return user
@@ -41,7 +41,7 @@ We can equivalently write this using the [search](https://github.com/qubrabench/
 ```python
 from qubrabench.algorithms.search import search
 
-def find_Shor(users):
+def find_shor(users):
     return search(users, lambda user: user.name == "Peter Shor")
 ```
 
@@ -51,11 +51,11 @@ To determine whether a quantum search algorithm can provide any advantage over c
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import oracle, track_queries
 
-def find_Shor(users):
+def find_shor(users):
     return search(users, lambda user: oracle(user.name == "Peter Shor"))
 
 with track_queries() as tracker:
-    maybe_Shor = find_Shor(users)
+    maybe_shor = find_shor(users)
     print(tracker.all_stats())
 ```
 
