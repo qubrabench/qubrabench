@@ -222,6 +222,9 @@ class PlottingStrategy(ABC):
 
 
 class BasicPlottingStrategy(PlottingStrategy, ABC):
+    def __init__(self):
+        self.colors[""] = "blue"
+
     def get_plot_group_column_names(self) -> list[str]:
         return []
 
