@@ -25,7 +25,7 @@ class QuantumLouvainBase(Louvain):
     error: float
     simple: bool
 
-    __graph_hashes: list[int]
+    __graph_hashes: set[int]
 
     def __init__(
         self,
@@ -50,10 +50,10 @@ class QuantumLouvainBase(Louvain):
         self.error = error
         self.simple = simple
 
-        self.__graph_hashes = []
+        self.__graph_hashes = set()
 
     def record_history(self):
-        self.__graph_hashes.append(hash(self.G))
+        self.__graph_hashes.add(hash(self.G))
         Louvain.record_history(self)
 
     def run_with_tracking(self) -> QueryStats:
@@ -62,6 +62,7 @@ class QuantumLouvainBase(Louvain):
             stats = functools.reduce(
                 QueryStats.__add__,
                 [tracker.stats.get(h, QueryStats()) for h in self.__graph_hashes],
+                QueryStats().as_benchmarked(),
             )
             return stats
 
