@@ -1,6 +1,8 @@
 """This module contains tests for the quantum louvain community detection example."""
-from dataclasses import asdict
 import pytest
+from pytest import approx
+
+from qubrabench.benchmark import QueryStats
 
 import qlouvain
 from graph_instances import random_fcs_graph
@@ -22,42 +24,42 @@ def test_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=False)
     sanity_check_input(solver.G)
 
-    solver.run()
+    stats = solver.run_with_tracking()
 
-    assert asdict(solver.stats) == {
-        "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": 2355,
-        "classical_expected_queries": pytest.approx(2355),
-        "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(55503.8913),
-    }
+    # TODO sanity check these numbers
+    assert stats == QueryStats(
+        classical_actual_queries=151641,
+        classical_expected_queries=approx(352146.1640308825),
+        quantum_expected_classical_queries=approx(1550071.3083908914),
+        quantum_expected_quantum_queries=approx(5379088.264356689),
+    )
 
 
 def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=True)
     sanity_check_input(solver.G)
 
-    solver.run()
+    stats = solver.run_with_tracking()
 
-    assert asdict(solver.stats) == {
-        "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": 2146,
-        "classical_expected_queries": pytest.approx(2146),
-        "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(50819.5234),
-    }
+    # TODO sanity check these numbers
+    assert stats == QueryStats(
+        classical_actual_queries=12868,
+        classical_expected_queries=approx(28617.491386576385),
+        quantum_expected_classical_queries=approx(29219.61351935794),
+        quantum_expected_quantum_queries=approx(82518.418292566),
+    )
 
 
 def test_edge_qlouvain(graph_b, rng):
     solver = qlouvain.EdgeQLouvain(graph_b, rng=rng)
     sanity_check_input(solver.G)
 
-    solver.run()
+    stats = solver.run_with_tracking()
 
-    assert asdict(solver.stats) == {
-        "classical_control_method_calls": pytest.approx(0),
-        "classical_actual_queries": 159771,
-        "classical_expected_queries": pytest.approx(159771),
-        "quantum_expected_classical_queries": pytest.approx(0),
-        "quantum_expected_quantum_queries": pytest.approx(1056766.8418505196),
-    }
+    # TODO sanity check these numbers
+    assert stats == QueryStats(
+        classical_actual_queries=160058,
+        classical_expected_queries=approx(160058),
+        quantum_expected_classical_queries=approx(287),
+        quantum_expected_quantum_queries=approx(1056766.8418505148),
+    )

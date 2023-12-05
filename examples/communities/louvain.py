@@ -4,6 +4,8 @@ from functools import cached_property
 from methodtools import lru_cache
 from abc import ABC
 
+from qubrabench.benchmark import oracle_method
+
 
 class LouvainGraph(nx.Graph):
     def get_label(self, u: int) -> int:
@@ -88,7 +90,7 @@ class LouvainGraph(nx.Graph):
         """Calculate the strength of a given node index."""
         return self.degree(u, weight="weight")
 
-    @lru_cache()
+    @oracle_method
     def delta_modularity(self, u: int, alpha: int) -> float:
         """Change in modularity when `u` is moved to community `alpha`.
         `alpha` must be a community of some neighbour of `u`.
@@ -117,7 +119,6 @@ class LouvainGraph(nx.Graph):
         # drop invalid caches
         self.Sigma.cache_clear()
         self.S.cache_clear()
-        self.delta_modularity.cache_clear()
 
     def modularity(self) -> float:
         """Calculate the modularity of self.G and a node to community mapping

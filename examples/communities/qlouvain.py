@@ -6,11 +6,12 @@ import numpy as np
 import networkx as nx
 import math
 from typing import Optional, Iterable
+import functools
 from methodtools import lru_cache
 
+from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.algorithms.search import search as qsearch
 from qubrabench.algorithms.max import max as qmax
-from qubrabench.stats import QueryStats
 
 from louvain import Louvain
 
@@ -21,9 +22,10 @@ class QuantumLouvainBase(Louvain):
     """
 
     rng: np.random.Generator
-    stats: QueryStats
     error: float
     simple: bool
+
+    __graph_hashes: set[int]
 
     def __init__(
         self,
@@ -45,12 +47,24 @@ class QuantumLouvainBase(Louvain):
         """
         Louvain.__init__(self, G, keep_history=keep_history)
         self.rng = rng
-        self.stats = QueryStats()
         self.error = error
         self.simple = simple
 
-    def get_stats(self) -> QueryStats:
-        return self.stats
+        self.__graph_hashes = set()
+
+    def record_history(self):
+        self.__graph_hashes.add(hash(self.G))
+        Louvain.record_history(self)
+
+    def run_with_tracking(self) -> QueryStats:
+        with track_queries() as tracker:
+            self.run()
+            stats = functools.reduce(
+                QueryStats.__add__,
+                [tracker.stats.get(h, QueryStats()) for h in self.__graph_hashes],
+                QueryStats().as_benchmarked(),
+            )
+            return stats
 
 
 class QLouvain(QuantumLouvainBase):
@@ -65,35 +79,20 @@ class QLouvain(QuantumLouvainBase):
         )
 
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        G = self.G
-
-        vertex_space: list[tuple[bool, int]] = [
-            (
-                # TODO stats
+        return qsearch(
+            nodes,
+            key=lambda u: (
                 qsearch(
-                    [
-                        G.delta_modularity(u, alpha) > 0
-                        for alpha in G.neighbouring_communities(u)
-                    ],
-                    key=lambda x: x,
+                    self.G.neighbouring_communities(u),
+                    key=lambda alpha: self.G.delta_modularity(u, alpha) > 0,
                     rng=self.rng,
                     # TODO pass `error`
                 )
-                is True,
-                u,
-            )
-            for u in nodes
-        ]
-
-        # TODO stats
-        result = qsearch(
-            vertex_space,
-            lambda data: data[0],
+                is not None
+            ),
             rng=self.rng,
             error=zeta,
         )
-
-        return result[1] if result else None
 
     def find_first(self, eps: float) -> Optional[int]:
         n = self.G.number_of_nodes()
@@ -131,43 +130,28 @@ class QLouvain(QuantumLouvainBase):
             if u is None:
                 break
 
-            # TODO stats
-            max_modularity_increase, alpha = qmax(
-                [
-                    (G.delta_modularity(u, alpha), alpha)
-                    for alpha in G.neighbouring_communities(u)
-                ],
-                key=lambda entry: entry[0],
-                stats=self.stats,
+            target_alpha = qmax(
+                G.neighbouring_communities(u),
+                key=lambda alpha: G.delta_modularity(u, alpha),
                 error=self.error,  # TODO check
             )
 
-            assert max_modularity_increase > 0
-            G.update_community(u, alpha)
+            assert G.delta_modularity(u, target_alpha) > 0
+            G.update_community(u, target_alpha)
             self.has_good_move.cache_clear()
 
 
 class QLouvainSG(QLouvain):
     def vertex_find(self, nodes: Iterable[int], zeta: float) -> Optional[int]:
-        G = self.G
-        # TODO stats
-        result = qsearch(
-            [
-                (
-                    any(
-                        G.delta_modularity(u, alpha) > 0
-                        for alpha in G.neighbouring_communities(u)
-                    ),
-                    u,
-                )
-                for u in nodes
-            ],
-            lambda data: data[0],
+        return qsearch(
+            nodes,
+            lambda u: any(
+                self.G.delta_modularity(u, alpha) > 0
+                for alpha in self.G.neighbouring_communities(u)
+            ),
             rng=self.rng,
             error=zeta,
         )
-
-        return result[1] if result else None
 
 
 class EdgeQLouvain(QuantumLouvainBase):
@@ -177,17 +161,13 @@ class EdgeQLouvain(QuantumLouvainBase):
         G = self.G
         while True:
             # calculate maximum increase of modularity
-            node, max_modularity_increase, target_community = qmax(
-                [
-                    (u, G.delta_modularity(u, G.get_label(v)), G.get_label(v))
-                    for u, v in self.G.edges
-                ],
-                key=lambda entry: entry[1],
-                stats=self.stats,
+            node, target_community = qmax(
+                [(u, G.get_label(v)) for u, v in self.G.edges],
+                key=lambda it: G.delta_modularity(*it),
                 error=self.error,
             )
 
-            if max_modularity_increase > 0:
+            if G.delta_modularity(node, target_community) > 0:
                 G.update_community(node, target_community)
             else:
                 break

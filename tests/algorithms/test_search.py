@@ -4,7 +4,7 @@ import pytest
 import re
 
 from qubrabench.algorithms.search import search
-from qubrabench.stats import QueryStats
+from qubrabench.benchmark import QueryStats, track_queries, oracle
 
 
 def test_search(rng):
@@ -13,20 +13,24 @@ def test_search(rng):
     Args:
         rng (np.rng): Source of randomness provided by test fixtures
     """
-    # test functionality
-    domain = range(0, 100)
-    stats = QueryStats()
-    result = search(domain, lambda it: it == 50, error=10**-5, stats=stats, rng=rng)
-    assert result == 50
+    with track_queries() as tracker:
+        # test functionality
+        domain = range(0, 100)
 
-    # test stats
-    assert stats == QueryStats(
-        classical_control_method_calls=0,
-        classical_actual_queries=45,
-        classical_expected_queries=50.5,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
-    )
+        @oracle
+        def check(it):
+            return it == 50
+
+        result = search(domain, check, error=10**-5, rng=rng)
+        assert result == 50
+
+        # test stats
+        assert tracker.get_stats(check) == QueryStats(
+            classical_actual_queries=45,
+            classical_expected_queries=50.5,
+            quantum_expected_classical_queries=72.9245740488006,
+            quantum_expected_quantum_queries=18.991528740664712,
+        )
 
 
 def test_search_raises_on_stats_requested_and_eps_missing(rng):
@@ -41,5 +45,25 @@ def test_search_raises_on_stats_requested_and_eps_missing(rng):
             "search() parameter 'error' not provided, cannot compute quantum query statistics"
         ),
     ):
-        stats = QueryStats()
-        search(range(100), lambda it: it == 42, rng=rng, stats=stats)
+        with track_queries():
+            search(range(100), lambda it: it == 42, rng=rng)
+
+
+def test_variable_time_key(rng):
+    @oracle
+    def is_prime(i: int) -> bool:
+        for j in range(2, i):
+            if i % j == 0:
+                return False
+        return True
+
+    with track_queries() as tracker:
+        twin_primes = search(
+            range(2, 10),
+            key=lambda i: is_prime(i) and is_prime(i + 2),
+            rng=rng,
+            error=10**-5,
+        )
+        assert twin_primes == 3  # (3, 5)
+        stats = tracker.get_stats(is_prime)
+        print(stats)

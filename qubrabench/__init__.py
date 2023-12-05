@@ -1,5 +1,10 @@
-__version__ = "0.1.0"
+__version__ = "0.2.0"
 
-from qubrabench import algorithms, utils, stats
+from qubrabench import algorithms, utils, benchmark, datastructures
 
-__all__ = ["algorithms", "utils", "stats"]
+__all__ = [
+    "algorithms",
+    "utils",
+    "benchmark",
+    "datastructures",
+]

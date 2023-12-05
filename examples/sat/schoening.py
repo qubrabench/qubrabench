@@ -2,9 +2,11 @@
 from typing import Optional
 import numpy as np
 import itertools
-from sat import SatInstance, Assignment
-from qubrabench.stats import QueryStats
+
 from qubrabench.algorithms.search import search
+from qubrabench.benchmark import oracle_method
+
+from sat import SatInstance, Assignment
 
 __all__ = ["schoening_solve"]
 
@@ -14,7 +16,6 @@ def schoening_solve(
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
-    stats: Optional[QueryStats] = None,
 ) -> Optional[Assignment]:
     """
     Find a satisfying assignment of a 3-SAT formula by using Schöning's algorithm,
@@ -38,18 +39,21 @@ def schoening_solve(
     domain = itertools.product(assignments, steps)
 
     # find a choice of randomness that makes Schoening's algorithm accept
-    def pred(x):
-        return schoening_with_randomness(x, inst) is not None
-
-    randomness = search(domain, pred, error=error, stats=stats, rng=rng)
+    randomness = search(
+        domain,
+        key=lambda x: schoening_with_randomness(inst, x) is not None,
+        error=error,
+        rng=rng,
+    )
 
     # return satisfying assignment (if any was found)
     if randomness is not None:
-        return schoening_with_randomness(randomness, inst)
+        return schoening_with_randomness(inst, randomness)
     return None
 
 
-def schoening_with_randomness(randomness, inst: SatInstance) -> Optional[Assignment]:
+@oracle_method
+def schoening_with_randomness(inst: SatInstance, randomness) -> Optional[Assignment]:
     """
     Run Schoening's algorithm with fixed random choices.
 

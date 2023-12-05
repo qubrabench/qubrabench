@@ -30,6 +30,9 @@ class SatInstance:
             ks == self.k
         ), f"Expected precisely k={self.k} literals per clause."
 
+    def __hash__(self):
+        return id(self)
+
     @property
     def n(self) -> int:
         """Number of variables"""
@@ -82,6 +85,9 @@ class WeightedSatInstance(SatInstance, Generic[W]):
     """
 
     weights: npt.NDArray[W]  # num_clauses
+
+    def __hash__(self):
+        return id(self)
 
     def weight(self, x: Assignment):
         """
