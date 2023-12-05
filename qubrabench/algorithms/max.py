@@ -26,7 +26,7 @@ def max(
     key: Optional[Callable[[E], Any]] = None,
     error: Optional[float] = None,
 ) -> E:
-    """Find the largest element in a list, while keeping track of query statistics.
+    """Find the largest element in a list.
 
     Args:
         iterable: iterable to find the maximum in
