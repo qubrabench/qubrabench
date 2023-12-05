@@ -8,7 +8,7 @@ from qubrabench.benchmark import oracle
 
 from sat import SatInstance, Assignment
 
-__all__ = ["schoening_solve"]
+__all__ = ["schoening_solve", "schoening_bruteforce_steps"]
 
 
 def schoening_solve(
@@ -51,6 +51,52 @@ def schoening_solve(
         return schoening_with_randomness(inst, randomness)
     return None
 
+def schoening_bruteforce_steps(
+    inst: SatInstance,
+    *,
+    rng: np.random.Generator,
+    error: Optional[float] = None,
+) -> Optional[Assignment]:
+    """
+    Find a satisfying assignment of a 3-SAT formula by using a variant of Schöning's algorithm,
+    bruteforcing over all sequences of steps.
+
+    Args:
+        inst: The 3-SAT Instance for which to find a satisfying assignment.
+        rng: Random number generator.
+        error: Allowed failure probability.
+        stats: Object that keeps track of statistics about evaluation queries to the SAT instance.
+
+    Returns:
+        Satisfying assignment if found, None otherwise.
+    """
+    assert inst.k == 3
+
+    # prepare search domain comprising all assignments
+    n = inst.n
+    domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=n)]
+    steps = [np.array(s, dtype=int) for s in itertools.product([0, 1, 2], repeat=3 * n)]
+
+    # variable for the oracle to store sequence of steps that works
+    sat_steps = None
+
+    # find a choice of randomness that makes Schoening's algorithm accept by bruteforcing over steps
+    def pred(assignments):
+        for step in steps:
+            # if current assignment is satisfying, sets variable in outer scope
+            if schoening_with_randomness(inst, (assignments, step)) is not None:
+                nonlocal sat_steps
+                sat_steps = step
+                return True
+        return False
+
+    randomness = search(domain, key=pred, error=error, rng=rng)
+    sat_pair = (randomness, sat_steps)
+
+    # return satisfying assignment (if any was found)
+    if sat_steps is not None:
+        return schoening_with_randomness(inst, sat_pair)
+    return None
 
 @oracle
 def schoening_with_randomness(inst: SatInstance, randomness) -> Optional[Assignment]:
