@@ -8,7 +8,7 @@ import pandas as pd
 
 from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
-from qubrabench.benchmark import track_queries, oracle
+from qubrabench.benchmark import track_queries, named_oracle
 
 from sat import WeightedSatInstance, Assignment, W
 
@@ -53,7 +53,7 @@ def hill_climber(
     if error is not None:
         error /= n
 
-    @oracle(store_as=0)
+    @named_oracle("hillclimb_step")
     def hillclimb_step():
         nonlocal x, w, inst
 
@@ -77,9 +77,12 @@ def hill_climber(
         if steep:
             result = max(
                 zip(neighbors, weights),
-                key=oracle(store_as=inst)(lambda it: it[1]),
+                key=named_oracle("inst.weight")(lambda it: it[1]),
                 error=error,
             )
+            if result is None:
+                return x
+
             nx, nw = result
             if nw > w:
                 x, w = result
@@ -88,7 +91,7 @@ def hill_climber(
         else:
             result = search(
                 zip(neighbors, weights),
-                key=oracle(store_as=inst)(lambda it: it[1] > w),
+                key=named_oracle("inst.weight")(lambda it: it[1] > w),
                 error=error,
                 rng=rng,
             )
@@ -96,10 +99,9 @@ def hill_climber(
                 return x
             x, w = result
 
-    while True:
-        res = hillclimb_step()
-        if res is not None:
-            return res
+    while (res := hillclimb_step()) is None:
+        pass
+    return res
 
 
 def run(
@@ -140,7 +142,7 @@ def run(
         )
         with track_queries() as tracker:
             hill_climber(inst, error=error, rng=rng, steep=steep)
-            stats = tracker.get_stats(inst)
+            stats = tracker.get_stats("inst.weight")
 
             # save record to history
             rec = asdict(stats)
@@ -148,7 +150,7 @@ def run(
             rec["k"] = k
             rec["r"] = r
             rec["classical_control_method_calls"] = tracker.get_stats(
-                0
+                "hillclimb_step"
             ).classical_actual_queries
             history.append(rec)
 

@@ -3,7 +3,7 @@ from functools import wraps, reduce
 from dataclasses import dataclass
 from contextlib import contextmanager
 
-__all__ = ["QueryStats", "track_queries", "oracle_method", "oracle"]
+__all__ = ["QueryStats", "track_queries", "oracle_method", "oracle", "named_oracle"]
 
 
 @dataclass
@@ -231,23 +231,21 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
         _BenchmarkManager._stack.pop()
 
 
-def oracle(func=None, *, store_as=None):
+def oracle(func=None, *, name: Optional[str] = None):
     """Wrapper to track queries for functions.
 
     Usage:
+
+    .. code:: python
 
         @oracle
         def some_func(*args, **kwargs):
             ...
 
-        @oracle(store_as=obj)
-        def some_func(*args, **kwargs):
+
+        with track_queries() as tracker:
             ...
-
-
-    The latter is useful especially for local functions that cannot be accessed later, or whose hash is not constant through the execution:
-
-        some_func = oracle(store_as=obj)(lambda x: ...)
+            stats = tracker.get_stats(some_func)
     """
 
     def decorator(fun):
@@ -255,7 +253,7 @@ def oracle(func=None, *, store_as=None):
         def wrapped_func(*args, **kwargs):
             if _BenchmarkManager.is_tracking():
                 _BenchmarkManager.current_frame()._record_classical_query(
-                    store_as if store_as is not None else wrapped_func
+                    name if name is not None else wrapped_func
                 )
             return fun(*args, **kwargs)
 
@@ -266,13 +264,39 @@ def oracle(func=None, *, store_as=None):
     return decorator
 
 
+def named_oracle(name: str):
+    """Wrapper to track queries for functions.
+
+    Usage:
+
+    .. code:: python
+
+        @named_oracle("some_name")
+        def some_func(*args, **kwargs):
+            ...
+
+        with track_queries() as tracker:
+            ...
+            stats = tracker.get_stats("some_name")
+    """
+
+    def decorator(fun):
+        return oracle(fun, name=name)
+
+    return decorator
+
+
 def oracle_method(fun):
     """Wrapper for class methods, keeps track of calls to the method at the instance.
 
     Usage:
 
-        @oracle_method
-        def some_func(self, *args, **kwargs): ...
+    .. code:: python
+
+        class SomeClass:
+            @oracle_method
+            def some_func(self, *args, **kwargs):
+                ...
     """
 
     @wraps(fun)

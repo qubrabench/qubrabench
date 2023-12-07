@@ -13,6 +13,7 @@ from ..benchmark import (
     track_queries,
     _already_benchmarked,
 )
+from .._internals import _absent, OptionalParameter
 
 __all__ = ["max"]
 
@@ -22,7 +23,7 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
-    default: Optional[E] = None,
+    default: OptionalParameter[E] = _absent,
     key: Optional[Callable[[E], Any]] = None,
     error: Optional[float] = None,
 ) -> E:
@@ -59,15 +60,18 @@ def max(
 
         sub_frames: list[BenchmarkFrame] = []
         it = iter(iterable)
+        iterable_copy = []
         while True:
             with track_queries() as sub_frame:
                 try:
                     x = next(it)
                 except StopIteration:
                     break
+                iterable_copy.append(x)
                 N += 1
                 key(x)
                 sub_frames.append(sub_frame)
+        iterable = iterable_copy
 
         frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
 
@@ -83,7 +87,7 @@ def max(
                 base_stats=stats,
             )
 
-    max_elem: Optional[E] = None
+    max_elem: OptionalParameter[E] = None
     with _already_benchmarked():
         key_of_max_elem = None
         for elem in iterable:
@@ -93,7 +97,7 @@ def max(
                 key_of_max_elem = key_of_elem
 
         if max_elem is None:
-            if default is None:
+            if default is _absent:
                 raise ValueError(
                     "max() arg is an empty sequence, and no default value provided"
                 )
