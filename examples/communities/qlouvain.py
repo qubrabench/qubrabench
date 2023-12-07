@@ -62,7 +62,7 @@ class QuantumLouvainBase(Louvain):
             stats = functools.reduce(
                 QueryStats.__add__,
                 [tracker.stats.get(h, QueryStats()) for h in self.__graph_hashes],
-                QueryStats().as_benchmarked(),
+                QueryStats()._as_benchmarked(),
             )
             return stats
 

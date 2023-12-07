@@ -31,7 +31,7 @@ class QueryStats:
             if self.quantum_expected_classical_queries is not None:
                 self.quantum_expected_classical_queries += n
 
-    def as_benchmarked(self):
+    def _as_benchmarked(self):
         """Propagate the recorded true queries."""
 
         return QueryStats(
@@ -54,7 +54,7 @@ class QueryStats:
         )
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
-        lhs, rhs = self.as_benchmarked(), other.as_benchmarked()
+        lhs, rhs = self._as_benchmarked(), other._as_benchmarked()
         return QueryStats(
             classical_actual_queries=(
                 lhs.classical_actual_queries + rhs.classical_actual_queries
@@ -113,7 +113,7 @@ class BenchmarkFrame:
         queries: float,
     ):
         stats = self._get_stats_from_hash(obj_hash)
-        base_stats = base_stats.as_benchmarked()
+        base_stats = base_stats._as_benchmarked()
 
         if stats.classical_expected_queries is None:
             stats.classical_expected_queries = 0
@@ -130,7 +130,7 @@ class BenchmarkFrame:
         queries_quantum: float = 0,
     ):
         stats = self._get_stats_from_hash(obj_hash)
-        base_stats = base_stats.as_benchmarked()
+        base_stats = base_stats._as_benchmarked()
 
         if stats.quantum_expected_classical_queries is None:
             stats.quantum_expected_classical_queries = 0
@@ -173,7 +173,7 @@ class _BenchmarkManager:
         frame = BenchmarkFrame()
         for obj_hash in benchmark_objects:
             sub_frame_stats = [
-                sub_frame._get_stats_from_hash(obj_hash).as_benchmarked()
+                sub_frame._get_stats_from_hash(obj_hash)._as_benchmarked()
                 for sub_frame in frames
             ]
 

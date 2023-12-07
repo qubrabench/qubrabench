@@ -22,8 +22,8 @@ def random_stats(rng: Generator, *, not_benched=False):
 def test_add_stats_identity(rng: Generator, not_benched: bool):
     for _ in range(100):
         a = random_stats(rng, not_benched=not_benched)
-        assert a + QueryStats() == a.as_benchmarked()
-        assert QueryStats() + a == a.as_benchmarked()
+        assert a + QueryStats() == a._as_benchmarked()
+        assert QueryStats() + a == a._as_benchmarked()
 
 
 @pytest.mark.parametrize("no_bench_1", [True, False])
