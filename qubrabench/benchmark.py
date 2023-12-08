@@ -243,7 +243,33 @@ def oracle(func=None, *, name: Optional[str] = None):
 
         with track_queries() as tracker:
             ...
-            stats = tracker.get_stats(some_func)
+            print(tracker.get_stats(some_func))
+
+    This can also be run with bound instance methods
+
+    .. code:: python
+
+        class MyClass
+            @oracle
+            def some_method(self, *args, **kwargs):
+                ...
+
+            @classmethod
+            @oracle
+            def some_class_method(cls, *args, **kwargs):
+                ...
+
+            @staticmethod
+            @oracle
+            def some_static_method(*args, **kwargs):
+                ...
+
+        with track_queries() as tracker:
+            obj = MyClass()
+            ...
+            print(tracker.get_stats(obj.some_method))
+            assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
+            assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
 
     def decorator(fun):
