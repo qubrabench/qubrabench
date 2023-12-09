@@ -1,9 +1,10 @@
-from typing import Optional, Generator
+from typing import Optional, Generator, Any
 from functools import wraps, reduce
 from dataclasses import dataclass
 from contextlib import contextmanager
+import inspect
 
-__all__ = ["QueryStats", "track_queries", "oracle_method", "oracle", "named_oracle"]
+__all__ = ["QueryStats", "track_queries", "oracle", "named_oracle"]
 
 
 @dataclass
@@ -83,7 +84,7 @@ class BenchmarkFrame:
         self.stats = dict()
         self._track_only_actual = False
 
-    def get_stats(self, obj: object) -> QueryStats:
+    def get_stats(self, obj: Any) -> QueryStats:
         """Get the statistics of a quantum oracle/data structure"""
 
         h = self.__get_hash(obj)
@@ -91,19 +92,16 @@ class BenchmarkFrame:
             raise ValueError(f"object {obj} has not been benchmarked!")
         return self.stats[h]
 
-    def __get_hash(self, obj: object) -> int:
+    def __get_hash(self, obj: Any) -> int:
         """hashing used to store the stats"""
+        if inspect.ismethod(obj):
+            return hash((obj.__func__, obj.__self__))
         return hash(obj)
 
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
             self.stats[obj_hash] = QueryStats()
         return self.stats[obj_hash]
-
-    def _record_classical_query(self, obj: object, *, n=1):
-        obj_hash = self.__get_hash(obj)
-        stats = self._get_stats_from_hash(obj_hash)
-        stats._record_query(n=n, only_actual=self._track_only_actual)
 
     def _add_classical_expected_queries(
         self,
@@ -245,16 +243,55 @@ def oracle(func=None, *, name: Optional[str] = None):
 
         with track_queries() as tracker:
             ...
-            stats = tracker.get_stats(some_func)
+            print(tracker.get_stats(some_func))
+
+    This can also be run with bound instance methods
+
+    .. code:: python
+
+        class MyClass
+            @oracle
+            def some_method(self, *args, **kwargs):
+                ...
+
+            @classmethod
+            @oracle
+            def some_class_method(cls, *args, **kwargs):
+                ...
+
+            @staticmethod
+            @oracle
+            def some_static_method(*args, **kwargs):
+                ...
+
+        with track_queries() as tracker:
+            obj = MyClass()
+            ...
+            print(tracker.get_stats(obj.some_method))
+            assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
+            assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
 
     def decorator(fun):
+        is_bound_method: bool = next(iter(inspect.signature(fun).parameters), None) in [
+            "self",
+            "cls",
+        ]
+
         @wraps(fun)
         def wrapped_func(*args, **kwargs):
             if _BenchmarkManager.is_tracking():
-                _BenchmarkManager.current_frame()._record_classical_query(
-                    name if name is not None else wrapped_func
-                )
+                hashes = [hash(wrapped_func)]
+                if is_bound_method:
+                    hashes.append(hash((wrapped_func, args[0])))
+                if name is not None:
+                    hashes.append(hash(name))
+
+                frame = _BenchmarkManager.current_frame()
+                for h in hashes:
+                    stats = frame._get_stats_from_hash(h)
+                    stats._record_query(n=1, only_actual=frame._track_only_actual)
+
             return fun(*args, **kwargs)
 
         return wrapped_func
@@ -284,28 +321,6 @@ def named_oracle(name: str):
         return oracle(fun, name=name)
 
     return decorator
-
-
-def oracle_method(fun):
-    """Wrapper for class methods, keeps track of calls to the method at the instance.
-
-    Usage:
-
-    .. code:: python
-
-        class SomeClass:
-            @oracle_method
-            def some_func(self, *args, **kwargs):
-                ...
-    """
-
-    @wraps(fun)
-    def wrapped_func(self, *args, **kwargs):
-        if _BenchmarkManager.is_tracking():
-            _BenchmarkManager.current_frame()._record_classical_query(self)
-        return fun(self, *args, **kwargs)
-
-    return wrapped_func
 
 
 @contextmanager

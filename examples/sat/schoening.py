@@ -4,7 +4,7 @@ import numpy as np
 import itertools
 
 from qubrabench.algorithms.search import search
-from qubrabench.benchmark import oracle_method
+from qubrabench.benchmark import oracle
 
 from sat import SatInstance, Assignment
 
@@ -52,7 +52,7 @@ def schoening_solve(
     return None
 
 
-@oracle_method
+@oracle
 def schoening_with_randomness(inst: SatInstance, randomness) -> Optional[Assignment]:
     """
     Run Schoening's algorithm with fixed random choices.

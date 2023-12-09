@@ -2,7 +2,7 @@ from typing import TypeVar, Generic, Union
 import numpy as np
 import attrs
 
-from qubrabench.benchmark import oracle_method
+from qubrabench.benchmark import oracle
 
 __all__ = ["QMatrix", "QRowView"]
 
@@ -36,7 +36,7 @@ class QMatrix(Generic[T]):
     def __get_row(self, i) -> QRowView[T]:
         return QRowView(self, i)
 
-    @oracle_method
+    @oracle
     def get_elem(self, i, j) -> T:
         return self.__data[i, j]
 

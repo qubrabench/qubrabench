@@ -6,7 +6,7 @@ import numpy as np
 from qubrabench.benchmark import track_queries, QueryStats
 
 from sat import SatInstance
-from schoening import schoening_solve
+from schoening import schoening_solve, schoening_with_randomness
 
 
 def test_solve(rng) -> None:
@@ -28,7 +28,7 @@ def test_solve(rng) -> None:
         assert x is not None and inst.evaluate(x)
 
         # check stats
-        assert tracker.get_stats(inst) == QueryStats(
+        assert tracker.get_stats(schoening_with_randomness) == QueryStats(
             classical_actual_queries=2,
             classical_expected_queries=pytest.approx(2.0009153259895374),
             quantum_expected_classical_queries=pytest.approx(2.0009153318077804),

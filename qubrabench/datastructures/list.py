@@ -1,6 +1,6 @@
 from typing import TypeVar, Generic, Sequence
 
-from qubrabench.benchmark import oracle_method
+from qubrabench.benchmark import oracle
 
 T = TypeVar("T")
 
@@ -11,7 +11,7 @@ class QList(Generic[T]):
     def __init__(self, seq: Sequence[T]):
         self.__data = seq
 
-    @oracle_method
+    @oracle
     def __get_item(self, i):
         return self.__data[i]
 

@@ -6,14 +6,13 @@ import numpy as np
 import networkx as nx
 import math
 from typing import Optional, Iterable
-import functools
 from methodtools import lru_cache
 
-from qubrabench.benchmark import QueryStats, track_queries
+from qubrabench.benchmark import QueryStats, track_queries, BenchmarkFrame
 from qubrabench.algorithms.search import search as qsearch
 from qubrabench.algorithms.max import max as qmax
 
-from louvain import Louvain
+from louvain import Louvain, LouvainGraph
 
 
 class QuantumLouvainBase(Louvain):
@@ -52,19 +51,11 @@ class QuantumLouvainBase(Louvain):
 
         self.__graph_hashes = set()
 
-    def record_history(self):
-        self.__graph_hashes.add(hash(self.G))
-        Louvain.record_history(self)
-
     def run_with_tracking(self) -> QueryStats:
+        tracker: BenchmarkFrame
         with track_queries() as tracker:
             self.run()
-            stats = functools.reduce(
-                QueryStats.__add__,
-                [tracker.stats.get(h, QueryStats()) for h in self.__graph_hashes],
-                QueryStats()._as_benchmarked(),
-            )
-            return stats
+            return tracker.get_stats(LouvainGraph.delta_modularity)
 
 
 class QLouvain(QuantumLouvainBase):
