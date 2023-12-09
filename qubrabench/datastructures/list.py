@@ -1,11 +1,13 @@
 from typing import TypeVar, Generic, Sequence
 
-from qubrabench.benchmark import oracle
+from ..benchmark import oracle, QObject
+
+__all__ = ["QList"]
 
 T = TypeVar("T")
 
 
-class QList(Generic[T]):
+class QList(QObject, Generic[T]):
     __data: Sequence[T]
 
     def __init__(self, seq: Sequence[T]):

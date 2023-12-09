@@ -2,7 +2,7 @@ from typing import TypeVar, Generic, Union
 import numpy as np
 import attrs
 
-from qubrabench.benchmark import oracle
+from ..benchmark import oracle, QObject
 
 __all__ = ["QMatrix", "QRowView"]
 
@@ -27,7 +27,7 @@ class QRowView(Generic[T]):
 
 
 @attrs.define
-class QMatrix(Generic[T]):
+class QMatrix(QObject, Generic[T]):
     __data: np.ndarray
 
     def __hash__(self):

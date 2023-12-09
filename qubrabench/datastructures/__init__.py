@@ -1,3 +1,3 @@
-from qubrabench.datastructures import matrix
+from . import matrix, list
 
-__all__ = ["matrix"]
+__all__ = ["matrix", "list"]

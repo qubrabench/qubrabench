@@ -4,7 +4,11 @@ from dataclasses import dataclass
 from contextlib import contextmanager
 import inspect
 
-__all__ = ["QueryStats", "track_queries", "oracle", "named_oracle"]
+__all__ = ["QObject", "QueryStats", "track_queries", "oracle", "named_oracle"]
+
+
+class QObject:
+    pass
 
 
 @dataclass
@@ -283,7 +287,10 @@ def oracle(func=None, *, name: Optional[str] = None):
             if _BenchmarkManager.is_tracking():
                 hashes = [hash(wrapped_func)]
                 if is_bound_method:
-                    hashes.append(hash((wrapped_func, args[0])))
+                    self = args[0]
+                    hashes.append(hash((wrapped_func, self)))
+                    if isinstance(self, QObject):
+                        hashes.append(hash(self))
                 if name is not None:
                     hashes.append(hash(name))
 
