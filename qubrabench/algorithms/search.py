@@ -9,7 +9,6 @@ from ..benchmark import (
     BenchmarkFrame,
     track_queries,
     _already_benchmarked,
-    QObject,
 )
 
 __all__ = ["search"]
