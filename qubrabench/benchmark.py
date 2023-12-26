@@ -163,6 +163,13 @@ class _BenchmarkManager:
         return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
+    def is_benchmarking() -> bool:
+        return (
+            _BenchmarkManager.is_tracking()
+            and not _BenchmarkManager._stack[-1]._track_only_actual
+        )
+
+    @staticmethod
     def current_frame() -> BenchmarkFrame:
         return _BenchmarkManager._stack[-1]
 

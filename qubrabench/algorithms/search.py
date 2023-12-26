@@ -44,10 +44,10 @@ def search(
         An element that satisfies the predicate, or None if no such argument can be found.
     """
 
-    is_tracking = _BenchmarkManager.is_tracking()
+    is_benchmarking = _BenchmarkManager.is_benchmarking()
 
     # collect stats
-    if is_tracking:
+    if is_benchmarking:
         if error is None:
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
@@ -99,14 +99,16 @@ def search(
             )
 
         iterable = iterable_copy
-    else:
-        iterable = list(iterable)
 
     with _already_benchmarked():
         # run the classical sampling-without-replacement algorithm
-        rng.shuffle(iterable)
+        try:
+            rng.shuffle(iterable)
+        except TypeError:
+            pass
+
         for x in iterable:
-            if is_tracking:
+            if is_benchmarking:
                 elem, sub_frame = x
                 # account for iterable access stats
                 for obj_hash, stats in sub_frame.stats.items():
