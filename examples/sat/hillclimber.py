@@ -99,9 +99,10 @@ def hill_climber(
                 return x
             x, w = result
 
-    while (res := hillclimb_step()) is None:
-        pass
-    return res
+    while True:
+        res = hillclimb_step()
+        if res is not None:
+            return res
 
 
 def run(

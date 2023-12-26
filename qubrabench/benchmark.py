@@ -163,6 +163,13 @@ class _BenchmarkManager:
         return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
+    def is_benchmarking() -> bool:
+        return (
+            _BenchmarkManager.is_tracking()
+            and not _BenchmarkManager._stack[-1]._track_only_actual
+        )
+
+    @staticmethod
     def current_frame() -> BenchmarkFrame:
         return _BenchmarkManager._stack[-1]
 
@@ -285,14 +292,14 @@ def oracle(func=None, *, name: Optional[str] = None):
         @wraps(fun)
         def wrapped_func(*args, **kwargs):
             if _BenchmarkManager.is_tracking():
-                hashes = [hash(wrapped_func)]
+                hashes = {hash(wrapped_func)}
                 if is_bound_method:
                     self = args[0]
-                    hashes.append(hash((wrapped_func, self)))
+                    hashes.add(hash((wrapped_func, self)))
                     if isinstance(self, QObject):
-                        hashes.append(hash(self))
+                        hashes.add(hash(self))
                 if name is not None:
-                    hashes.append(hash(name))
+                    hashes.add(hash(name))
 
                 frame = _BenchmarkManager.current_frame()
                 for h in hashes:
@@ -324,10 +331,7 @@ def named_oracle(name: str):
             stats = tracker.get_stats("some_name")
     """
 
-    def decorator(fun):
-        return oracle(fun, name=name)
-
-    return decorator
+    return oracle(name=name)
 
 
 @contextmanager

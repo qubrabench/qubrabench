@@ -42,13 +42,11 @@ def search(
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
     """
-    # TODO maybe use Sequence instead of Iterable:
-    #      as Iterable might get consumed during the first iteration,
-    #      making the benchmark implementation a ugly
-    #      Also: the iteration itself can make queries (e.g. when using QList), so this must be captured very carefully.
+
+    is_benchmarking = _BenchmarkManager.is_benchmarking()
 
     # collect stats
-    if _BenchmarkManager.is_tracking():
+    if is_benchmarking:
         if error is None:
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
@@ -58,7 +56,8 @@ def search(
         T = 0
 
         sub_frames_access: list[BenchmarkFrame] = []
-        sub_frames_eval_key: list[BenchmarkFrame] = []
+        sub_frames_eval: list[BenchmarkFrame] = []
+
         it = iter(iterable)
         iterable_copy = []
         while True:
@@ -67,22 +66,18 @@ def search(
                     x = next(it)
                 except StopIteration:
                     break
-                iterable_copy.append(x)
                 N += 1
+                iterable_copy.append((x, sub_frame_access))
                 sub_frames_access.append(sub_frame_access)
 
-            with track_queries() as sub_frame_eval_key:
+            with track_queries() as sub_frame_eval:
                 if key(x):
                     T += 1
-                sub_frames_eval_key.append(sub_frame_eval_key)
+                sub_frames_eval.append(sub_frame_eval)
 
         frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
-        frame_eval_key = _BenchmarkManager.combine_subroutine_frames(
-            sub_frames_eval_key
-        )
-        frame = _BenchmarkManager.combine_sequence_frames(
-            [frame_access, frame_eval_key]
-        )
+        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
+        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
         for obj_hash, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
@@ -102,24 +97,27 @@ def search(
                 ),
             )
 
-        # iterable already consumed, account for true queries during iteration into the parent frame
-        for obj_hash, stats in _BenchmarkManager.combine_sequence_frames(
-            sub_frames_access
-        ).stats.items():
-            _BenchmarkManager.current_frame()._get_stats_from_hash(
-                obj_hash
-            ).classical_actual_queries += stats.classical_actual_queries
-
         iterable = iterable_copy
-    else:
-        iterable = list(iterable)
 
     with _already_benchmarked():
         # run the classical sampling-without-replacement algorithm
-        rng.shuffle(iterable)  # type: ignore
+        try:
+            rng.shuffle(iterable)
+        except TypeError:
+            pass
+
         for x in iterable:
-            if key(x):
-                return x
+            if is_benchmarking:
+                elem, sub_frame = x
+                # account for iterable access stats
+                for obj_hash, stats in sub_frame.stats.items():
+                    _BenchmarkManager.current_frame()._get_stats_from_hash(
+                        obj_hash
+                    ).classical_actual_queries += stats.classical_actual_queries
+            else:
+                elem = x
+            if key(elem):
+                return elem
 
     return None
 
