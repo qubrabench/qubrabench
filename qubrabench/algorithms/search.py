@@ -2,8 +2,10 @@
     and calculates the expected quantum query costs to a predicate function
 """
 
-from typing import Callable, Iterable, Optional, TypeVar
+from abc import ABC, abstractmethod
+from typing import Callable, Iterable, Optional, TypeVar, Generic
 import numpy as np
+
 from ..benchmark import (
     _BenchmarkManager,
     BenchmarkFrame,
@@ -11,7 +13,7 @@ from ..benchmark import (
     _already_benchmarked,
 )
 
-__all__ = ["search"]
+__all__ = ["search", "search_by_sampling_with_replacement", "SamplingDomain"]
 
 E = TypeVar("E")
 
@@ -120,6 +122,97 @@ def search(
                 return elem
 
     return None
+
+
+class SamplingDomain(ABC, Generic[E]):
+    """
+    Class used for search routines requiring elaborate sampling with replacement. To search against a predicate, please
+    refer to the function search_custom.
+    If your use-case involves simpler search spaces, e.g. ones that can be stored as a list in memory, please use the
+    function search for that.
+    """
+
+    @abstractmethod
+    def get_size(self) -> int:
+        pass
+
+    @abstractmethod
+    def get_probability_of_sampling_solution(self, key) -> float:
+        pass
+
+    @abstractmethod
+    def get_random_sample(self, rng: np.random.Generator) -> E:
+        pass
+
+
+def search_by_sampling_with_replacement(
+    domain: SamplingDomain[E],
+    key: Callable[[E], bool],
+    *,
+    rng: np.random.Generator,
+    error: float,
+    max_classical_queries: int = 130,
+) -> Optional[E]:
+    """Search a domain by sampling with replacement, for an element satisfying the given predicate, while keeping track of query statistics.
+
+    Args:
+        domain: sampling domain to be searched over
+        key: function to test if an element satisfies the predicate
+        rng: np.random.Generator instance as source of randomness
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+
+    Returns:
+        An element that satisfies the predicate, or None if no such argument can be found.
+    """
+
+    N = domain.get_size()
+    f = domain.get_probability_of_sampling_solution(key)
+    max_iterations = int(3 * np.log(error) / np.log(1.0 - f))
+
+    is_benchmarking = _BenchmarkManager.is_benchmarking()
+
+    # collect stats
+    if is_benchmarking:
+        sub_frames_access: list[BenchmarkFrame] = []
+        sub_frames_eval: list[BenchmarkFrame] = []
+
+        for _ in range(max_iterations):
+            with track_queries() as sub_frame_access:
+                x = domain.get_random_sample(rng)
+                sub_frames_access.append(sub_frame_access)
+
+            with track_queries() as sub_frame_eval:
+                key(x)
+                sub_frames_eval.append(sub_frame_eval)
+
+        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
+        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
+        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
+
+        for obj_hash, stats in frame.stats.items():
+            _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                obj_hash,
+                base_stats=stats,
+                queries=max_iterations,
+            )
+
+            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                obj_hash,
+                base_stats=stats,
+                queries_classical=cade_et_al_expected_classical_queries(
+                    N, f * N, max_classical_queries
+                ),
+                queries_quantum=cade_et_al_expected_quantum_queries(
+                    N, f * N, error, max_classical_queries
+                ),
+            )
+
+    with _already_benchmarked():
+        for _ in range(max_iterations):
+            x = domain.get_random_sample(rng)
+            if key(x):
+                return x
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> float:

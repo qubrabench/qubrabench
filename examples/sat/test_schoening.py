@@ -6,11 +6,15 @@ import numpy as np
 from qubrabench.benchmark import track_queries, QueryStats
 
 from sat import SatInstance
-from schoening import schoening_solve, schoening_with_randomness, schoening_bruteforce_steps
+from schoening import (
+    schoening_solve,
+    schoening_with_randomness,
+    schoening_bruteforce_steps,
+)
 
 
 def test_solve(rng) -> None:
-    """Test Schöning's algorithm and quantum statistic generation
+    """Test Schoening's algorithm and quantum statistic generation
 
     Args:
         rng (np.rng): Source of randomness provided by test fixtures
@@ -30,10 +34,12 @@ def test_solve(rng) -> None:
         # check stats
         assert tracker.get_stats(schoening_with_randomness) == QueryStats(
             classical_actual_queries=2,
-            classical_expected_queries=pytest.approx(2.0009153259895374),
-            quantum_expected_classical_queries=pytest.approx(2.0009153318077804),
+            classical_expected_queries=pytest.approx(64),
+            quantum_expected_classical_queries=pytest.approx(3.3703703703703702),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
+
+
 def test_bruteforce_steps(rng) -> None:
     """Test Schöning's algorithm and quantum statistic generation
 
@@ -53,9 +59,9 @@ def test_bruteforce_steps(rng) -> None:
         assert x is not None and inst.evaluate(x)
 
         # check stats
-        assert tracker.get_stats(inst) == QueryStats(
-            classical_actual_queries=2,
-            classical_expected_queries=pytest.approx(1.0009153259895374),
-            quantum_expected_classical_queries=pytest.approx(1.0009153318077804),
+        assert tracker.get_stats(schoening_with_randomness) == QueryStats(
+            classical_actual_queries=3,
+            classical_expected_queries=pytest.approx(254),
+            quantum_expected_classical_queries=pytest.approx(11.481481481481481),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
