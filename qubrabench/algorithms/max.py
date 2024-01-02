@@ -49,8 +49,10 @@ def max(
 
         key = default_key
 
+    is_benchmarking = _BenchmarkManager.is_benchmarking()
+
     # collect stats
-    if _BenchmarkManager.is_tracking():
+    if is_benchmarking:
         if error is None:
             raise ValueError(
                 "max() parameter 'error' not provided, cannot compute quantum query statistics"
@@ -58,22 +60,28 @@ def max(
 
         N = 0
 
-        sub_frames: list[BenchmarkFrame] = []
+        sub_frames_access: list[BenchmarkFrame] = []
+        sub_frames_eval: list[BenchmarkFrame] = []
+
         it = iter(iterable)
         iterable_copy = []
         while True:
-            with track_queries() as sub_frame:
+            with track_queries() as sub_frame_access:
                 try:
                     x = next(it)
                 except StopIteration:
                     break
-                iterable_copy.append(x)
                 N += 1
-                key(x)
-                sub_frames.append(sub_frame)
-        iterable = iterable_copy
+                iterable_copy.append(x)
+                sub_frames_access.append(sub_frame_access)
 
-        frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
+            with track_queries() as sub_frame_eval:
+                key(x)
+                sub_frames_eval.append(sub_frame_eval)
+
+        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
+        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
+        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
         for obj_hash, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
@@ -87,8 +95,17 @@ def max(
                 base_stats=stats,
             )
 
+        iterable = iterable_copy
+
     max_elem: OptionalParameter[E] = None
     with _already_benchmarked():
+        if is_benchmarking:
+            for sub_frame in sub_frames_access:
+                for obj_hash, stats in sub_frame.stats.items():
+                    _BenchmarkManager.current_frame()._get_stats_from_hash(
+                        obj_hash
+                    ).classical_actual_queries += stats.classical_actual_queries
+
         key_of_max_elem = None
         for elem in iterable:
             key_of_elem = key(elem)
