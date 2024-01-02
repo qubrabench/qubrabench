@@ -39,24 +39,33 @@ def find_shor(users):
 We can equivalently write this using the [search](https://github.com/qubrabench/qubrabench/blob/development/qubrabench/algorithms/search.py) function in qubrabench:
 
 ```python
+import numpy as np
 from qubrabench.algorithms.search import search
 
+def is_shor(user):
+    return user.name == "Peter Shor"
+
 def find_shor(users):
-    return search(users, lambda user: user.name == "Peter Shor")
+    return search(users, key=is_shor, rng=np.random.default_rng())
 ```
 
 To determine whether a quantum search algorithm can provide any advantage over classically iterating over the list, we add some minimal annotations to tell qubrabench which object we are interested in counting query stats for:
 
 ```python
+import numpy as np
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import oracle, track_queries
 
+@oracle
+def is_shor(user):
+    return user.name == "Peter Shor"
+
 def find_shor(users):
-    return search(users, lambda user: oracle(user.name == "Peter Shor"))
+    return search(users, key=is_shor, rng=np.random.default_rng(), error=1e-5)
 
 with track_queries() as tracker:
     maybe_shor = find_shor(users)
-    print(tracker.all_stats())
+    print(tracker.get_stats(is_shor))
 ```
 
 
