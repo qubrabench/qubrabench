@@ -60,12 +60,16 @@ def solve(
         q = q_star / (0.39 - 0.201 * eps)
 
         for obj, stats in A.costs.items():
+            if obj not in costs:
+                costs[obj] = QueryStats()
             costs[obj] += QueryStats(
                 quantum_expected_quantum_queries=(
                     q * stats.quantum_expected_quantum_queries
                 )
             )
         for obj, stats in b.costs.items():
+            if obj not in costs:
+                costs[obj] = QueryStats()
             costs[obj] += QueryStats(
                 quantum_expected_quantum_queries=(
                     2 * q * stats.quantum_expected_quantum_queries
