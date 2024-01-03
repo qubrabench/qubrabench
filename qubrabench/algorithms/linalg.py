@@ -4,8 +4,10 @@ import numpy as np
 from ..benchmark import QueryStats
 from ..datastructures.blockencoding import BlockEncoding
 
+__all__ = ["solve"]
 
-def linear_solver(
+
+def solve(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
@@ -14,7 +16,7 @@ def linear_solver(
 ) -> BlockEncoding:
     """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
 
-    Given block-encodings for $A$ and $b$, find an approximation for $A^{-1}b$.
+    Given block-encodings for $A$ and $b$, find an approximation of $y$ satisfying $Ay = b$.
 
     Args:
         A: block-encoded input matrix
@@ -70,5 +72,5 @@ def linear_solver(
                 )
             )
 
-    x = np.linalg.solve(A.matrix, b.matrix)
-    return BlockEncoding(x, alpha=np.linalg.norm(x), error=error, costs=costs)
+    y = np.linalg.solve(A.matrix, b.matrix)
+    return BlockEncoding(y, alpha=np.linalg.norm(y), error=error, costs=costs)

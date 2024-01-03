@@ -22,18 +22,24 @@ class BlockEncoding(QObject):
     error: float
     """Approximation factor"""
 
-    costs: dict[Hashable, QueryStats]
+    costs: dict[Hashable, QueryStats] = attrs.field(factory=dict)
     """Cost to implement the block-encoding unitary"""
+
+    def __attrs_post_init__(self):
+        self.costs[self] = QueryStats(quantum_expected_quantum_queries=1)
 
     def get(self):
         """Access the block-encoded matrix via the implementing unitary"""
         if _BenchmarkManager.is_benchmarking():
             for obj, stats in self.costs.items():
-                true_stats = _BenchmarkManager.current_frame()._get_stats(obj)
-                if true_stats.quantum_expected_quantum_queries is None:
-                    true_stats.quantum_expected_quantum_queries = 0
-                true_stats.quantum_expected_quantum_queries += (
-                    stats.quantum_expected_quantum_queries
+                obj_hash = _BenchmarkManager._get_hash(obj)
+                _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries_quantum=1,
                 )
 
         return self.matrix
+
+    def __hash__(self):
+        return id(self)
