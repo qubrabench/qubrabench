@@ -91,16 +91,14 @@ class BenchmarkFrame:
     def get_stats(self, obj: Any) -> QueryStats:
         """Get the statistics of a quantum oracle/data structure"""
 
-        h = self.__get_hash(obj)
+        h = _BenchmarkManager._get_hash(obj)
         if h not in self.stats:
             raise ValueError(f"object {obj} has not been benchmarked!")
         return self.stats[h]
 
-    def __get_hash(self, obj: Any) -> int:
-        """hashing used to store the stats"""
-        if inspect.ismethod(obj):
-            return hash((obj.__func__, obj.__self__))
-        return hash(obj)
+    def _get_stats(self, obj: Any) -> QueryStats:
+        h = _BenchmarkManager._get_hash(obj)
+        return self._get_stats_from_hash(h)
 
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
@@ -157,6 +155,13 @@ class _BenchmarkManager:
 
     def __new__(cls):
         assert False, f"should not create object of class {cls}"
+
+    @staticmethod
+    def _get_hash(obj: Any) -> int:
+        """hashing used to store the stats"""
+        if inspect.ismethod(obj):
+            return hash((obj.__func__, obj.__self__))
+        return hash(obj)
 
     @staticmethod
     def is_tracking() -> bool:
