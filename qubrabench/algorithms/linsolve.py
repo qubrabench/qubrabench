@@ -1,7 +1,7 @@
-from typing import Optional
+from typing import Optional, Hashable
 import numpy as np
 
-from ..benchmark import _BenchmarkManager, QueryStats
+from ..benchmark import QueryStats
 from ..datastructures.blockencoding import BlockEncoding
 
 
@@ -11,7 +11,7 @@ def linear_solver(
     *,
     error: Optional[float] = None,
     condition_number_A: Optional[float] = None,
-):
+) -> BlockEncoding:
     """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
 
     Given block-encodings for $A$ and $b$, find an approximation for $A^{-1}b$.
@@ -24,17 +24,11 @@ def linear_solver(
 
     Returns:
         Block-encoded solution vector.
-
-    Raises:
-        ValueError: when in benchmarking mode but error is not provided.
     """
 
-    if _BenchmarkManager.is_benchmarking():
-        if error is None:
-            raise ValueError(
-                "linear_solver() parameter 'error' not provided, cannot compute quantum query statistics"
-            )
+    costs: dict[Hashable, QueryStats] = {}
 
+    if error is not None:
         if condition_number_A is None:
             condition_number_A = np.linalg.cond(A.matrix)
 
@@ -61,21 +55,20 @@ def linear_solver(
         q_star_term_3 = alpha * k * np.log(32 / eps)
 
         q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
+        q = q_star / (0.39 - 0.201 * eps)
 
-        _BenchmarkManager.current_frame()._add_quantum_expected_queries(
-            hash(A),
-            base_stats=QueryStats(
-                quantum_expected_quantum_queries=1
-            ),  # TODO: maybe use the cost of implementing A?
-            queries_quantum=q_star,
-        )
-        _BenchmarkManager.current_frame()._add_quantum_expected_queries(
-            hash(b),
-            base_stats=QueryStats(
-                quantum_expected_quantum_queries=1
-            ),  # TODO: maybe use the cost of implementing A?
-            queries_quantum=2 * q_star,
-        )
+        for obj, stats in A.costs.items():
+            costs[obj] += QueryStats(
+                quantum_expected_quantum_queries=(
+                    q * stats.quantum_expected_quantum_queries
+                )
+            )
+        for obj, stats in b.costs.items():
+            costs[obj] += QueryStats(
+                quantum_expected_quantum_queries=(
+                    2 * q * stats.quantum_expected_quantum_queries
+                )
+            )
 
     x = np.linalg.solve(A.matrix, b.matrix)
-    return BlockEncoding(x, np.linalg.norm(x), error)
+    return BlockEncoding(x, alpha=np.linalg.norm(x), error=error, costs=costs)

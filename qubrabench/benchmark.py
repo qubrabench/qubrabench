@@ -100,6 +100,10 @@ class BenchmarkFrame:
         h = _BenchmarkManager._get_hash(obj)
         return self._get_stats_from_hash(h)
 
+    def _get_stats(self, obj: Any) -> QueryStats:
+        """Get the statistics of a quantum oracle/data structure"""
+        return self._get_stats_from_hash(self.__get_hash(obj))
+
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
             self.stats[obj_hash] = QueryStats()
