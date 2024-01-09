@@ -34,6 +34,15 @@ def solve(
         if condition_number_A is None:
             condition_number_A = np.linalg.cond(A.matrix)
 
+        if not np.isclose(A.error, 0):
+            raise ValueError(
+                f"solve expects a zero-error block-encoding of A, but input has an error of {A.error}"
+            )
+        if not np.isclose(b.error, 0):
+            raise ValueError(
+                f"solve expects a zero-error block-encoding of b, but input has an error of {b.error}"
+            )
+
         condition_number_A = max(condition_number_A, np.sqrt(12))
         error = min(error, 0.24)
 
