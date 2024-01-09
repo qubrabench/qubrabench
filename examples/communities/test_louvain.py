@@ -82,7 +82,7 @@ def test_node_to_community_strength(small_adjacency_matrix):
     for target_node in range(split_index):
         # check strength of node and neighbors in community alpha
         assert (
-            graph.S(target_node, alpha)
+            graph.S(target_node).get(alpha, 0)
             == small_adjacency_matrix[target_node, :split_index].sum()
         )
         # check node strength
@@ -91,8 +91,8 @@ def test_node_to_community_strength(small_adjacency_matrix):
         )
 
     # check strength of all nodes in community alpha
-    assert graph.Sigma(alpha) == small_adjacency_matrix[:split_index, :].sum()
-    assert graph.Sigma(beta) == small_adjacency_matrix[split_index:, :].sum()
+    assert graph.Sigma[alpha] == small_adjacency_matrix[:split_index, :].sum()
+    assert graph.Sigma[beta] == small_adjacency_matrix[split_index:, :].sum()
 
     # check W
     assert graph.W == small_adjacency_matrix.sum() / 2

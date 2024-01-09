@@ -47,7 +47,7 @@ class LouvainGraph(nx.Graph):
         return self.size(weight="weight")
 
     @lru_cache()
-    def S(self, u: int, alpha: int) -> float:
+    def S(self, u: int) -> dict[int, float]:
         r"""Strength of u to other nodes in the community alpha
 
         .. math::
@@ -56,34 +56,35 @@ class LouvainGraph(nx.Graph):
 
         Args:
             u: Integer label of the nx.Node whose strength should be determined
-            alpha: Integer label of the community that the incident edges of u belong to
 
         Returns:
-            The resulting strength
+            A dictionary mapping community labels $\alpha$ to the value of $S_u^\alpha$
         """
-        return sum(
-            A_uv
-            for _, v, A_uv in self.edges(u, data="weight", default=1)
-            if self.get_label(v) == alpha
-        )
+        result: dict[int, float] = {}
+        for _, v, A_uv in self.edges(u, data="weight", default=1):
+            l_v = self.get_label(v)
+            if l_v not in result:
+                result[l_v] = 0
+            result[l_v] += A_uv
+        return result
 
-    @lru_cache()
-    def Sigma(self, alpha: int) -> float:
+    @cached_property
+    def Sigma(self) -> dict[int, float]:
         r"""Calculates sum of all weights on edges incident to vertices contained in a community
 
         .. math::
 
             \Sigma_\alpha = \sum_{v \in C_\alpha} s_v
 
-        Args:
-            alpha: Integer label of the community whose Sigma is to be calculated
-
         Returns:
-            Sum of weights
+            A dictionary mapping community labels $\alpha$ to the value of $\Sigma_\alpha$
         """
-        return sum(
-            self.strength(v) for v, label in self.nodes.data("label") if label == alpha
-        )
+        result: dict[int, float] = {}
+        for v, label in self.nodes.data("label"):
+            if label not in result:
+                result[label] = 0
+            result[label] += self.strength(v)
+        return result
 
     @lru_cache()
     def strength(self, u: int) -> float:
@@ -108,16 +109,17 @@ class LouvainGraph(nx.Graph):
 
         s_u = self.strength(u)
         A_uu = self.get_edge_data(u, u, {"weight": 0})["weight"]
+        S_u = self.S(u)
 
-        return (self.S(u, alpha) - self.S(u, l_u) + A_uu) / self.W - (
-            s_u * (self.Sigma(alpha) - self.Sigma(l_u) + s_u)
+        return (S_u.get(alpha, 0) - S_u.get(l_u, 0) + A_uu) / self.W - (
+            s_u * (self.Sigma.get(alpha, 0) - self.Sigma.get(l_u, 0) + s_u)
         ) / (2 * self.W**2)
 
     def update_community(self, u: int, label: int):
         self.nodes[u]["label"] = label
 
         # drop invalid caches
-        self.Sigma.cache_clear()
+        del self.Sigma
         self.S.cache_clear()
 
     def modularity(self) -> float:
