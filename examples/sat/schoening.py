@@ -33,7 +33,7 @@ def schoening_with_randomness(
 
     if inst.evaluate(assignment):
         return assignment
-
+# iterate over the steps of the random walk
     for step in walk_steps:
         # choose an unsatisfied clause
         unsat_clauses = (inst.clauses @ assignment.T) == -inst.k
@@ -52,6 +52,7 @@ def schoening_with_randomness(
 
 @attrs.define
 class SchoeningDomain(SamplingDomain[tuple[np.ndarray, np.ndarray]]):
+""" The class SchoeningDomain implements the methods declared for a SamplingDomain. We use this class for search spaces that cannot be stored in memory. """
     n: int
     n_assignment: int
     n_walk_steps: int
@@ -87,7 +88,7 @@ def schoening_solve(
 ) -> Optional[Assignment]:
     """
     Find a satisfying assignment of a 3-SAT formula by using Schoening's algorithm,
-    which incrementally flipping bits contained in unsatisfied clauses.
+    which incrementally flips assigned variables contained in unsatisfied clauses. 
 
     Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
@@ -97,6 +98,7 @@ def schoening_solve(
     Returns:
         Satisfying assignment if found, None otherwise.
     """
+    # schoening's algorithm is defined for 3-SAT instances.
     assert inst.k == 3
 
     # find a choice of randomness that makes Schoening's algorithm accept
@@ -136,7 +138,9 @@ def schoening_bruteforce_steps(
 
     # prepare search domain comprising all assignments
     n = inst.n
+    domain = SchoeningDomain(n, 0, 3 * n)
 
+    # define predicate, if steps lead to satisfying assignment return that
     def pred(steps) -> Optional[Assignment]:
         for _ in range(10**5):
             initial_assignment = SchoeningDomain.generate_random_assignment(n, rng)
@@ -146,7 +150,7 @@ def schoening_bruteforce_steps(
         return None
 
     result = search_by_sampling_with_replacement(
-        SchoeningDomain(n, 0, 3 * n),
+        domain
         key=lambda r: pred(r) is not None,
         rng=rng,
         error=error,
