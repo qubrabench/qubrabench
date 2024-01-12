@@ -105,7 +105,9 @@ def schoening_solve(
     # find a choice of randomness that makes Schoening's algorithm accept
     randomness = search_by_sampling_with_replacement(
         SchoeningDomain(inst.n, inst.n, 3 * inst.n),
-        key=named_oracle("inst.schoening")(lambda r: schoening_with_randomness(inst, r[0], r[1]) is not None),
+        key=named_oracle("inst.schoening")(
+            lambda r: schoening_with_randomness(inst, r[0], r[1]) is not None
+        ),
         error=error,
         rng=rng,
     )
