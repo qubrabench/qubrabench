@@ -35,12 +35,7 @@ def cli():
     type=int,
     required=True,
 )
-@click.option(
-    "-strategy",
-    type=str,
-    default="assignments",
-    show_default=True
-)
+@click.option("-strategy", type=str, default="assignments", show_default=True)
 @click.option(
     "--seed",
     help="Seed for the random operations.",
@@ -114,8 +109,6 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
         history = pd.concat([orig, history], ignore_index=True)
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
-
-
 
 
 class SchoeningPlottingStrategy(PlottingStrategy):
