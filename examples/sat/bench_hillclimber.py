@@ -65,7 +65,7 @@ def cli():
 )
 def hill_climb(k, r, seed, n, runs, dest, verbose, steep):
     """
-    Run simple hill simpler benchmark.
+    Benchmark the hillclimber algorithm for MAX-k-SAT.
 
     Example:
 
