@@ -12,7 +12,7 @@ import pandas as pd
 from bench_hillclimber import setup_default_logger
 from sat import SatInstance
 from qubrabench.benchmark import track_queries
-from schoening import schoening_solve
+from schoening import schoening_solve, schoening_bruteforce_steps
 
 from qubrabench.utils.plotting import PlottingStrategy
 
@@ -34,6 +34,12 @@ def cli():
     help="Number of clauses divided by number of variables.",
     type=int,
     required=True,
+)
+@click.option(
+    "-strategy",
+    type=str,
+    default="assignments",
+    show_default=True
 )
 @click.option(
     "--seed",
@@ -58,9 +64,9 @@ def cli():
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def bruteforce_assignments(r, seed, n, runs, dest, verbose):
+def generate(r, seed, n, runs, dest, verbose, strategy):
     """
-    Benchmark Schoening's algorithm bruteforcing assignments.
+    Benchmark Schoening's algorithm for both strategies, bruteforcing assignments and steps.
 
     Example:
 
@@ -71,18 +77,22 @@ def bruteforce_assignments(r, seed, n, runs, dest, verbose):
 
     history = []
     for run in range(runs):
-        logging.debug(f"r={r}, n={n}, #{run}")
+        logging.debug(f"r={r}, n={n}, strategy={strategy}, #{run}")
 
         # as schoening uses 3-SAT, k=3
         inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
         with track_queries() as tracker:
-            schoening_solve(inst, error=10**-5, rng=rng)
+            if strategy == "assignments":
+                schoening_solve(inst, error=10**-5, rng=rng)
+            elif strategy == "steps":
+                schoening_bruteforce_steps(inst, error=10**-5, rng=rng)
             stats = tracker.get_stats("inst.schoening")
 
             # save record to history
             rec = asdict(stats)
             rec["n"] = n
             rec["r"] = r
+            rec["strategy"] = strategy
             rec["classical_control_method_calls"] = tracker.get_stats(
                 "inst.schoening"
             ).classical_actual_queries
@@ -93,9 +103,9 @@ def bruteforce_assignments(r, seed, n, runs, dest, verbose):
         [list(row.values()) for row in history], columns=list(history[0].keys())
     )
 
-    history.insert(0, "impl", "QuBRA")
+    history.insert(0, "impl", strategy)
 
-    logging.info(history.groupby(["r", "n"]).mean(numeric_only=True))
+    logging.info(history.groupby(["r", "n", "strategy"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
@@ -104,6 +114,8 @@ def bruteforce_assignments(r, seed, n, runs, dest, verbose):
         history = pd.concat([orig, history], ignore_index=True)
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
+
+
 
 
 class SchoeningPlottingStrategy(PlottingStrategy):

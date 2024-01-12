@@ -154,7 +154,7 @@ def schoening_bruteforce_steps(
 
     result = search_by_sampling_with_replacement(
         domain,
-        key=lambda r: pred(r) is not None,
+        key=named_oracle("inst.schoening")(lambda r: pred(r) is not None),
         rng=rng,
         error=error,
     )
