@@ -11,8 +11,12 @@ import numpy as np
 import pandas as pd
 from bench_hillclimber import setup_default_logger
 from sat import SatInstance
-from qubrabench.benchmark import track_queries
-from schoening import schoening_solve, schoening_bruteforce_steps
+from bruteforce import bruteforce_solve
+from qubrabench.benchmark import track_queries, named_oracle
+from schoening import (
+    schoening_solve,
+    schoening_bruteforce_steps,
+)
 
 from qubrabench.utils.plotting import PlottingStrategy
 
@@ -35,7 +39,7 @@ def cli():
     type=int,
     required=True,
 )
-@click.option("-strategy", type=str, default="assignments", show_default=True)
+@click.option("-strategy", type=str, default=None, show_default=True)
 @click.option(
     "--seed",
     help="Seed for the random operations.",
@@ -65,7 +69,7 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
 
     Example:
 
-        bench_schoening.py bruteforce-assignments -r 3 -n 100 --save results.json
+        bench_schoening.py --strategy=steps -r 3 -n 100 --save results.json
     """
     setup_default_logger(verbose)
     rng = np.random.default_rng(seed)
@@ -77,11 +81,20 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
         # as schoening uses 3-SAT, k=3
         inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
         with track_queries() as tracker:
-            if strategy == "assignments":
+            # TODO: streamline selection of strategies...
+            if strategy == "standard":
                 schoening_solve(inst, error=10**-5, rng=rng)
             elif strategy == "steps":
                 schoening_bruteforce_steps(inst, error=10**-5, rng=rng)
-            stats = tracker.get_stats("inst.schoening")
+            elif strategy is None:
+                bruteforce_solve(
+                    inst,
+                    (named_oracle("inst.evaluate"))(lambda k: inst.evaluate(k)),
+                    error=10**-5,
+                    rng=rng,
+                )
+
+            stats = tracker.get_stats("inst.evaluate")
 
             # save record to history
             rec = asdict(stats)
@@ -89,7 +102,7 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
             rec["r"] = r
             rec["strategy"] = strategy
             rec["classical_control_method_calls"] = tracker.get_stats(
-                "inst.schoening"
+                "inst.evaluate"
             ).classical_actual_queries
             history.append(rec)
 
@@ -98,7 +111,7 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
         [list(row.values()) for row in history], columns=list(history[0].keys())
     )
 
-    history.insert(0, "impl", strategy)
+    history.insert(0, "impl", "bruteforce sat" if strategy is None else strategy)
 
     logging.info(history.groupby(["r", "n", "strategy"]).mean(numeric_only=True))
 

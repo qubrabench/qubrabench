@@ -31,7 +31,10 @@ def schoening_with_randomness(
     """
     assignment = np.copy(initial_assignment)
 
-    if inst.evaluate(assignment):
+    # FIXME: get_stats(inst.evaluate) won't work, as underlying matrix can't be hashed.
+    eval = (named_oracle("inst.evaluate"))(lambda k: inst.evaluate(k))
+
+    if eval(assignment):
         return assignment
     # iterate over the steps of the random walk
     for step in walk_steps:
@@ -44,7 +47,7 @@ def schoening_with_randomness(
         var = vars_[step]
         assignment[var] *= -1
 
-        if inst.evaluate(assignment):
+        if eval(assignment):
             return assignment
 
     return None
@@ -105,9 +108,7 @@ def schoening_solve(
     # find a choice of randomness that makes Schoening's algorithm accept
     randomness = search_by_sampling_with_replacement(
         SchoeningDomain(inst.n, inst.n, 3 * inst.n),
-        key=named_oracle("inst.schoening")(
-            lambda r: schoening_with_randomness(inst, r[0], r[1]) is not None
-        ),
+        key=lambda r: schoening_with_randomness(inst, r[0], r[1]) is not None,
         error=error,
         rng=rng,
     )
@@ -154,7 +155,7 @@ def schoening_bruteforce_steps(
 
     result = search_by_sampling_with_replacement(
         domain,
-        key=named_oracle("inst.schoening")(lambda r: pred(r) is not None),
+        key=lambda r: pred(r) is not None,
         rng=rng,
         error=error,
     )
