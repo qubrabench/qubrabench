@@ -46,7 +46,7 @@ def is_shor(user):
     return user.name == "Peter Shor"
 
 def find_shor(users):
-    return search(users, key=is_shor, rng=np.random.default_rng())
+    return search(users, key=is_shor)
 ```
 
 To determine whether a quantum search algorithm can provide any advantage over classically iterating over the list, we add some minimal annotations to tell qubrabench which object we are interested in counting query stats for:
@@ -61,7 +61,7 @@ def is_shor(user):
     return user.name == "Peter Shor"
 
 def find_shor(users):
-    return search(users, key=is_shor, rng=np.random.default_rng(), error=1e-5)
+    return search(users, key=is_shor, error=1e-5)
 
 with track_queries() as tracker:
     maybe_shor = find_shor(users)
