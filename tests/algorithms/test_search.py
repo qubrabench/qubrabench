@@ -22,10 +22,30 @@ def test_search_linear_scan():
         # test stats
         assert tracker.get_stats(check) == QueryStats(
             classical_actual_queries=51,
-            classical_expected_queries=50.5,
+            classical_expected_queries=51,
             quantum_expected_classical_queries=72.9245740488006,
             quantum_expected_quantum_queries=18.991528740664712,
         )
+
+
+def test_search_linear_scan_classical_queries(rng):
+    """Check that classical expected and actual queries match"""
+    for N in rng.integers(20, 500, size=20):
+        k = rng.integers(N)
+
+        @oracle
+        def check(it):
+            return it == k
+
+        with track_queries() as tracker:
+            result = search(range(N), check, error=10**-5)
+            assert result == k
+            stats: QueryStats = tracker.get_stats(check)
+            assert (
+                stats.classical_actual_queries
+                == stats.classical_expected_queries
+                == k + 1
+            )
 
 
 def test_search_with_shuffle(rng):

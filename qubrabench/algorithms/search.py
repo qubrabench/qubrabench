@@ -50,6 +50,7 @@ def search(
     """
 
     is_benchmarking = _BenchmarkManager.is_benchmarking()
+    classical_is_random_search = rng is not None
 
     # collect stats
     if is_benchmarking:
@@ -64,6 +65,9 @@ def search(
         sub_frames_access: list[BenchmarkFrame] = []
         sub_frames_eval: list[BenchmarkFrame] = []
 
+        sub_frames_linear_scan: list[BenchmarkFrame] = []
+        linear_scan_solution_found = False
+
         it = iter(iterable)
         iterable_copy = []
         while True:
@@ -75,22 +79,31 @@ def search(
                 N += 1
                 iterable_copy.append((x, sub_frame_access))
                 sub_frames_access.append(sub_frame_access)
+                if not linear_scan_solution_found:
+                    sub_frames_linear_scan.append(sub_frame_access)
 
             with track_queries() as sub_frame_eval:
+                solution_found = False
                 if key(x):
                     T += 1
+                    solution_found = True
                 sub_frames_eval.append(sub_frame_eval)
+
+                if not linear_scan_solution_found:
+                    sub_frames_linear_scan.append(sub_frame_eval)
+                linear_scan_solution_found |= solution_found
 
         frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
         for obj_hash, stats in frame.stats.items():
-            _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash,
-                base_stats=stats,
-                queries=(N + 1) / (T + 1),
-            )
+            if classical_is_random_search:
+                _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries=(N + 1) / (T + 1),
+                )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj_hash,
@@ -103,11 +116,23 @@ def search(
                 ),
             )
 
+        # classical expected queries for a linear scan
+        if not classical_is_random_search:
+            frame_linear_scan = _BenchmarkManager.combine_sequence_frames(
+                sub_frames_linear_scan
+            )
+            for obj_hash, stats in frame_linear_scan.stats.items():
+                _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries=1,
+                )
+
         iterable = iterable_copy
 
     with _already_benchmarked():
         # run the classical sampling-without-replacement algorithm
-        if rng is not None:
+        if classical_is_random_search:
             try:
                 rng.shuffle(iterable)
             except TypeError:
