@@ -7,14 +7,34 @@ from qubrabench.algorithms.search import search
 from qubrabench.benchmark import QueryStats, track_queries, oracle
 
 
-def test_search(rng):
+def test_search_linear_scan():
+    """Test linear search through a list"""
+    with track_queries() as tracker:
+        domain = range(0, 100)
+
+        @oracle
+        def check(it):
+            return it == 50
+
+        result = search(domain, check, error=10**-5)
+        assert result == 50
+
+        # test stats
+        assert tracker.get_stats(check) == QueryStats(
+            classical_actual_queries=51,
+            classical_expected_queries=50.5,
+            quantum_expected_classical_queries=72.9245740488006,
+            quantum_expected_quantum_queries=18.991528740664712,
+        )
+
+
+def test_search_with_shuffle(rng):
     """Tests the qubrabench search function on a trivial search space.
 
     Args:
         rng (np.rng): Source of randomness provided by test fixtures
     """
     with track_queries() as tracker:
-        # test functionality
         domain = range(0, 100)
 
         @oracle
