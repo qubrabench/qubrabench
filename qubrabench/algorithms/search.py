@@ -20,21 +20,27 @@ def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
     *,
-    rng: np.random.Generator,
+    rng: Optional[np.random.Generator] = None,
     error: Optional[float] = None,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
-    """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+    """Search a list for an element satisfying the given predicate.
 
-    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0)
     2
+
+    By default performs a linear scan on the iterable and returns the first element satisfying the `key`.
+    If the optional random generator `rng` is provided, instead shuffles the input iterable before scanning for a solution.
+
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(42))
+    4
 
     Args:
         iterable: iterable to be searched over
         key: function to test if an element satisfies the predicate
-        rng: np.random.Generator instance as source of randomness
-        error: upper bound on the failure probability of the quantum algorithm.
-        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        rng: random generator - if provided shuffle the input before scanning
+        error: upper bound on the failure probability of the quantum algorithm
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm
 
     Raises:
         ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
@@ -101,10 +107,11 @@ def search(
 
     with _already_benchmarked():
         # run the classical sampling-without-replacement algorithm
-        try:
-            rng.shuffle(iterable)
-        except TypeError:
-            pass
+        if rng is not None:
+            try:
+                rng.shuffle(iterable)
+            except TypeError:
+                pass
 
         for x in iterable:
             if is_benchmarking:
