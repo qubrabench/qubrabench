@@ -4,7 +4,7 @@ from enum import Enum
 import numpy as np
 from numpy.typing import NDArray
 
-
+from qubrabench.benchmark import QueryStats
 from qubrabench.datastructures.blockencoding import BlockEncoding
 
 Matrix: TypeAlias = NDArray[np.complex_]
@@ -39,14 +39,15 @@ def Simplex(A: Matrix, b: Vector, c: Vector):
 
 
 def SimplexIter(
-    A: Matrix, B: Basis, c: Vector, epsilon: float, delta: float, t: float
+    A: Matrix, B: Basis, b: Vector, c: Vector, epsilon: float, delta: float, t: float
 ) -> Union[ResultFlag, tuple[int, int]]:
     """Algorithm 1 [C->C]: Run one iteration of the simplex method
 
     Args:
-        A: matrix
-        B: basis
-        c: cost vector
+        A: n x m matrix, n >= m
+        B: basis of size m
+        b: RHS vector (i.e. $Ax = b$) of size m
+        c: cost vector of size n
         epsilon: precision parameter
         delta: precision parameter
         t: precision parameter
@@ -57,23 +58,25 @@ def SimplexIter(
             - k is a nonbasic variable with negative reduced cost
             - l is the basic variable that should leave the basis if k enters.
     """
-    # TODO Normalize c so that \norm{c_B} = 1
+    # Normalize c so that \norm{c_B} = 1
+    c /= np.linalg.norm(c[B])
 
-    # TODO Normalize A so that \norm{A_B} <= 1
+    # Normalize A so that \norm{A_B} <= 1
+    A /= np.linalg.norm(A[:, B])
 
-    if IsOptimal(A, B, epsilon):
+    if IsOptimal(A, B, c, epsilon):
         return ResultFlag.Optimal
 
-    k = FindColumn(A, B, epsilon)
+    k = FindColumn(A, B, c, epsilon)
 
-    if IsUnbounded(A_B, A_k, delta):
+    if IsUnbounded(A[:, B], A[:, k], delta):
         return ResultFlag.Unbounded
 
-    l = FindRow(A_B, A_k, b, delta)
+    el = FindRow(A[:, B], A[:, k], b, delta, t)
 
-    # Update basis B <- (B \ {B(l)}) \cup {k}
+    B[el] = k
 
-    return k, l
+    return k, el
 
 
 def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
@@ -89,17 +92,42 @@ def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
         V: encodes vector beta
 
     Returns:
-        Above described output vector
+        Unitary that prepares above described output vector
     """
-    raise NotImplementedError
+    if U.matrix.shape != V.matrix.shape:
+        raise ValueError("U and V must block-encode same sized matrices")
+
+    u = U.matrix / U.alpha
+    v = V.matrix / V.alpha
+    return BlockEncoding(
+        0.5 * np.concatenate((u + v, v - u)),
+        alpha=1,
+        error=max(U.error / U.alpha, V.error / V.alpha),
+        costs={
+            U: QueryStats(quantum_expected_quantum_queries=1),
+            V: QueryStats(quantum_expected_quantum_queries=1),
+        },
+    )
 
 
-def SignEstNFN(U, k, epsilon) -> bool:
-    """Algorithm 3 [Q->C]: Sign estimation routine"""
-    raise NotImplementedError
+def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
+    r"""Algorithm 3 [Q->C]: Sign estimation routine
+
+    Args:
+        U: Block-encodes vector $\alpha$ of length 2^q
+        k: index between 0 and 2^q - 1
+        epsilon: precision
+
+    Returns:
+        True if $\alpha_k \ge -\epsilon$, with probability at least 3/4.
+    """
+    # TODO query costs for amplitude estimation
+    if U.matrix[k] >= -epsilon:
+        return True
+    return False
 
 
-def RedCost(A_B, A_k, c, epsilon):
+def RedCost(A_B: BlockEncoding, A_k: BlockEncoding, c: BlockEncoding, epsilon):
     """Algorithm 4 [Q->Q]: Determining the reduced cost of a column"""
     raise NotImplementedError
 
