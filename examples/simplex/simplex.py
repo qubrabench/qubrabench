@@ -1,11 +1,12 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
-from typing import Union, TypeAlias
+from typing import Union, TypeAlias, Optional
 from enum import Enum
 import numpy as np
 from numpy.typing import NDArray
 
 from qubrabench.benchmark import QueryStats
 from qubrabench.datastructures.blockencoding import BlockEncoding
+import qubrabench.algorithms as qba
 
 Matrix: TypeAlias = NDArray[np.complex_]
 """n x m complex matrix"""
@@ -127,9 +128,14 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     return False
 
 
-def RedCost(A_B: BlockEncoding, A_k: BlockEncoding, c: BlockEncoding, epsilon):
-    """Algorithm 4 [Q->Q]: Determining the reduced cost of a column"""
+def RedCost(
+    A_B: Matrix, A_k: Vector, c: Vector, epsilon: float
+) -> Optional[BlockEncoding]:
+    """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     raise NotImplementedError
+    # lhs_mat = BlockEncoding()
+    # rhs_vec = BlockEncoding()
+    # return qba.linalg.solve(lhs_mat, rhs_vec, error=epsilon / (10 * np.sqrt(2)))
 
 
 def CanEnter(A_B: Matrix, A_k: Vector, c: Vector, epsilon: float) -> bool:
