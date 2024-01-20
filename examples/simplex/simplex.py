@@ -141,11 +141,20 @@ def RedCost(
 def CanEnter(A_B: Matrix, A_k: Vector, c: Vector, epsilon: float) -> bool:
     r"""Algorithm 5 [C->C]: Determine is a column is eligible to enter the basis
 
+    Args:
+        A_B: Basic square sub-matrix of A with norm at most 1
+        A_k: nonbasic k-th column
+        c: cost vector s.t. $\norm{c_B} = 1$
+        epsilon: precision
+
     Returns:
         1 if the nonbasic column $A_k$ has reduced cost $< \epsilon$;
         0 otherwise
     """
-    raise NotImplementedError
+    U_r = RedCost(A_B, A_k, c, epsilon)
+    if U_r is None:
+        return False
+    return SignEstNFN(U_r, 0, 11 * epsilon / (10 * np.sqrt(2)))
 
 
 def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> int:
