@@ -1,5 +1,5 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
-from typing import Union, TypeAlias, Optional
+from typing import TypeAlias, Optional
 from enum import Enum
 import numpy as np
 from numpy.typing import NDArray
