@@ -21,9 +21,10 @@ Basis: TypeAlias = NDArray[np.int_]
 class ResultFlag(Enum):
     Optimal = 0
     Unbounded = 1
+    BasisUpdated = 2
 
 
-def Simplex(A: Matrix, b: Vector, c: Vector):
+def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
     r"""Simplex method for linear optimization
 
     Find an $x \in \mathbb{R}^n$ such that $Ax = b$ and minimizing $c^T x$.
@@ -36,12 +37,22 @@ def Simplex(A: Matrix, b: Vector, c: Vector):
     Returns:
         x: an $n$-dimensional column vector solution to the above optimization.
     """
-    raise NotImplementedError
+    # TODO compute valid initial basic solution
+    B: Basis = np.arange(A.shape[0])
+
+    while True:
+        result = SimplexIter(A, B, b, c)
+        if result == ResultFlag.Optimal:
+            break
+        if result == ResultFlag.Unbounded:
+            return None
+
+    return np.linalg.solve(A[:, B], b)  # TODO quantum costs
 
 
 def SimplexIter(
     A: Matrix, B: Basis, b: Vector, c: Vector, epsilon: float, delta: float, t: float
-) -> Union[ResultFlag, tuple[int, int]]:
+) -> ResultFlag:
     """Algorithm 1 [C->C]: Run one iteration of the simplex method
 
     Args:
@@ -54,10 +65,9 @@ def SimplexIter(
         t: precision parameter
 
     Returns:
-        Flag "optimal", "unbounded",
-        or a pair (k, l) where
-            - k is a nonbasic variable with negative reduced cost
-            - l is the basic variable that should leave the basis if k enters.
+        Optimal - solution is found
+        Unbounded - no bounded solution exists
+        Updated - pivot was performed, and more iterations may be neccessary.
     """
     # Normalize c so that \norm{c_B} = 1
     c /= np.linalg.norm(c[B])
@@ -77,7 +87,7 @@ def SimplexIter(
 
     B[el] = k
 
-    return k, el
+    return ResultFlag.BasisUpdated
 
 
 def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
