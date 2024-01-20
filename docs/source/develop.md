@@ -43,7 +43,7 @@ GitHub provides a [Quickstart Article](https://docs.github.com/en/get-started/qu
 ## Testing
 
 This library uses the [pytest](https://docs.pytest.org/) library, which makes testing very simple.
-You can use the predefined [tests](https://github.com/qubrabench/qubrabench/tree/development/tests), or write your own tests.
+You can use the predefined [tests](https://github.com/qubrabench/qubrabench/tree/main/tests), or write your own tests.
 To execute all tests in the project, by simply executing the following command in the project root:
 
 ```shell
@@ -84,7 +84,7 @@ Some algorithms and examples operate on randomly generated instances.
 To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
 RNG function parameters should never have default values.
 
-For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/development/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
+For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/main/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
 
 ### Code Style
 

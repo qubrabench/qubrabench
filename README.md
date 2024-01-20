@@ -1,9 +1,9 @@
-# QuBRA Benchmarking Framework [![CI](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml/badge.svg?branch=development)](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml)
+# QuBRA Benchmarking Framework [![CI](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml)
 
 _qubrabench_ is a Python library that aims to enable domain experts to estimate quantum speedups provided by future quantum computers for realistic use cases and data sets, in advance of large-scale quantum computers being available.
 
 <p align="center">
-    <img src="https://github.com/qubrabench/qubrabench/blob/development/docs/img/motivation.png?raw=true" width="250px">
+    <img src="https://github.com/qubrabench/qubrabench/blob/main/docs/img/motivation.png?raw=true" width="250px">
 </p>
 
 To this end, the library provides classical implementations of algorithms and subroutines (e.g., `search` or `max`) that can be accelerated on a quantum computer.
@@ -25,7 +25,7 @@ We recommend the use of Python 3.10 or 3.11.
 
 ## Usage
 
-The `qubrabench` library offers [subroutines and algorithms](https://github.com/qubrabench/qubrabench/tree/development/qubrabench/algorithms), which record classical and quantum cost metrics that can then be evaluated.
+The `qubrabench` library offers [subroutines and algorithms](https://github.com/qubrabench/qubrabench/tree/main/qubrabench/algorithms), which record classical and quantum cost metrics that can then be evaluated.
 For example, consider the following code which iterates over a list of users to find one with a particular name:
 
 ```python
@@ -36,7 +36,7 @@ def find_shor(users):
     return None
 ```
 
-We can equivalently write this using the [search](https://github.com/qubrabench/qubrabench/blob/development/qubrabench/algorithms/search.py) function in qubrabench:
+We can equivalently write this using the [search](https://github.com/qubrabench/qubrabench/blob/main/qubrabench/algorithms/search.py) function in qubrabench:
 
 ```python
 import numpy as np
@@ -69,7 +69,7 @@ with track_queries() as tracker:
 ```
 
 
-To further familiarize yourself with this approach and workflow, we recommend looking at the [examples](https://github.com/qubrabench/qubrabench/tree/development/examples).
+To further familiarize yourself with this approach and workflow, we recommend looking at the [examples](https://github.com/qubrabench/qubrabench/tree/main/examples).
 
 ## Contributing & Development
 
