@@ -79,6 +79,9 @@ def SimplexIter(
         return ResultFlag.Optimal
 
     k = FindColumn(A, B, c, epsilon)
+    assert (
+        k is not None
+    ), "FindColumn should not return None when IsOptimal returns False!"
 
     if IsUnbounded(A[:, B], A[:, k], delta):
         return ResultFlag.Unbounded
@@ -167,7 +170,7 @@ def CanEnter(A_B: Matrix, A_k: Vector, c: Vector, epsilon: float) -> bool:
     return SignEstNFN(U_r, 0, 11 * epsilon / (10 * np.sqrt(2)))
 
 
-def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> int:
+def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     r"""Algorithm 6 [C->C]: Determine the next column to enter the basis
 
     Args:
@@ -179,7 +182,10 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> int:
     Returns:
         index of column $k$ with $\bar{c}_k < \epsilon \norm{(A_B^{-1} A_k, c_k)} if one exists, with bounded probability.
     """
-    raise NotImplementedError
+    non_basic = set(range(A.shape[1])) - set(B)
+    return qba.search.search(
+        non_basic, key=lambda k: CanEnter(A[:, B], A[:, k], c, epsilon), error=2.0 / 3.0
+    )
 
 
 def IsOptimal(A: Matrix, B: Basis, c: Vector, epsilon: float) -> bool:
