@@ -5,8 +5,13 @@ import numpy as np
 from numpy.typing import NDArray
 
 from qubrabench.benchmark import QueryStats
-from qubrabench.datastructures.blockencoding import BlockEncoding
+from qubrabench.datastructures.blockencoding import (
+    BlockEncoding,
+    block_encoding_of_matrix,
+)
 import qubrabench.algorithms as qba
+
+# TODO: success flag of QLSA
 
 Matrix: TypeAlias = NDArray[np.complex_]
 """n x m complex matrix"""
@@ -223,8 +228,27 @@ def SteepestEdgeCompare(A_B, A_j, A_k, c, epsilon) -> bool:
 
 
 def IsUnbounded(A_B, A_k, delta) -> bool:
-    """Algorithm 8 [C->C]: Determine if the problem is unbounded from below"""
-    raise NotImplementedError
+    r"""Algorithm 8 [C->C]: Determine if the problem is unbounded from below
+
+    Args:
+        A_B: basis columns of A, with norm at most 1.
+        A_k: nonbasic column
+        delta: precision
+
+    Returns:
+        True if $A_B^{-1} A_k < \delta \textbf{1}_m \norm{A_B^{-1} A_k}$
+    """
+    m = A_B.shape[0]
+    enc_A_B = block_encoding_of_matrix(A_B, eps=0)
+    enc_A_k = block_encoding_of_matrix(A_k, eps=0)
+    U_LS = qba.linalg.solve(enc_A_B, enc_A_k, error=0.1 * delta)
+    result = qba.search.search(
+        range(m),
+        key=lambda el: SignEstNFN(
+            U_LS, el, 0.9 * delta
+        ),  # and success flag of QLSA = 1
+    )
+    return result is None
 
 
 def FindRow(A_B, A_k, b, delta, t) -> int:
