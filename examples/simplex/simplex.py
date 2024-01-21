@@ -125,7 +125,7 @@ def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
 
 
 def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
-    r"""Algorithm 3 [Q->C]: Sign estimation routine
+    r"""Algorithm 3 [Q->C]: Sign estimation routine with no false negatives
 
     Args:
         U: Block-encodes vector $\alpha$ of length 2^q
@@ -135,10 +135,27 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     Returns:
         True if $\alpha_k \ge -\epsilon$, with probability at least 3/4.
     """
-    # TODO query costs for amplitude estimation
+    # TODO quantum query costs
     if U.matrix[k] >= -epsilon:
         return True
     return False
+
+
+def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
+    r"""Algorithm 11 [Q->Q] Sign estimation routine with no false positives
+
+    Args:
+        U: Block-encodes vector $\alpha$ of length 2^q
+        k: index between 0 and 2^q - 1
+        epsilon: precision
+
+    Returns:
+        False if $\alpha_k \le -\epsilon$, with probability at least 3/4.
+    """
+    # TODO quantum query costs
+    if U.matrix[k] <= -epsilon:
+        return False
+    return True
 
 
 def RedCost(
