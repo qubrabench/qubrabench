@@ -1,4 +1,5 @@
 from typing import Optional, Generator, Any
+import warnings
 from functools import wraps, reduce
 from dataclasses import dataclass
 from contextlib import contextmanager
@@ -339,6 +340,7 @@ def named_oracle(name: str):
             ...
             stats = tracker.get_stats("some_name")
     """
+    warnings.warn("named_oracle will be removed soon", DeprecationWarning)
 
     return oracle(name=name)
 
