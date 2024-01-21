@@ -184,7 +184,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     """
     non_basic = set(range(A.shape[1])) - set(B)
     return qba.search.search(
-        non_basic, key=lambda k: CanEnter(A[:, B], A[:, k], c, epsilon), error=2.0 / 3.0
+        non_basic, key=lambda k: CanEnter(A[:, B], A[:, k], c, epsilon), error=1.0 / 3.0
     )
 
 
