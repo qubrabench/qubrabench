@@ -251,8 +251,31 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
     return result is None
 
 
-def FindRow(A_B, A_k, b, delta, t) -> int:
-    """Algorithm 9 [C->C]: Determine the basic variable (row) leaving the basis"""
+def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float, t: float) -> int:
+    """Algorithm 9 [C->C]: Determine the basic variable (row) leaving the basis
+
+    Args:
+        A_B: basis columns of A, with norm atmost 1.
+        A_k: nonbasic column
+        b: RHS
+        delta: precision
+        t: TODO what is this
+
+    Returns:
+        index of the row that should leave the basis according to the ratio test,
+        with bounded probability
+    """
+
+    delta_signest = delta / np.linalg.norm(np.linalg.solve(A_B, A_k))
+
+    def U(r: float) -> BlockEncoding:
+        enc_A_B = block_encoding_of_matrix(A_B, eps=0)
+        enc_rhs = block_encoding_of_matrix(b - r * A_k, eps=0)
+        qlsa = qba.linalg.solve(enc_A_B, enc_rhs)
+        # TODO amplitude estimation of
+        #      SignEstNFN(qlsa, epsilon=delta_signest)
+        raise NotImplementedError
+
     raise NotImplementedError
 
 
