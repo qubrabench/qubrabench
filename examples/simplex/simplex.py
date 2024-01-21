@@ -13,11 +13,11 @@ import qubrabench.algorithms as qba
 
 # TODO: success flag of QLSA
 
-Matrix: TypeAlias = NDArray[np.complex_]
-"""n x m complex matrix"""
+Matrix: TypeAlias = NDArray[np.float_]
+"""n x m real matrix"""
 
-Vector: TypeAlias = NDArray[np.complex_]
-"""n x 1 complex vector"""
+Vector: TypeAlias = NDArray[np.float_]
+"""n x 1 real vector"""
 
 Basis: TypeAlias = NDArray[np.int_]
 """array of column indices"""
