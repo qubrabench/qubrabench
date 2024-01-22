@@ -34,9 +34,6 @@ dynamic = ["version"]
 "Homepage" = "https://github.com/qubrabench/qubrabench"
 "Bug Tracker" = "https://github.com/qubrabench/qubrabench/issues"
 
-# [project.scripts]
-# my-script = "my_package.module:function"
-
 [project.optional-dependencies]
 dev = [
     "black[jupyter]",
