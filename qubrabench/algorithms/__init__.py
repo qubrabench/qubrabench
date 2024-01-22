@@ -1,3 +1,3 @@
-from qubrabench.algorithms import search, max, linalg
+from qubrabench.algorithms import linalg, max, search
 
 __all__ = ["search", "max", "linalg"]
