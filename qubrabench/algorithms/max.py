@@ -3,17 +3,14 @@ This module provides a generic maximum finding interface that executes classical
 and calculates the expected quantum query costs to a predicate function.
 """
 
-from typing import Iterable, TypeVar, Optional, Callable, Any
+from typing import Any, Callable, Iterable, Optional, TypeVar
+
 import numpy as np
 
+from .._internals import OptionalParameter, _absent
+from ..benchmark import (BenchmarkFrame, _already_benchmarked,
+                         _BenchmarkManager, track_queries)
 from .search import cade_et_al_F
-from ..benchmark import (
-    _BenchmarkManager,
-    BenchmarkFrame,
-    track_queries,
-    _already_benchmarked,
-)
-from .._internals import _absent, OptionalParameter
 
 __all__ = ["max"]
 

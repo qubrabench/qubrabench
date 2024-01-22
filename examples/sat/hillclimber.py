@@ -1,16 +1,16 @@
 """This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
-from dataclasses import asdict
-from typing import Optional, Callable
 import logging
+from dataclasses import asdict
+from typing import Callable, Optional
+
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
+from sat import Assignment, W, WeightedSatInstance
 
-from qubrabench.algorithms.search import search
 from qubrabench.algorithms.max import max
-from qubrabench.benchmark import track_queries, named_oracle
-
-from sat import WeightedSatInstance, Assignment, W
+from qubrabench.algorithms.search import search
+from qubrabench.benchmark import named_oracle, track_queries
 
 
 def hill_climber(

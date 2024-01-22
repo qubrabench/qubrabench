@@ -1,4 +1,5 @@
-from typing import Optional, Hashable
+from typing import Hashable, Optional
+
 import numpy as np
 
 from ..benchmark import QueryStats

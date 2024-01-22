@@ -1,9 +1,9 @@
-from typing import Optional, Generator, Any
-import warnings
-from functools import wraps, reduce
-from dataclasses import dataclass
-from contextlib import contextmanager
 import inspect
+import warnings
+from contextlib import contextmanager
+from dataclasses import dataclass
+from functools import reduce, wraps
+from typing import Any, Generator, Optional
 
 __all__ = ["QObject", "QueryStats", "track_queries", "oracle", "named_oracle"]
 

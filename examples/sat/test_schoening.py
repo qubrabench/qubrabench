@@ -1,12 +1,11 @@
 """This module collects test functions for the examples.sat.schoening module."""
 
-import pytest
 import numpy as np
-
-from qubrabench.benchmark import track_queries, QueryStats
-
+import pytest
 from sat import SatInstance
 from schoening import schoening_solve, schoening_with_randomness
+
+from qubrabench.benchmark import QueryStats, track_queries
 
 
 def test_solve(rng) -> None:

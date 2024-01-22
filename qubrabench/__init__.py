@@ -1,6 +1,6 @@
 __version__ = "0.2.0"
 
-from qubrabench import algorithms, utils, benchmark, datastructures
+from qubrabench import algorithms, benchmark, datastructures, utils
 
 __all__ = [
     "algorithms",

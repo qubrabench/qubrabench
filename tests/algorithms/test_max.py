@@ -1,10 +1,11 @@
 """This module collects test functions for the qubrabench.max method."""
 
-import pytest
 import re
 
+import pytest
+
 from qubrabench.algorithms.max import max
-from qubrabench.benchmark import track_queries, oracle, QueryStats
+from qubrabench.benchmark import QueryStats, oracle, track_queries
 
 
 def test_max_return_value():

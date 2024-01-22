@@ -3,13 +3,11 @@
 """
 
 from typing import Callable, Iterable, Optional, TypeVar
+
 import numpy as np
-from ..benchmark import (
-    _BenchmarkManager,
-    BenchmarkFrame,
-    track_queries,
-    _already_benchmarked,
-)
+
+from ..benchmark import (BenchmarkFrame, _already_benchmarked,
+                         _BenchmarkManager, track_queries)
 
 __all__ = ["search"]
 

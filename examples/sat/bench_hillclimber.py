@@ -6,13 +6,13 @@ Script/Module that provides benchmarking functions for hillclimbing and bench_pl
 import logging
 from datetime import datetime
 from pathlib import Path
+
 import click
+import hillclimber
 import numpy as np
 import pandas as pd
 
 from qubrabench.utils.plotting import PlottingStrategy
-
-import hillclimber
 
 
 @click.group()

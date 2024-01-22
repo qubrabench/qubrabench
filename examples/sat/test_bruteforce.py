@@ -1,12 +1,11 @@
 """This module collects test functions surrounding the SAT bruteforce example."""
 
-import pytest
 import numpy as np
+import pytest
+from bruteforce import bruteforce_solve
+from sat import SatInstance
 
 import qubrabench as qb
-
-from sat import SatInstance
-from bruteforce import bruteforce_solve
 
 
 def test_solve(rng) -> None:

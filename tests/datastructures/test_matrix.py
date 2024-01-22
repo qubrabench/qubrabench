@@ -1,7 +1,7 @@
 import numpy as np
 
+from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.matrix import QMatrix
-from qubrabench.benchmark import track_queries, QueryStats
 
 
 def test_qmatrix_iterate(rng):

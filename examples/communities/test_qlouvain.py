@@ -1,12 +1,11 @@
 """This module contains tests for the quantum louvain community detection example."""
 import pytest
-from pytest import approx
-
-from qubrabench.benchmark import QueryStats
-
 import qlouvain
 from graph_instances import random_fcs_graph
+from pytest import approx
 from test_louvain import sanity_check_input
+
+from qubrabench.benchmark import QueryStats
 
 
 @pytest.fixture()

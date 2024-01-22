@@ -1,8 +1,9 @@
 """This module handles different types of graph instance generation for community detection."""
 
-import numpy as np
-import networkx as nx
 import math
+
+import networkx as nx
+import numpy as np
 
 __all__ = ["random_lfr_graph", "random_fcs_graph"]
 

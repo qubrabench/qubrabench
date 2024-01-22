@@ -1,10 +1,11 @@
 """This module collects test functions for the qubrabench.search method."""
 
-import pytest
 import re
 
+import pytest
+
 from qubrabench.algorithms.search import search
-from qubrabench.benchmark import QueryStats, track_queries, oracle
+from qubrabench.benchmark import QueryStats, oracle, track_queries
 
 
 def test_search_linear_scan():
