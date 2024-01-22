@@ -92,7 +92,7 @@ Public facing API functions should also contain `mypy` type hints.
 When type hints are present in the method declaration, they may be omitted from the docstring.
 For an extensive example see [here](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
 
-For formatting, make use of the [black](https://black.readthedocs.io/en/stable/) autoformatter with default configuration.
+For formatting, make use of the [black](https://black.readthedocs.io/en/stable/) autoformatter with default configuration and [isort](https://pycqa.github.io/isort/index.html) to sort imports.
 
 Linting will be checked by GitHub actions.
 This projects uses the [ruff](https://beta.ruff.rs/docs/) linter. 
