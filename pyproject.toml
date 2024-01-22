@@ -76,3 +76,6 @@ include = ["qubrabench", "tests", "tests", "examples"]
 reportMissingImports = true
 reportMissingTypeStubs = true
 pythonVersion = "3.10"
+
+[tool.isort]
+profile = "black"
