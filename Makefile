@@ -1,5 +1,6 @@
 # everything run by the continuous integration script on GitHub
 ci:
+	isort --check .
 	black --quiet --check .
 	ruff .
 	pytest --doctest-modules -m "not slow"

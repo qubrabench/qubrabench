@@ -40,6 +40,7 @@ dynamic = ["version"]
 [project.optional-dependencies]
 dev = [
     "black[jupyter]",
+    "isort>=5.12",
     "pytest~=7.3",
     "mypy~=1.2",
     "pandas-stubs~=2.0",
