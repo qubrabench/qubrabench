@@ -19,6 +19,9 @@ jobs:
         with:
           jupyter: true
 
+      - name: Check imports sorted
+        uses: isort/isort-action@v1
+
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
         if: always()

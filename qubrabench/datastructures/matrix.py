@@ -1,8 +1,9 @@
-from typing import TypeVar, Generic, Union
-import numpy as np
-import attrs
+from typing import Generic, TypeVar, Union
 
-from ..benchmark import oracle, QObject
+import attrs
+import numpy as np
+
+from ..benchmark import QObject, oracle
 
 __all__ = ["QMatrix", "QRowView"]
 

@@ -1,9 +1,10 @@
 """Module concerning solving SAT instance by brute forcing."""
 
-from typing import Optional, Callable
 import itertools
+from typing import Callable, Optional
+
 import numpy as np
-from sat import SatInstance, Assignment
+from sat import Assignment, SatInstance
 
 import qubrabench as qb
 

@@ -1,7 +1,7 @@
 import pytest
 from numpy.random import Generator
 
-from qubrabench.benchmark import QueryStats, oracle, named_oracle, track_queries
+from qubrabench.benchmark import QueryStats, named_oracle, oracle, track_queries
 
 
 def random_stats(rng: Generator, *, not_benched=False):

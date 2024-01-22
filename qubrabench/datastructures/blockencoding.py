@@ -1,4 +1,5 @@
 from typing import Hashable
+
 import attrs
 import numpy as np
 

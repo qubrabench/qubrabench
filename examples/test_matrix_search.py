@@ -1,15 +1,14 @@
 import numpy as np
+from matrix_search import find_row_all_ones
 from pytest import approx
 
-from qubrabench.datastructures.matrix import QMatrix
-from qubrabench.benchmark import track_queries, QueryStats
 from qubrabench.algorithms.search import (
-    search,
     cade_et_al_expected_classical_queries,
     cade_et_al_expected_quantum_queries,
+    search,
 )
-
-from matrix_search import find_row_all_ones
+from qubrabench.benchmark import QueryStats, track_queries
+from qubrabench.datastructures.matrix import QMatrix
 
 
 def test_dummy(rng):

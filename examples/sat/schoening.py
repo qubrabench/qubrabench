@@ -1,12 +1,12 @@
 """This module provides the Schöning example for solving SAT instances."""
-from typing import Optional
-import numpy as np
 import itertools
+from typing import Optional
+
+import numpy as np
+from sat import Assignment, SatInstance
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import oracle
-
-from sat import SatInstance, Assignment
 
 __all__ = ["schoening_solve"]
 

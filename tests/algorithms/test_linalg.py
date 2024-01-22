@@ -1,9 +1,9 @@
 import numpy as np
 import pytest
 
+from qubrabench.algorithms.linalg import solve
 from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.blockencoding import BlockEncoding
-from qubrabench.algorithms.linalg import solve
 
 
 def random_instance(rng, N: int) -> tuple[BlockEncoding, BlockEncoding]:

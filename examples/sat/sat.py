@@ -1,7 +1,8 @@
 """This module contains SAT related data classes, calculations and instance generations."""
 
 from dataclasses import dataclass
-from typing import Optional, Callable, TypeVar, Generic, Any
+from typing import Any, Callable, Generic, Optional, TypeVar
+
 import numpy as np
 import numpy.typing as npt
 import scipy  # type: ignore

@@ -1,10 +1,11 @@
 from dataclasses import asdict
+
+import click
 import numpy as np
 import pandas as pd
-import click
 
-from qubrabench.benchmark import track_queries
 from qubrabench.algorithms.search import search
+from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.matrix import QMatrix
 from qubrabench.utils.plotting import BasicPlottingStrategy
 

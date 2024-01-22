@@ -1,6 +1,6 @@
-from typing import TypeVar, Generic, Sequence
+from typing import Generic, Sequence, TypeVar
 
-from ..benchmark import oracle, QObject
+from ..benchmark import QObject, oracle
 
 __all__ = ["QList"]
 

@@ -1,13 +1,12 @@
 """This module contains tests for the classical louvain community detection example."""
 from typing import Optional
 
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 import pytest
-
-from louvain import LouvainGraph, Louvain
+from louvain import Louvain, LouvainGraph
 
 
 @pytest.fixture()
