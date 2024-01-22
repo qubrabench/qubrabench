@@ -147,7 +147,7 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
 
 
 def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
-    r"""Algorithm 11 [Q->Q] Sign estimation routine with no false positives
+    r"""Algorithm 11 [Q->C] Sign estimation routine with no false positives
 
     Args:
         U: Block-encodes vector $\alpha$ of length 2^q
