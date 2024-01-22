@@ -26,7 +26,7 @@ def bench():
         for size in graph_sizes:
             print(f"Benchmarking Graph Size {size}", end="")
             for _ in range(instance_num):
-                print(".", end="")
+                print(".")
                 # create graph
                 #graph = random_lfr_graph(
                 #    size,
@@ -134,8 +134,8 @@ def plot():
     )
 
     # Update x and y axes to log scale
-    fig.update_xaxes(type="log")
-    fig.update_yaxes(type="log")
+    fig.update_xaxes(type="log", tickformat=".2e")
+    fig.update_yaxes(type="log", tickformat=".2e")
 
     fig.show()
 
