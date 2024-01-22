@@ -3,8 +3,10 @@ from matrix_search import find_row_all_ones
 from pytest import approx
 
 from qubrabench.algorithms.search import (
-    cade_et_al_expected_classical_queries, cade_et_al_expected_quantum_queries,
-    search)
+    cade_et_al_expected_classical_queries,
+    cade_et_al_expected_quantum_queries,
+    search,
+)
 from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.matrix import QMatrix
 

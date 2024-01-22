@@ -6,8 +6,12 @@ from typing import Callable, Iterable, Optional, TypeVar
 
 import numpy as np
 
-from ..benchmark import (BenchmarkFrame, _already_benchmarked,
-                         _BenchmarkManager, track_queries)
+from ..benchmark import (
+    BenchmarkFrame,
+    _already_benchmarked,
+    _BenchmarkManager,
+    track_queries,
+)
 
 __all__ = ["search"]
 

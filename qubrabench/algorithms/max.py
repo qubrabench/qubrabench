@@ -8,8 +8,12 @@ from typing import Any, Callable, Iterable, Optional, TypeVar
 import numpy as np
 
 from .._internals import OptionalParameter, _absent
-from ..benchmark import (BenchmarkFrame, _already_benchmarked,
-                         _BenchmarkManager, track_queries)
+from ..benchmark import (
+    BenchmarkFrame,
+    _already_benchmarked,
+    _BenchmarkManager,
+    track_queries,
+)
 from .search import cade_et_al_F
 
 __all__ = ["max"]
