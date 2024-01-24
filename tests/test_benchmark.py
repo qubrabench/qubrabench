@@ -1,3 +1,8 @@
+import re
+from dataclasses import dataclass
+
+import numpy as np
+import numpy.typing as npt
 import pytest
 from numpy.random import Generator
 
@@ -210,3 +215,21 @@ def test_oracle_class_methods(rng):
             == get(ClassWithOracles.some_staticmethod)
             == N_a + N_b + N_c + N_class + N_child
         )
+
+
+@dataclass
+class ClassWithUnhashableMember:
+    unhashable: npt.NDArray
+
+    @oracle
+    def some_oracle(self):
+        pass
+
+
+def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
+    with pytest.raises(
+        TypeError, match=re.escape("unhashable type: 'ClassWithUnhashableMember'")
+    ):
+        obj = ClassWithUnhashableMember(np.zeros(5))
+        with track_queries():
+            obj.some_oracle()
