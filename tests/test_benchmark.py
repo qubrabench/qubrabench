@@ -1,7 +1,11 @@
 import pytest
 from numpy.random import Generator
 
+from examples.sat.bruteforce import bruteforce_solve
+
+
 from qubrabench.benchmark import QueryStats, named_oracle, oracle, track_queries
+from examples.sat.sat import SatInstance
 
 
 def random_stats(rng: Generator, *, not_benched=False):
@@ -210,3 +214,22 @@ def test_oracle_class_methods(rng):
             == get(ClassWithOracles.some_staticmethod)
             == N_a + N_b + N_c + N_class + N_child
         )
+
+
+def test_inst_evaluate_throws_type_error(rng):
+    with pytest.raises(
+        TypeError,
+    ):
+        n = 5
+        r = 3
+
+        inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
+        with track_queries() as tracker:
+            bruteforce_solve(
+                inst,
+                inst.evaluate,
+                error=10**-5,
+                rng=rng,
+            )
+
+        tracker.get_stats(inst.evaluate)
