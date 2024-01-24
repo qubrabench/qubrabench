@@ -1,11 +1,12 @@
+import re
+from dataclasses import dataclass
+
+import numpy as np
+import numpy.typing as npt
 import pytest
 from numpy.random import Generator
 
-from examples.sat.bruteforce import bruteforce_solve
-
-
 from qubrabench.benchmark import QueryStats, named_oracle, oracle, track_queries
-from examples.sat.sat import SatInstance
 
 
 def random_stats(rng: Generator, *, not_benched=False):
@@ -216,20 +217,19 @@ def test_oracle_class_methods(rng):
         )
 
 
-def test_inst_evaluate_throws_type_error(rng):
+@dataclass
+class ClassWithUnhashableMember:
+    unhashable: npt.NDArray
+
+    @oracle
+    def some_oracle(self):
+        pass
+
+
+def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
     with pytest.raises(
-        TypeError,
+        TypeError, match=re.escape("unhashable type: 'ClassWithUnhashableMember'")
     ):
-        n = 5
-        r = 3
-
-        inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
-        with track_queries() as tracker:
-            bruteforce_solve(
-                inst,
-                inst.evaluate,
-                error=10**-5,
-                rng=rng,
-            )
-
-        tracker.get_stats(inst.evaluate)
+        obj = ClassWithUnhashableMember(np.zeros(5))
+        with track_queries():
+            obj.some_oracle()
