@@ -1,17 +1,15 @@
 #!/usr/bin/env python
-import networkx as nx
-
-from graph_instances import random_fcs_graph
-from graph_instances import random_lfr_graph
+import os
 from dataclasses import asdict
+from pathlib import Path
+
+import networkx as nx
 import numpy as np
 import pandas as pd
-import qlouvain
-from pathlib import Path
-import os
 import plotly.express as px
 import plotly.graph_objects as go
-
+import qlouvain
+from graph_instances import random_fcs_graph, random_lfr_graph
 
 # benchmarking
 rng = np.random.default_rng()
@@ -28,13 +26,13 @@ def bench():
             for _ in range(instance_num):
                 print(".")
                 # create graph
-                #graph = random_lfr_graph(
+                # graph = random_lfr_graph(
                 #    size,
                 #    #community_size=50,
                 #    mu=0.3,
                 #    average_degree=5,
                 #    rng=rng,
-                #)
+                # )
                 graph = random_fcs_graph(
                     size,
                     community_size=50,
