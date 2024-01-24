@@ -174,9 +174,8 @@ class SchoeningPlottingStrategy(PlottingStrategy):
 def plot(benchmark_data_file):
     # load data
     history = []
-    for data_file in [benchmark_data_file]:
-        data_block = pd.read_json(data_file, orient="split")
-        history.append(data_block)
+    data_block = pd.read_json(benchmark_data_file, orient="split")
+    history.append(data_block)
     data = pd.concat(history)
 
     # could switch strategy here based on src input
