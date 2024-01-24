@@ -39,7 +39,7 @@ def cli():
     type=int,
     required=True,
 )
-@click.option("-strategy", type=str, default=None, show_default=True)
+@click.option("-variant", type=str, default=None, show_default=True)
 @click.option(
     "--seed",
     help="Seed for the random operations.",
@@ -63,7 +63,7 @@ def cli():
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def generate(r, seed, n, runs, dest, verbose, strategy):
+def generate(r, seed, n, runs, dest, verbose, variant):
     """
     Benchmark Schoening's algorithm for both strategies, bruteforcing assignments and steps.
 
@@ -76,17 +76,18 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
 
     history = []
     for run in range(runs):
-        logging.debug(f"r={r}, n={n}, strategy={strategy}, #{run}")
+        logging.debug(f"r={r}, n={n}, variant={variant}, #{run}")
 
         # as schoening uses 3-SAT, k=3
         inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
+        variants = {
+            "standard": lambda i: schoening_solve(i, error=10**5, rng=rng),
+            "steps": lambda i: schoening_bruteforce_steps(i, error=10**-5, rng=rng),
+        }
         with track_queries() as tracker:
-            # TODO: streamline selection of strategies...
-            if strategy == "standard":
-                schoening_solve(inst, error=10**-5, rng=rng)
-            elif strategy == "steps":
-                schoening_bruteforce_steps(inst, error=10**-5, rng=rng)
-            elif strategy is None:
+            if variant is not None:
+                variants["standard"](inst)
+            else:
                 bruteforce_solve(
                     inst,
                     (named_oracle("inst.evaluate"))(lambda k: inst.evaluate(k)),
@@ -100,7 +101,7 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
             rec = asdict(stats)
             rec["n"] = n
             rec["r"] = r
-            rec["strategy"] = strategy
+            rec["variant"] = variant
             rec["classical_control_method_calls"] = tracker.get_stats(
                 "inst.evaluate"
             ).classical_actual_queries
@@ -111,9 +112,9 @@ def generate(r, seed, n, runs, dest, verbose, strategy):
         [list(row.values()) for row in history], columns=list(history[0].keys())
     )
 
-    history.insert(0, "impl", "bruteforce sat" if strategy is None else strategy)
+    history.insert(0, "impl", "bruteforce sat" if variant is None else variant)
 
-    logging.info(history.groupby(["r", "n", "strategy"]).mean(numeric_only=True))
+    logging.info(history.groupby(["r", "n", "variant"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
@@ -130,7 +131,7 @@ class SchoeningPlottingStrategy(PlottingStrategy):
     """
 
     def __init__(self):
-        self.colors["QuBRA"] = "blue"
+        pass
 
     def get_plot_group_column_names(self):
         return ["r"]
@@ -166,14 +167,14 @@ class SchoeningPlottingStrategy(PlottingStrategy):
 
 @cli.command()
 @click.argument(
-    "qubra-data-file",
+    "benchmark-data-file",
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
     required=True,
 )
-def plot(qubra_data_file):
+def plot(benchmark_data_file):
     # load data
     history = []
-    for data_file in [qubra_data_file]:
+    for data_file in [benchmark_data_file]:
         data_block = pd.read_json(data_file, orient="split")
         history.append(data_block)
     data = pd.concat(history)
