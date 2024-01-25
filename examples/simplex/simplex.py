@@ -267,17 +267,34 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float, t: float) -> int:
         with bounded probability
     """
 
-    delta_signest = delta / np.linalg.norm(np.linalg.solve(A_B, A_k))
+    delta_search = delta / np.linalg.norm(np.linalg.solve(A_B, A_k))
+    m = A_B.shape[0]
 
-    def U(r: float) -> BlockEncoding:
+    def U(r: float) -> Optional[int]:
         enc_A_B = block_encoding_of_matrix(A_B, eps=0)
         enc_rhs = block_encoding_of_matrix(b - r * A_k, eps=0)
         qlsa = qba.linalg.solve(enc_A_B, enc_rhs)
-        # TODO amplitude estimation of
-        #      SignEstNFN(qlsa, epsilon=delta_signest)
-        raise NotImplementedError
+        # TODO figure out how to properly propagate stats
+        #      i.e. interplay between BlockEncoding and search styles.
+        row = qba.search.search(
+            range(1, m + 1),
+            key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
+            error=delta_search,
+        )
+        return row
 
-    raise NotImplementedError
+    # binary search for `r`
+    r_low, r_high = 0.0, 100.0  # TODO compute proper starting upper-bound
+    while r_high - r_low > delta_search / 2:
+        r = (r_low + r_high) / 2
+        if U(r) is not None:
+            r_high = r
+        else:
+            r_low = r
+
+    row = U(r_high)
+    assert row is not None
+    return row
 
 
 def IsFeasible(A_B, b, delta) -> bool:
