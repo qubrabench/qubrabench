@@ -66,7 +66,7 @@ def block_encoding_of_matrix(matrix: QMatrix, *, eps: float) -> BlockEncoding:
     References:
         [QSVT2019]: [Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics](https://arxiv.org/abs/1806.01838)
     """
-    data = matrix.__data
+    data = matrix.get_data()
     return BlockEncoding(
         matrix=data,
         alpha=np.sqrt(data.size),

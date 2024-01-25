@@ -61,3 +61,6 @@ class QMatrix(QObject, Generic[T]):
 
     def __len__(self):
         return self.shape[0]
+
+    def get_data(self):
+        return self.__data

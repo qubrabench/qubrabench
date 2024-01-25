@@ -5,7 +5,7 @@ from simplex import Simplex
 def test_simplex_solution():
     n = 4
 
-    A = np.ones((n, n))
+    A = np.eye(n)
     b = np.ones(n)
     c = np.ones(n)
 

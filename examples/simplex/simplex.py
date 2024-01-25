@@ -7,6 +7,7 @@ from numpy.typing import NDArray
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import QueryStats
+from qubrabench.datastructures.matrix import QMatrix
 from qubrabench.datastructures.blockencoding import (
     BlockEncoding,
     block_encoding_of_matrix,
@@ -24,8 +25,8 @@ Basis: TypeAlias = NDArray[np.int_]
 
 def linear_solver_unitary(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     # TODO: success flag of QLSA
-    enc_A = block_encoding_of_matrix(A, eps=0)
-    enc_b = block_encoding_of_matrix(b, eps=0)
+    enc_A = block_encoding_of_matrix(QMatrix(A), eps=0)
+    enc_b = block_encoding_of_matrix(QMatrix(b), eps=0)
     sol = qba.linalg.solve(enc_A, enc_b, error=eps)
     return sol
 
@@ -59,7 +60,8 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
         if result == ResultFlag.Unbounded:
             return None
 
-    return np.linalg.solve(A[:, B], b)  # TODO quantum costs
+    qlsa = linear_solver_unitary(A[:, B], b, eps=1e-5)
+    return qlsa.get()
 
 
 def SimplexIter(
@@ -84,15 +86,16 @@ def SimplexIter(
     c /= np.linalg.norm(c[B])
 
     # Normalize A so that \norm{A_B} <= 1
-    A /= np.linalg.norm(A[:, B])
+    scale_A = np.linalg.norm(A[:, B])
+    A /= scale_A
+    b /= scale_A
 
-    if IsOptimal(A, B, c, epsilon):
-        return ResultFlag.Optimal
+    # if IsOptimal(A, B, c, epsilon):
+    #     return ResultFlag.Optimal
 
     k = FindColumn(A, B, c, epsilon)
-    assert (
-        k is not None
-    ), "FindColumn should not return None when IsOptimal returns False!"
+    if k is None:
+        return ResultFlag.Optimal
 
     if IsUnbounded(A[:, B], A[:, k], delta):
         return ResultFlag.Unbounded
@@ -225,6 +228,7 @@ def IsOptimal(A: Matrix, B: Basis, c: Vector, epsilon: float) -> bool:
         c: cost vector s.t. $\norm{c_B} = 1$
         epsilon: precision
     """
+
     raise NotImplementedError
 
 
