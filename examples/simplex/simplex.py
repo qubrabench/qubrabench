@@ -7,11 +7,11 @@ from numpy.typing import NDArray
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import QueryStats
-from qubrabench.datastructures.matrix import QMatrix
 from qubrabench.datastructures.blockencoding import (
     BlockEncoding,
     block_encoding_of_matrix,
 )
+from qubrabench.datastructures.matrix import QMatrix
 
 Matrix: TypeAlias = NDArray[np.float_]
 """n x m real matrix"""
