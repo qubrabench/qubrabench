@@ -12,7 +12,6 @@ from qubrabench.datastructures.blockencoding import (
     block_encoding_of_matrix,
 )
 
-# TODO: success flag of QLSA
 
 Matrix: TypeAlias = NDArray[np.float_]
 """n x m real matrix"""
@@ -22,6 +21,14 @@ Vector: TypeAlias = NDArray[np.float_]
 
 Basis: TypeAlias = NDArray[np.int_]
 """array of column indices"""
+
+
+def linear_solver_unitary(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
+    # TODO: success flag of QLSA
+    enc_A = block_encoding_of_matrix(A, eps=0)
+    enc_b = block_encoding_of_matrix(b, eps=0)
+    sol = qba.linalg.solve(enc_A, enc_b, error=eps)
+    return sol
 
 
 class ResultFlag(Enum):
@@ -47,7 +54,7 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
     B: Basis = np.arange(A.shape[0])
 
     while True:
-        result = SimplexIter(A, B, b, c)
+        result = SimplexIter(A, B, b, c, epsilon=1e-5, delta=1e-5)
         if result == ResultFlag.Optimal:
             break
         if result == ResultFlag.Unbounded:
@@ -57,7 +64,7 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
 
 
 def SimplexIter(
-    A: Matrix, B: Basis, b: Vector, c: Vector, epsilon: float, delta: float, t: float
+    A: Matrix, B: Basis, b: Vector, c: Vector, epsilon: float, delta: float
 ) -> ResultFlag:
     """Algorithm 1 [C->C]: Run one iteration of the simplex method
 
@@ -68,7 +75,6 @@ def SimplexIter(
         c: cost vector of size n
         epsilon: precision parameter
         delta: precision parameter
-        t: precision parameter
 
     Returns:
         Optimal - solution is found
@@ -92,7 +98,7 @@ def SimplexIter(
     if IsUnbounded(A[:, B], A[:, k], delta):
         return ResultFlag.Unbounded
 
-    el = FindRow(A[:, B], A[:, k], b, delta, t)
+    el = FindRow(A[:, B], A[:, k], b, delta)
 
     B[el] = k
 
@@ -240,9 +246,7 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
         True if $A_B^{-1} A_k < \delta \textbf{1}_m \norm{A_B^{-1} A_k}$
     """
     m = A_B.shape[0]
-    enc_A_B = block_encoding_of_matrix(A_B, eps=0)
-    enc_A_k = block_encoding_of_matrix(A_k, eps=0)
-    U_LS = qba.linalg.solve(enc_A_B, enc_A_k, error=0.1 * delta)
+    U_LS = linear_solver_unitary(A_B, A_k, eps=0.1 * delta)
     result = qba.search.search(
         range(m),
         key=lambda el: SignEstNFN(
@@ -252,7 +256,7 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
     return result is None
 
 
-def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float, t: float) -> int:
+def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
     """Algorithm 9 [C->C]: Determine the basic variable (row) leaving the basis
 
     Args:
@@ -260,26 +264,21 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float, t: float) -> int:
         A_k: nonbasic column
         b: RHS
         delta: precision
-        t: TODO what is this
 
     Returns:
         index of the row that should leave the basis according to the ratio test,
         with bounded probability
     """
 
-    delta_search = delta / np.linalg.norm(np.linalg.solve(A_B, A_k))
+    delta_scaled = delta / np.linalg.norm(np.linalg.solve(A_B, A_k))
     m = A_B.shape[0]
 
     def U(r: float) -> Optional[int]:
-        enc_A_B = block_encoding_of_matrix(A_B, eps=0)
-        enc_rhs = block_encoding_of_matrix(b - r * A_k, eps=0)
-        qlsa = qba.linalg.solve(enc_A_B, enc_rhs)
-        # TODO figure out how to properly propagate stats
-        #      i.e. interplay between BlockEncoding and search styles.
+        qlsa = linear_solver_unitary(A_B, b - r * A_k, eps=delta_scaled)
         row = qba.search.search(
             range(1, m + 1),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
-            error=delta_search,
+            error=delta_scaled,
         )
         return row
 
@@ -297,6 +296,22 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float, t: float) -> int:
     return row
 
 
-def IsFeasible(A_B, b, delta) -> bool:
-    """Algorithm 10 [C->C]: Determine if a basic solution is feasible"""
-    raise NotImplementedError
+def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
+    r"""Algorithm 10 [C->C]: Determine if a basic solution is feasible
+
+    Args:
+        A_B: matrix of basis columns, with norm at most 1
+        b: rhs vector
+        delta: precision
+
+    Returns:
+        Whether $A_B^{-1} b \ge  −\delta 1_m$, with bounded probability.
+    """
+    delta_scaled = delta / np.linalg.norm(np.linalg.solve(A_B, b))
+    qlsa = linear_solver_unitary(A_B, b, eps=delta_scaled * 0.1)
+    result = qba.search.search(
+        range(1, m + 1),
+        key=lambda el: not SignEstNFP(qlsa, el, epsilon=delta_scaled * 0.45),
+        error=1e-5,  # TODO check
+    )
+    return result is not None
