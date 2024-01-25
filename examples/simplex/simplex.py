@@ -12,7 +12,6 @@ from qubrabench.datastructures.blockencoding import (
     block_encoding_of_matrix,
 )
 
-
 Matrix: TypeAlias = NDArray[np.float_]
 """n x m real matrix"""
 
@@ -284,7 +283,7 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
 
     # binary search for `r`
     r_low, r_high = 0.0, 100.0  # TODO compute proper starting upper-bound
-    while r_high - r_low > delta_search / 2:
+    while r_high - r_low > delta_scaled / 2:
         r = (r_low + r_high) / 2
         if U(r) is not None:
             r_high = r
@@ -307,7 +306,9 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
     Returns:
         Whether $A_B^{-1} b \ge  −\delta 1_m$, with bounded probability.
     """
+    m = A_B.shape[0]
     delta_scaled = delta / np.linalg.norm(np.linalg.solve(A_B, b))
+
     qlsa = linear_solver_unitary(A_B, b, eps=delta_scaled * 0.1)
     result = qba.search.search(
         range(1, m + 1),
