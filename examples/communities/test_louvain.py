@@ -212,7 +212,12 @@ def test_louvain(graph_a):
     actual_communities = LouvainGraph.community_list_from_labels(labels)
     expected_communities = nx.algorithms.community.louvain_communities(graph_a)
 
-    assert actual_communities == expected_communities
+    def sort_communities(communities: list[set[int]]) -> list[list[int]]:
+        return sorted([sorted(list(c)) for c in communities])
+
+    assert sort_communities(actual_communities) == (
+        sort_communities(expected_communities)
+    )
 
 
 def debug_draw_communities(G: nx.Graph, communities: Optional[list[list[int]]] = None):
