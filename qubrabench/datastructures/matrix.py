@@ -20,6 +20,7 @@ class Qndarray(QObject, Generic[T]):
 
     @oracle
     def __get_elem(self, ix: int | tuple[int, ...]) -> T:
+        print(ix)
         return self.__data[ix]
 
     @property

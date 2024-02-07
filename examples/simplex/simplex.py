@@ -1,4 +1,5 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
+
 from enum import Enum
 from typing import Optional, TypeAlias
 
@@ -6,9 +7,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 import qubrabench.algorithms as qba
-from qubrabench.benchmark import BlockEncoding, QueryStats
+from qubrabench.benchmark import BlockEncoding, QueryStats, quantum_subroutine
 from qubrabench.datastructures.matrix import (
-    Qndarray,
     block_encode_matrix,
     state_preparation_unitary,
 )
@@ -172,9 +172,8 @@ def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
     return True
 
 
-def RedCost(
-    A_B: Matrix, A_k: Vector, c: Vector, epsilon: float
-) -> Optional[BlockEncoding]:
+@quantum_subroutine
+def RedCost(A_B: Matrix, A_k: Vector, c: Vector, epsilon: float) -> BlockEncoding:
     """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     raise NotImplementedError
     # lhs_mat = BlockEncoding()

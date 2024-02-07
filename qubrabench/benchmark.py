@@ -3,7 +3,7 @@ import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
-from typing import Any, Callable, Generator, Hashable, Optional, TypeAlias, Iterable
+from typing import Any, Callable, Generator, Hashable, Iterable, Optional, TypeAlias
 
 import attrs
 import numpy.typing as npt

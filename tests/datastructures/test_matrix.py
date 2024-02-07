@@ -27,3 +27,12 @@ def test_qmatrix_iterate(rng):
             assert tracker.get_stats(qmat) == QueryStats(
                 classical_actual_queries=2 * N * M
             )
+
+
+def test_matrix_access():
+    N = 4
+    mat = np.zeros(shape=(N, N))
+    qmat = Qndarray(mat)
+
+    res = qmat[:, :]
+    print(res)
