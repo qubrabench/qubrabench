@@ -2,6 +2,7 @@
 This module extends the initial Louvain class with quantum variants that track query statistics.
 Most variants differ only in how the graph is iterated while moving community labels.
 """
+
 import math
 from typing import Iterable, Optional
 

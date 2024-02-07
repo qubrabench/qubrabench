@@ -1,4 +1,5 @@
 """This module contains tests for the quantum louvain community detection example."""
+
 import pytest
 import qlouvain
 from graph_instances import random_fcs_graph

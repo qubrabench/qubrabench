@@ -1,4 +1,5 @@
 """This module provides the Schöning example for solving SAT instances."""
+
 import itertools
 from typing import Optional
 

@@ -1,4 +1,5 @@
 """This module provides a classical louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
+
 from abc import ABC
 from functools import cached_property
 

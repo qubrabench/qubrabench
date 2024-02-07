@@ -1,4 +1,5 @@
 """This module contains tests for the classical louvain community detection example."""
+
 from typing import Optional
 
 import matplotlib as mpl

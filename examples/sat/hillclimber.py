@@ -1,4 +1,5 @@
 """This module contains the hillclimber examples as seen in Cade et al.'s 2022 paper Grover beyond asymptotics."""
+
 import logging
 from dataclasses import asdict
 from typing import Callable, Optional
