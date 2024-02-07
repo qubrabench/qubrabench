@@ -6,13 +6,13 @@ import numpy.typing as npt
 
 from ..benchmark import BlockEncoding, QObject, oracle
 
-__all__ = ["ndarray", "block_encoding_of_matrix"]
+__all__ = ["Qndarray", "block_encoding_of_matrix"]
 
 T = TypeVar("T")
 
 
 @attrs.define
-class ndarray(QObject, Generic[T]):
+class Qndarray(QObject, Generic[T]):
     __data: npt.NDArray[T]
 
     def __hash__(self):
@@ -33,7 +33,7 @@ class ndarray(QObject, Generic[T]):
         return self.__data
 
 
-def block_encoding_of_matrix(matrix: ndarray, *, eps: float) -> BlockEncoding:
+def block_encoding_of_matrix(matrix: Qndarray, *, eps: float) -> BlockEncoding:
     """Prepares a block-encoding of a dense matrix.
 
     Complexity is described in Lemma 48 of [QSVT2019] for sparse matrices,

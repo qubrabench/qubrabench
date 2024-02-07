@@ -1,17 +1,17 @@
-from typing import Hashable, Optional
+from typing import Optional
 
 import numpy as np
 
-from ..benchmark import BlockEncoding, QueryStats, quantum_subroutine
-from ..datastructures.matrix import block_encoding_of_matrix, ndarray
+from ..benchmark import BlockEncoding, quantum_subroutine
+from ..datastructures.matrix import block_encoding_of_matrix, Qndarray
 
 __all__ = ["solve", "qlsa"]
 
 
 @quantum_subroutine
 def solve(
-    A: ndarray,
-    b: ndarray,
+    A: Qndarray,
+    b: Qndarray,
     *,
     error: Optional[float] = None,
     condition_number_A: Optional[float] = None,

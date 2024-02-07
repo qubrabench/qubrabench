@@ -1,13 +1,13 @@
 import numpy as np
 
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.matrix import QMatrix
+from qubrabench.datastructures.matrix import Qndarray
 
 
 def test_qmatrix_iterate(rng):
     for _ in range(5):
         N, M = rng.integers(10, 50, size=2)
-        mat = QMatrix(rng.random(size=(N, M)))
+        mat = Qndarray(rng.random(size=(N, M)))
 
         with track_queries() as tracker:
             _ = np.sum(mat)

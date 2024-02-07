@@ -8,13 +8,13 @@ from qubrabench.algorithms.search import (
     search,
 )
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.matrix import QMatrix
+from qubrabench.datastructures.matrix import Qndarray
 
 
 def test_dummy(rng):
     N = 4
     eps = 10**-5
-    mat = QMatrix(1 - np.eye(N, dtype=int))
+    mat = Qndarray(1 - np.eye(N, dtype=int))
 
     for i in range(N):
         with track_queries() as tracker:
@@ -28,7 +28,7 @@ def test_find_row_all_ones_on_nearly_good_matrix(rng):
     N = 100
     eps = 10**-5
 
-    mat = QMatrix(1 - np.eye(N, dtype=int))
+    mat = Qndarray(1 - np.eye(N, dtype=int))
 
     with track_queries() as tracker:
         find_row_all_ones(mat, rng=rng, error=eps)

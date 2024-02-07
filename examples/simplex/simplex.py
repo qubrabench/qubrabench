@@ -6,12 +6,8 @@ import numpy as np
 from numpy.typing import NDArray
 
 import qubrabench.algorithms as qba
-from qubrabench.benchmark import QueryStats
-from qubrabench.datastructures.blockencoding import (
-    BlockEncoding,
-    block_encoding_of_matrix,
-)
-from qubrabench.datastructures.matrix import QMatrix
+from qubrabench.benchmark import BlockEncoding, QueryStats
+from qubrabench.datastructures.matrix import block_encoding_of_matrix, Qndarray
 
 Matrix: TypeAlias = NDArray[np.float_]
 """n x m real matrix"""
@@ -25,8 +21,8 @@ Basis: TypeAlias = NDArray[np.int_]
 
 def linear_solver_unitary(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     # TODO: success flag of QLSA
-    enc_A = block_encoding_of_matrix(QMatrix(A), eps=0)
-    enc_b = block_encoding_of_matrix(QMatrix(b), eps=0)
+    enc_A = block_encoding_of_matrix(Qndarray(A), eps=0)
+    enc_b = block_encoding_of_matrix(Qndarray(b), eps=0)
     sol = qba.linalg.solve(enc_A, enc_b, error=eps)
     return sol
 

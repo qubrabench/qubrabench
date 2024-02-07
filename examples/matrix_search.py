@@ -6,12 +6,12 @@ import pandas as pd
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import track_queries
-from qubrabench.datastructures.matrix import QMatrix
+from qubrabench.datastructures.matrix import Qndarray
 from qubrabench.utils.plotting import BasicPlottingStrategy
 
 
 def find_row_all_ones(
-    matrix: QMatrix, *, rng: np.random.Generator, error=None
+    matrix: Qndarray, *, rng: np.random.Generator, error=None
 ) -> int | None:
     """Given an N x N matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
     N = matrix.shape[0]
@@ -29,7 +29,7 @@ def find_row_all_ones(
 def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**-5):
     history = []
     for _ in range(n_runs):
-        matrix = QMatrix(rng.choice([0, 1], size=(n, n)))
+        matrix = Qndarray(rng.choice([0, 1], size=(n, n)))
 
         with track_queries() as tracker:
             find_row_all_ones(matrix, rng=rng, error=error)

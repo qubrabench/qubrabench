@@ -3,9 +3,10 @@ import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
-from typing import Any, Callable, Generator, Hashable, Optional
+from typing import Any, Callable, Generator, Hashable, Optional, TypeAlias
 
 import attrs
+import numpy as np
 
 __all__ = [
     "QObject",
@@ -15,11 +16,16 @@ __all__ = [
     "named_oracle",
     "BlockEncoding",
     "quantum_subroutine",
+    "Hash",
 ]
 
 
 class QObject:
     pass
+
+
+Hash: TypeAlias = int
+"""hash type of a benchmarkable object"""
 
 
 @dataclass
@@ -444,6 +450,8 @@ def quantum_subroutine(func: Callable[..., BlockEncoding]):
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
+        raise NotImplementedError
+
         if _BenchmarkManager.is_benchmarking():
             pass
 
