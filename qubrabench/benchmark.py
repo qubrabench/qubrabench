@@ -2,10 +2,20 @@ import inspect
 import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import reduce, wraps
-from typing import Any, Generator, Optional
+from functools import cached_property, reduce, wraps
+from typing import Any, Callable, Generator, Hashable, Optional
 
-__all__ = ["QObject", "QueryStats", "track_queries", "oracle", "named_oracle"]
+import attrs
+
+__all__ = [
+    "QObject",
+    "QueryStats",
+    "track_queries",
+    "oracle",
+    "named_oracle",
+    "BlockEncoding",
+    "quantum_subroutine",
+]
 
 
 class QObject:
@@ -356,3 +366,91 @@ def _already_benchmarked():
     finally:
         if _BenchmarkManager.is_tracking():
             _BenchmarkManager.current_frame()._track_only_actual = prev_flag
+
+
+@attrs.define
+class BlockEncoding(QObject):
+    r"""
+    Unitary that block-encodes an $\epsilon$-approximation of $A/\alpha$ in the top-left block.
+    """
+
+    matrix: np.ndarray
+    """The encoded matrix A"""
+
+    alpha: float
+    """Subnormalization factor"""
+
+    error: float
+    """Approximation factor"""
+
+    uses: list[tuple[Hashable, int]] = attrs.field(factory=list)
+    """BlockEncodings or data-structures used to implement the block-encoding unitary"""
+
+    @cached_property
+    def costs(self) -> dict[Hashable, QueryStats]:
+        cost_table: dict[Hashable, QueryStats] = {}
+        for obj, q_queries in self.uses:
+            obj_hash = hash(obj)
+            if obj_hash not in cost_table:
+                cost_table[obj_hash] = QueryStats()
+            cost_table[obj_hash] += QueryStats(
+                quantum_expected_quantum_queries=q_queries
+            )
+
+            if isinstance(obj, BlockEncoding):
+                for sub_obj, stats in obj.costs.items():
+                    stats = stats._as_benchmarked()
+                    sub_q = (
+                        stats.quantum_expected_quantum_queries
+                        + stats.quantum_expected_classical_queries
+                    )
+
+                    sub_obj_hash = hash(sub_obj)
+                    if sub_obj_hash not in cost_table:
+                        cost_table[sub_obj_hash] = QueryStats()
+                    cost_table[sub_obj_hash] += QueryStats(
+                        quantum_expected_quantum_queries=q_queries * sub_q
+                    )
+
+        cost_table[self] = QueryStats(quantum_expected_quantum_queries=1)
+        return cost_table
+
+    def get(self):
+        """Access the block-encoded matrix via the implementing unitary"""
+        if _BenchmarkManager.is_benchmarking():
+            for obj, stats in self.costs.items():
+                obj_hash = _BenchmarkManager._get_hash(obj)
+                _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries_quantum=1,
+                )
+
+        return self.matrix
+
+    def __hash__(self):
+        return id(self)
+
+
+def quantum_subroutine(func: Callable[..., BlockEncoding]):
+    """Wrapper to mark a function as a quantum subroutine.
+
+    A quantum subroutine must return a block-encoding as output.
+
+    The wrapper ensures that all oracle calls are accounted for in the costs of the block-encoding,
+    instead of throwing them to higher level tracker.
+    This way, we can ensure that the costs when using the block-encoding are correct.
+    """
+
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        if _BenchmarkManager.is_benchmarking():
+            pass
+
+        tracker: BenchmarkFrame
+        with track_queries() as tracker:
+            result: BlockEncoding = func(*args, **kwargs)
+            for obj_hash, stats in tracker.stats.items():
+                result.costs[obj_hash] += stats
+
+    return wrapped_func

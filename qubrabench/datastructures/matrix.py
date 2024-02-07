@@ -1,66 +1,58 @@
-from typing import Generic, TypeVar, Union
+from typing import Generic, TypeVar
 
 import attrs
 import numpy as np
+import numpy.typing as npt
 
-from ..benchmark import QObject, oracle
+from ..benchmark import BlockEncoding, QObject, oracle
 
-__all__ = ["QMatrix", "QRowView"]
+__all__ = ["ndarray", "block_encoding_of_matrix"]
 
 T = TypeVar("T")
 
 
 @attrs.define
-class QRowView(Generic[T]):
-    __ref: "QMatrix[T]"
-    __row_ix: int
+class ndarray(QObject, Generic[T]):
+    __data: npt.NDArray[T]
 
     def __hash__(self):
         return id(self)
-
-    def __getitem__(self, item) -> T:
-        if item not in range(len(self)):
-            raise IndexError
-        return self.__ref.get_elem(self.__row_ix, item)
-
-    def __len__(self):
-        return self.__ref.shape[1]
-
-
-@attrs.define
-class QMatrix(QObject, Generic[T]):
-    __data: np.ndarray
-
-    def __hash__(self):
-        return id(self)
-
-    def __get_row(self, i) -> QRowView[T]:
-        return QRowView(self, i)
 
     @oracle
-    def get_elem(self, i, j) -> T:
-        return self.__data[i, j]
+    def __get_elem(self, ix: int | tuple[int, ...]) -> T:
+        return self.__data[ix]
 
     @property
     def shape(self):
         return self.__data.shape
 
-    def __getitem__(self, item) -> Union[T, QRowView[T]]:
-        if isinstance(item, tuple):
-            if len(item) != 2:
-                raise IndexError
-            if item[0] not in range(self.shape[0]) or item[1] not in range(
-                self.shape[1]
-            ):
-                raise IndexError
-            return self.get_elem(item[0], item[1])
-        else:
-            if item not in range(self.shape[0]):
-                raise IndexError
-            return self.__get_row(item)
-
-    def __len__(self):
-        return self.shape[0]
+    def __getitem__(self, item) -> T:
+        return self.__get_elem(item)
 
     def get_data(self):
         return self.__data
+
+
+def block_encoding_of_matrix(matrix: ndarray, *, eps: float) -> BlockEncoding:
+    """Prepares a block-encoding of a dense matrix.
+
+    Complexity is described in Lemma 48 of [QSVT2019] for sparse matrices,
+    which can be extended to a dense matrix by picking row and column sparsities to be the full dimension.
+
+    This method currently only considers queries to the input `matrix`, and not other gates/unitaries that are input-independent.
+    Note that `eps` does not affect queries to the matrix, but only auxillary gates needed.
+
+    Args:
+        matrix: the input matrix to block encode
+        eps: the required precision of the block-encoding
+
+    Returns:
+        The block encoding of the input matrix
+
+    References:
+        [QSVT2019]: [Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics](https://arxiv.org/abs/1806.01838)
+    """
+    data = matrix.get_data()
+    return BlockEncoding(
+        matrix=data, alpha=np.sqrt(data.size), error=eps, uses=[(matrix, 2)]
+    )

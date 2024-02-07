@@ -2,13 +2,27 @@ from typing import Hashable, Optional
 
 import numpy as np
 
-from ..benchmark import QueryStats
-from ..datastructures.blockencoding import BlockEncoding
+from ..benchmark import BlockEncoding, QueryStats, quantum_subroutine
+from ..datastructures.matrix import block_encoding_of_matrix, ndarray
 
-__all__ = ["solve"]
+__all__ = ["solve", "qlsa"]
 
 
+@quantum_subroutine
 def solve(
+    A: ndarray,
+    b: ndarray,
+    *,
+    error: Optional[float] = None,
+    condition_number_A: Optional[float] = None,
+) -> BlockEncoding:
+    enc_A = block_encoding_of_matrix(A, eps=0)
+    enc_b = block_encoding_of_matrix(b, eps=0)
+    return qlsa(enc_A, enc_b, error=error, condition_number_A=condition_number_A)
+
+
+@quantum_subroutine
+def qlsa(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
@@ -29,7 +43,7 @@ def solve(
         Block-encoded solution vector.
     """
 
-    costs: dict[Hashable, QueryStats] = {}
+    # costs: dict[Hashable, QueryStats] = {}
 
     if error is not None:
         if condition_number_A is None:
@@ -68,23 +82,10 @@ def solve(
 
         q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
         q = q_star / (0.39 - 0.201 * eps)
-
-        for obj, stats in A.costs.items():
-            if obj not in costs:
-                costs[obj] = QueryStats()
-            costs[obj] += QueryStats(
-                quantum_expected_quantum_queries=(
-                    q * stats.quantum_expected_quantum_queries
-                )
-            )
-        for obj, stats in b.costs.items():
-            if obj not in costs:
-                costs[obj] = QueryStats()
-            costs[obj] += QueryStats(
-                quantum_expected_quantum_queries=(
-                    2 * q * stats.quantum_expected_quantum_queries
-                )
-            )
+    else:
+        q = 0
 
     y = np.linalg.solve(A.matrix, b.matrix)
-    return BlockEncoding(y, alpha=np.linalg.norm(y), error=error, costs=costs)
+    return BlockEncoding(
+        y, alpha=np.linalg.norm(y), error=error, uses=[(A, q), (b, 2 * q)]
+    )
