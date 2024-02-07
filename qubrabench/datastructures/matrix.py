@@ -6,7 +6,7 @@ import numpy.typing as npt
 
 from ..benchmark import BlockEncoding, QObject, oracle
 
-__all__ = ["Qndarray", "block_encoding_of_matrix"]
+__all__ = ["Qndarray", "block_encode_matrix", "state_preparation_unitary"]
 
 T = TypeVar("T")
 
@@ -33,7 +33,7 @@ class Qndarray(QObject, Generic[T]):
         return self.__data
 
 
-def block_encoding_of_matrix(matrix: Qndarray, *, eps: float) -> BlockEncoding:
+def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockEncoding:
     """Prepares a block-encoding of a dense matrix.
 
     Complexity is described in Lemma 48 of [QSVT2019] for sparse matrices,
@@ -52,7 +52,30 @@ def block_encoding_of_matrix(matrix: Qndarray, *, eps: float) -> BlockEncoding:
     References:
         [QSVT2019]: [Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics](https://arxiv.org/abs/1806.01838)
     """
-    data = matrix.get_raw_data()
+    raw_matrix: npt.NDArray
+    uses = []
+    if isinstance(matrix, Qndarray):
+        raw_matrix = matrix.get_raw_data()
+        uses = [(matrix, 2)]
+    else:
+        raw_matrix = matrix
+
     return BlockEncoding(
-        matrix=data, alpha=np.sqrt(data.size), error=eps, uses=[(matrix, 2)]
+        raw_matrix, alpha=np.sqrt(raw_matrix.size), error=eps, uses=uses
+    )
+
+
+def state_preparation_unitary(
+    vector: npt.ArrayLike | Qndarray, *, eps: float
+) -> BlockEncoding:
+    raw_vector: npt.ArrayLike
+    uses = []
+    if isinstance(vector, Qndarray):
+        raw_vector = vector.get_raw_data()
+        uses = [(vector, 2)]
+    else:
+        raw_vector = vector
+
+    return BlockEncoding(
+        raw_vector, alpha=np.linalg.norm(raw_vector), error=eps, uses=uses
     )

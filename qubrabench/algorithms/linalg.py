@@ -3,26 +3,12 @@ from typing import Optional
 import numpy as np
 
 from ..benchmark import BlockEncoding, quantum_subroutine
-from ..datastructures.matrix import Qndarray, block_encoding_of_matrix
 
-__all__ = ["solve", "qlsa"]
+__all__ = ["solve"]
 
 
 @quantum_subroutine
 def solve(
-    A: Qndarray,
-    b: Qndarray,
-    *,
-    error: Optional[float] = None,
-    condition_number_A: Optional[float] = None,
-) -> BlockEncoding:
-    enc_A = block_encoding_of_matrix(A, eps=0)
-    enc_b = block_encoding_of_matrix(b, eps=0)
-    return qlsa(enc_A, enc_b, error=error, condition_number_A=condition_number_A)
-
-
-@quantum_subroutine
-def qlsa(
     A: BlockEncoding,
     b: BlockEncoding,
     *,

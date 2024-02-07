@@ -3,10 +3,10 @@ import warnings
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
-from typing import Any, Callable, Generator, Hashable, Optional, TypeAlias
+from typing import Any, Callable, Generator, Hashable, Optional, TypeAlias, Iterable
 
 import attrs
-import numpy as np
+import numpy.typing as npt
 
 __all__ = [
     "QObject",
@@ -394,7 +394,7 @@ class BlockEncoding(QObject):
     Unitary that block-encodes an $\epsilon$-approximation of $A/\alpha$ in the top-left block.
     """
 
-    matrix: np.ndarray
+    matrix: npt.NDArray
     """The encoded matrix A"""
 
     alpha: float
@@ -403,7 +403,7 @@ class BlockEncoding(QObject):
     error: float
     """Approximation factor"""
 
-    uses: list[tuple[Hashable, int]] = attrs.field(factory=list)
+    uses: Iterable[tuple[Hashable, int]] = attrs.field(factory=list)
     """BlockEncodings or data-structures used to implement the block-encoding unitary"""
 
     @cached_property
