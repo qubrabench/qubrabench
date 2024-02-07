@@ -17,7 +17,12 @@ __all__ = [
     "BlockEncoding",
     "quantum_subroutine",
     "Hash",
+    "BenchmarkError",
 ]
+
+
+class BenchmarkError(Exception):
+    """Base class for raising benchmarking errors"""
 
 
 class QObject:
@@ -95,10 +100,19 @@ class QueryStats:
         )
 
 
+def merge_into_with_sum_inplace(a: dict, b: dict):
+    """Union of two dictionaries, by adding the values for existing keys"""
+    for k, v in b.items():
+        if k not in a:
+            a[k] = v
+        else:
+            a[k] += v
+
+
 class BenchmarkFrame:
     """A benchmark stack frame, mapping oracle hashes to their computed stats"""
 
-    stats: dict[int, QueryStats]
+    stats: dict[Hash, QueryStats]
     _track_only_actual: bool
 
     def __init__(self):
@@ -393,39 +407,42 @@ class BlockEncoding(QObject):
     """BlockEncodings or data-structures used to implement the block-encoding unitary"""
 
     @cached_property
-    def costs(self) -> dict[Hashable, QueryStats]:
-        cost_table: dict[Hashable, QueryStats] = {}
+    def costs(self) -> dict[Hash, QueryStats]:
+        cost_table: dict[Hash, QueryStats] = {}
+
         for obj, q_queries in self.uses:
-            obj_hash = hash(obj)
-            if obj_hash not in cost_table:
-                cost_table[obj_hash] = QueryStats()
-            cost_table[obj_hash] += QueryStats(
-                quantum_expected_quantum_queries=q_queries
+            obj_hash = _BenchmarkManager._get_hash(obj)
+            merge_into_with_sum_inplace(
+                cost_table,
+                {obj_hash: QueryStats(quantum_expected_quantum_queries=q_queries)},
             )
 
             if isinstance(obj, BlockEncoding):
-                for sub_obj, stats in obj.costs.items():
+                for sub_obj_hash, stats in obj.costs.items():
                     stats = stats._as_benchmarked()
                     sub_q = (
                         stats.quantum_expected_quantum_queries
                         + stats.quantum_expected_classical_queries
                     )
 
-                    sub_obj_hash = hash(sub_obj)
-                    if sub_obj_hash not in cost_table:
-                        cost_table[sub_obj_hash] = QueryStats()
-                    cost_table[sub_obj_hash] += QueryStats(
-                        quantum_expected_quantum_queries=q_queries * sub_q
+                    merge_into_with_sum_inplace(
+                        cost_table,
+                        {
+                            sub_obj_hash: QueryStats(
+                                quantum_expected_quantum_queries=q_queries * sub_q
+                            )
+                        },
                     )
 
-        cost_table[self] = QueryStats(quantum_expected_quantum_queries=1)
+        merge_into_with_sum_inplace(
+            cost_table, {hash(self): QueryStats(quantum_expected_quantum_queries=1)}
+        )
         return cost_table
 
     def get(self):
         """Access the block-encoded matrix via the implementing unitary"""
         if _BenchmarkManager.is_benchmarking():
-            for obj, stats in self.costs.items():
-                obj_hash = _BenchmarkManager._get_hash(obj)
+            for obj_hash, stats in self.costs.items():
                 _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                     obj_hash,
                     base_stats=stats,
@@ -441,7 +458,7 @@ class BlockEncoding(QObject):
 def quantum_subroutine(func: Callable[..., BlockEncoding]):
     """Wrapper to mark a function as a quantum subroutine.
 
-    A quantum subroutine must return a block-encoding as output.
+    A quantum subroutine must return a BlockEncoding as output.
 
     The wrapper ensures that all oracle calls are accounted for in the costs of the block-encoding,
     instead of throwing them to higher level tracker.
@@ -450,15 +467,18 @@ def quantum_subroutine(func: Callable[..., BlockEncoding]):
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        raise NotImplementedError
-
         if _BenchmarkManager.is_benchmarking():
-            pass
+            tracker: BenchmarkFrame
+            with track_queries() as tracker:
+                result: BlockEncoding = func(*args, **kwargs)
+                if not isinstance(result, BlockEncoding):
+                    raise TypeError(
+                        f"quantum subroutine must return a BlockEncoding, instead got {type(result)}"
+                    )
 
-        tracker: BenchmarkFrame
-        with track_queries() as tracker:
-            result: BlockEncoding = func(*args, **kwargs)
-            for obj_hash, stats in tracker.stats.items():
-                result.costs[obj_hash] += stats
+                merge_into_with_sum_inplace(result.costs, tracker.stats)
+            return result
+
+        return func(*args, **kwargs)
 
     return wrapped_func

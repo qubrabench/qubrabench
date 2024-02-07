@@ -29,7 +29,7 @@ class Qndarray(QObject, Generic[T]):
     def __getitem__(self, item) -> T:
         return self.__get_elem(item)
 
-    def get_data(self):
+    def get_raw_data(self):
         return self.__data
 
 
@@ -52,7 +52,7 @@ def block_encoding_of_matrix(matrix: Qndarray, *, eps: float) -> BlockEncoding:
     References:
         [QSVT2019]: [Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics](https://arxiv.org/abs/1806.01838)
     """
-    data = matrix.get_data()
+    data = matrix.get_raw_data()
     return BlockEncoding(
         matrix=data, alpha=np.sqrt(data.size), error=eps, uses=[(matrix, 2)]
     )

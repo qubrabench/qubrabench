@@ -1,38 +1,39 @@
 import numpy as np
 import pytest
 
-from qubrabench.algorithms.linalg import solve
-from qubrabench.benchmark import BlockEncoding, track_queries
+from qubrabench.algorithms.linalg import qlsa_query_count, solve
+from qubrabench.benchmark import track_queries
+from qubrabench.datastructures.matrix import Qndarray
 
 
-def random_instance(rng, N: int) -> tuple[BlockEncoding, BlockEncoding]:
+def random_instance(rng, N: int) -> tuple[Qndarray, Qndarray]:
     A = rng.random(size=(N, N))
     b = rng.random(size=N)
 
-    enc_A = BlockEncoding(A, alpha=np.linalg.norm(A), error=0)
-    enc_b = BlockEncoding(b, alpha=np.linalg.norm(b), error=0)
-
-    return enc_A, enc_b
+    return Qndarray(A), Qndarray(b)
 
 
 @pytest.mark.parametrize("N", [5, 10, 15, 20, 25, 30])
 def test_solve(rng, N: int):
-    enc_A, enc_b = random_instance(rng, N)
-    enc_y = solve(enc_A, enc_b)
-    np.testing.assert_allclose(enc_A.matrix @ enc_y.matrix, enc_b.matrix)
+    A, b = random_instance(rng, N)
+    enc_y = solve(A, b)
+    np.testing.assert_allclose(A.get_raw_data() @ enc_y.matrix, b.get_raw_data())
 
 
 def test_solve_stats(rng):
     N = 10
-    enc_A, enc_b = random_instance(rng, N)
-    enc_y = solve(enc_A, enc_b, error=1e-5)
+    A, b = random_instance(rng, N)
+    enc_y = solve(A, b, error=1e-5)
 
     with track_queries() as tracker:
         enc_y.get()
         queries_y = tracker.get_stats(enc_y).quantum_expected_quantum_queries
-        queries_A = tracker.get_stats(enc_A).quantum_expected_quantum_queries
-        queries_b = tracker.get_stats(enc_b).quantum_expected_quantum_queries
+        queries_A = tracker.get_stats(A).quantum_expected_quantum_queries
+        queries_b = tracker.get_stats(b).quantum_expected_quantum_queries
 
     assert queries_y == 1
-    assert queries_A == pytest.approx(840211.9909199567)
+    expected_query_count_A = 2 * qlsa_query_count(
+        N, max(np.linalg.cond(A.get_raw_data()), np.sqrt(12)), 1e-5
+    )
+    assert queries_A == expected_query_count_A
     assert queries_b == pytest.approx(2 * queries_A)
