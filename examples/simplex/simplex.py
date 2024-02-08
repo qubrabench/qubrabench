@@ -61,7 +61,7 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
             return None
 
     qlsa = linear_solver_unitary(A[:, B], b, eps=1e-5)
-    return qlsa.get()
+    return qlsa.access()
 
 
 def SimplexIter(

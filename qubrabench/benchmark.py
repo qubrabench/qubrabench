@@ -6,6 +6,7 @@ from functools import cached_property, reduce, wraps
 from typing import Any, Callable, Generator, Hashable, Iterable, Optional, TypeAlias
 
 import attrs
+import numpy as np
 import numpy.typing as npt
 
 __all__ = [
@@ -394,7 +395,7 @@ class BlockEncoding(QObject):
     Unitary that block-encodes an $\epsilon$-approximation of $A/\alpha$ in the top-left block.
     """
 
-    matrix: npt.NDArray
+    matrix: npt.NDArray[np.complex_]
     """The encoded matrix A"""
 
     alpha: float
@@ -439,14 +440,14 @@ class BlockEncoding(QObject):
         )
         return cost_table
 
-    def get(self):
+    def access(self, *, n_times: int = 1):
         """Access the block-encoded matrix via the implementing unitary"""
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
                 _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                     obj_hash,
                     base_stats=stats,
-                    queries_quantum=1,
+                    queries_quantum=n_times,
                 )
 
         return self.matrix

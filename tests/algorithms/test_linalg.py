@@ -35,7 +35,7 @@ def test_solve_stats(rng):
     enc_y = solve(enc_A, enc_b, error=1e-5)
 
     with track_queries() as tracker:
-        enc_y.get()
+        enc_y.access()
         queries_y = tracker.get_stats(enc_y).quantum_expected_quantum_queries
         queries_A = tracker.get_stats(A).quantum_expected_quantum_queries
         queries_b = tracker.get_stats(b).quantum_expected_quantum_queries
