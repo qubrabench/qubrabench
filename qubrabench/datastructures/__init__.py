@@ -1,3 +1,3 @@
-from . import list, matrix
+from . import qlist, qndarray
 
-__all__ = ["matrix", "list"]
+__all__ = ["qndarray", "qlist"]

@@ -7,7 +7,7 @@ from qubrabench.algorithms.search import (
     cade_et_al_expected_quantum_queries,
 )
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.matrix import Qndarray
+from qubrabench.datastructures.qndarray import Qndarray
 
 
 def test_find_row_all_ones_on_nearly_good_matrix(rng):

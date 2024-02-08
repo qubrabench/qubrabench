@@ -8,7 +8,7 @@ from numpy.typing import NDArray
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import BlockEncoding, QueryStats, quantum_subroutine
-from qubrabench.datastructures.matrix import (
+from qubrabench.datastructures.qndarray import (
     block_encode_matrix,
     state_preparation_unitary,
 )

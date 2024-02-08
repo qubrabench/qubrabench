@@ -18,16 +18,18 @@ class Qndarray(QObject, Generic[T]):
         if len(args) == 1 and isinstance(args[0], Qndarray):
             return args[0]
         inst = super().__new__(cls)
-        Qndarray.__init(inst, *args, **kwargs)
+        Qndarray.__initialize(inst, *args, **kwargs)
         return inst
 
-    def __init(self, d, v=None):
+    def __initialize(self, d, v=None):
         self.__data = d
         self.__view_of = v
 
-    @oracle
-    def __get_elem(self, ix: int | tuple[int, ...]) -> T:
-        return self.__data[ix]
+    def get_raw_data(self):
+        return self.__data
+
+    def copy(self):
+        return Qndarray(self.__data)
 
     @property
     def shape(self):
@@ -36,6 +38,10 @@ class Qndarray(QObject, Generic[T]):
     @property
     def ndim(self):
         return len(self.shape)
+
+    @oracle
+    def __get_elem(self, ix: int | tuple[int, ...]) -> T:
+        return self.__data[ix]
 
     def __getitem__(self, item):
         if (isinstance(item, int) and self.ndim == 1) or (
@@ -52,16 +58,10 @@ class Qndarray(QObject, Generic[T]):
             self if self.__view_of is None else self.__view_of,
         )
 
-    def get_raw_data(self):
-        return self.__data
-
     def __hash__(self):
         if self.__view_of is not None:
             return hash(self.__view_of)
         return id(self)
-
-    def copy(self):
-        return Qndarray(self.__data)
 
 
 def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockEncoding:
@@ -83,6 +83,11 @@ def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockE
     References:
         [QSVT2019]: [Quantum singular value transformation and beyond: exponential improvements for quantum matrix arithmetics](https://arxiv.org/abs/1806.01838)
     """
+    if matrix.ndim != 2:
+        raise ValueError(
+            f"Expected a 2D matrix to block encode, instead got shape {matrix.shape}"
+        )
+
     raw_matrix: npt.NDArray
     uses = []
     if isinstance(matrix, Qndarray):
@@ -99,6 +104,11 @@ def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockE
 def state_preparation_unitary(
     vector: npt.ArrayLike | Qndarray, *, eps: float
 ) -> BlockEncoding:
+    if vector.ndim != 1:
+        raise ValueError(
+            f"Expected a vector to block encode, instead got shape {vector.shape}"
+        )
+
     raw_vector: npt.ArrayLike
     uses = []
     if isinstance(vector, Qndarray):

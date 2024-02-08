@@ -6,7 +6,7 @@ import pandas as pd
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import track_queries
-from qubrabench.datastructures.matrix import Qndarray
+from qubrabench.datastructures.qndarray import Qndarray
 from qubrabench.utils.plotting import BasicPlottingStrategy
 
 
