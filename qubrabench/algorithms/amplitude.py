@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import numpy.typing as npt
 
@@ -43,9 +45,18 @@ def estimate_amplitude(
 
     if not np.isclose(prepare_psi.error, 0):
         # TODO analyze cost for robust version
-        raise RuntimeError(
-            f"estimate_amplitude: only works with perfect state preparation unitaries, but got precision {prepare_psi.error}"
+        warnings.warn(
+            "estimate_amplitude: query costs for robust version is not yet implemented, results may be incorrect",
+            UserWarning,
         )
+
+        prec_sub = np.abs(prepare_psi.error / prepare_psi.alpha)
+        if precision < prec_sub:
+            raise RuntimeError(
+                f"estimate_amplitude: Input block-encoding is too imprecise to estimate correctly:"
+                f"required precision is {precision}, but block-encoding has (normalized)error of {prec_sub}"
+            )
+        precision -= prec_sub
 
     # actual value to estimate
     a = np.linalg.norm(prepare_psi.matrix[good_indices] / prepare_psi.alpha) ** 2

@@ -31,6 +31,35 @@ def solve_linear_system(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     return qba.linalg.solve(enc_A, enc_b, error=eps)
 
 
+@quantum_subroutine
+def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
+    r"""Algorithm 2 [Q->Q]: Interference Routine
+
+    Given unitaries $U, V$ such that $U\ket{0} = \sum_j \alpha_j \ket j$ and $U\ket{0} = \sum_j \beta_j \ket j$,
+    returns a unitary that prepares
+
+        $$\frac12 \ket0 \otimes \sum_j (\alpha_j + \beta_j) \ket j + \frac12 \ket1 \otimes \sum_j (\beta_j - \alpha_j) \ket j$$
+
+    Args:
+        U: encodes vector alpha
+        V: encodes vector beta
+
+    Returns:
+        Unitary that prepares above described output vector
+    """
+    if U.matrix.shape != V.matrix.shape:
+        raise ValueError("U and V must block-encode same sized matrices")
+
+    u = U.matrix / U.alpha
+    v = V.matrix / V.alpha
+    return BlockEncoding(
+        0.5 * np.concatenate((u + v, v - u)),
+        alpha=1,
+        error=max(U.error / U.alpha, V.error / V.alpha),
+        uses=[(U, 1), (V, 1)],
+    )
+
+
 def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     r"""Algorithm 3 [Q->C]: Sign estimation routine with no false negatives
 
@@ -42,10 +71,14 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     Returns:
         True if $\alpha_k \ge -\epsilon$, with probability at least 3/4.
     """
-    # TODO quantum query costs
-    if U.matrix[k] >= -epsilon:
-        return True
-    return False
+    one_shot_k = np.zeros(U.matrix.shape)
+    one_shot_k[k] = 1
+    V = state_preparation_unitary(one_shot_k, eps=0)
+
+    a = qba.amplitude.estimate_amplitude(
+        Interfere(U, V), k, precision=epsilon, failure_probability=3 / 4
+    )
+    return a >= 0.5
 
 
 def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
@@ -151,35 +184,6 @@ def SimplexIter(
 
 
 @quantum_subroutine
-def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
-    r"""Algorithm 2 [Q->Q]: Interference Routine
-
-    Given unitaries $U, V$ such that $U\ket{0} = \sum_j \alpha_j \ket j$ and $U\ket{0} = \sum_j \beta_j \ket j$,
-    returns a unitary that prepares
-
-        $$\frac12 \ket0 \otimes \sum_j (\alpha_j + \beta_j) \ket j + \frac12 \ket1 \otimes \sum_j (\beta_j - \alpha_j) \ket j$$
-
-    Args:
-        U: encodes vector alpha
-        V: encodes vector beta
-
-    Returns:
-        Unitary that prepares above described output vector
-    """
-    if U.matrix.shape != V.matrix.shape:
-        raise ValueError("U and V must block-encode same sized matrices")
-
-    u = U.matrix / U.alpha
-    v = V.matrix / V.alpha
-    return BlockEncoding(
-        0.5 * np.concatenate((u + v, v - u)),
-        alpha=1,
-        error=max(U.error / U.alpha, V.error / V.alpha),
-        uses=[(U, 1), (V, 1)],
-    )
-
-
-@quantum_subroutine
 def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncoding:
     if a.ndim != b.ndim:
         raise ValueError(
@@ -210,28 +214,43 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
 
 
 @quantum_subroutine
-def RedCost(A_B: Matrix, A_k: Vector, c_k: float, epsilon: float) -> BlockEncoding:
+def RedCost(
+    A_B: Matrix, A_k: Vector, c: Vector, k: int, B: Basis, epsilon: float
+) -> BlockEncoding:
     """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
-    rhs_vec = direct_sum_of_ndarrays(A_k, np.array([c_k]))
-    return qba.linalg.solve(lhs_mat, rhs_vec, error=epsilon / (10 * np.sqrt(2)))
+    rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
+    sol = qba.linalg.solve(lhs_mat, rhs_vec, error=epsilon / (10 * np.sqrt(2)))
+
+    c = Qndarray(c)
+
+    return BlockEncoding(
+        np.array([np.inner(np.block([-c.get_raw_data()[B], 1]), sol.matrix)]),
+        alpha=sol.alpha * np.sqrt(2),
+        error=sol.error,
+        uses=[(sol, 1), (c, 1)],
+    )
 
 
-def CanEnter(A_B: Matrix, A_k: Vector, c_k: float, epsilon: float) -> bool:
+def CanEnter(
+    A_B: Matrix, A_k: Vector, c: Vector, k: int, B: Basis, epsilon: float
+) -> bool:
     r"""Algorithm 5 [C->C]: Determine is a column is eligible to enter the basis
 
     Args:
         A_B: Basic square sub-matrix of A with norm at most 1
         A_k: nonbasic k-th column
-        c_k: cost vector s.t. $\norm{c_B} = 1$
+        c: cost vector s.t. $\norm{c_B} = 1$
+        k: index of nonbasic column
+        B: Basis
         epsilon: precision
 
     Returns:
         1 if the nonbasic column $A_k$ has reduced cost $< \epsilon$;
         0 otherwise
     """
-    U_r = RedCost(A_B, A_k, c_k, epsilon)
-    return SignEstNFN(U_r, 0, 11 * epsilon / (10 * np.sqrt(2)))
+    U_r = RedCost(A_B, A_k, c, k, B, epsilon)
+    return not SignEstNFN(U_r, 0, 11 * epsilon / (10 * np.sqrt(2)))
 
 
 def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
@@ -249,7 +268,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     non_basic = set(range(A.shape[1])) - set(B)
     return qba.search.search(
         non_basic,
-        key=lambda k: CanEnter(A[:, B], A[:, k], c[k], epsilon),
+        key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
         error=1.0 / 3.0,
     )
 
