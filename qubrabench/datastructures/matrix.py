@@ -1,6 +1,5 @@
-from typing import Generic, TypeVar
+from typing import Generic, Optional, TypeVar
 
-import attrs
 import numpy as np
 import numpy.typing as npt
 
@@ -11,27 +10,58 @@ __all__ = ["Qndarray", "block_encode_matrix", "state_preparation_unitary"]
 T = TypeVar("T")
 
 
-@attrs.define
 class Qndarray(QObject, Generic[T]):
     __data: npt.NDArray[T]
+    __view_of: Optional["Qndarray[T]"]
 
-    def __hash__(self):
-        return id(self)
+    def __new__(cls, *args, **kwargs):
+        if len(args) == 1 and isinstance(args[0], Qndarray):
+            return args[0]
+        inst = super().__new__(cls)
+        Qndarray.__init(inst, *args, **kwargs)
+        return inst
+
+    def __init(self, d, v=None):
+        self.__data = d
+        self.__view_of = v
 
     @oracle
     def __get_elem(self, ix: int | tuple[int, ...]) -> T:
-        print(ix)
         return self.__data[ix]
 
     @property
     def shape(self):
         return self.__data.shape
 
-    def __getitem__(self, item) -> T:
-        return self.__get_elem(item)
+    @property
+    def ndim(self):
+        return len(self.shape)
+
+    def __getitem__(self, item):
+        if (isinstance(item, int) and self.ndim == 1) or (
+            isinstance(item, tuple)
+            and all(isinstance(i, int) for i in item)
+            and self.ndim == len(item)
+        ):
+            # access the element
+            return self.__get_elem(item)
+
+        # return a view of a sub-array
+        return Qndarray(
+            self.__data[item],
+            self if self.__view_of is None else self.__view_of,
+        )
 
     def get_raw_data(self):
         return self.__data
+
+    def __hash__(self):
+        if self.__view_of is not None:
+            return hash(self.__view_of)
+        return id(self)
+
+    def copy(self):
+        return Qndarray(self.__data)
 
 
 def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockEncoding:

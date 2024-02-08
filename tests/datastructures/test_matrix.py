@@ -29,10 +29,7 @@ def test_qmatrix_iterate(rng):
             )
 
 
-def test_matrix_access():
-    N = 4
-    mat = np.zeros(shape=(N, N))
-    qmat = Qndarray(mat)
-
-    res = qmat[:, :]
-    print(res)
+def test_matrix_idempotent():
+    a = Qndarray(np.eye(3))
+    b = Qndarray(a)
+    assert a == b
