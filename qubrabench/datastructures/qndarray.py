@@ -37,7 +37,11 @@ class Qndarray(QObject, Generic[T]):
 
     @property
     def ndim(self):
-        return len(self.shape)
+        return self.__data.ndim
+
+    @property
+    def size(self):
+        return self.__data.size
 
     @oracle
     def __get_elem(self, ix: int | tuple[int, ...]) -> T:

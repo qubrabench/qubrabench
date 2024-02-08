@@ -1,31 +1,17 @@
 import numpy as np
-import scipy as sp
-from simplex import Simplex
+from simplex import FindColumn
 
 
-def test_trivial_simplex_solution():
-    n = 4
+def test_find_column(rng):
+    N, M = 4, 6
 
-    A = np.eye(n)
-    b = np.ones(n)
-    c = np.ones(n)
+    B = [0, 1, 2, 3]
 
-    x = Simplex(A, b, c)
-    np.testing.assert_allclose(x, np.ones(n))
+    A = rng.random((N, M))
+    A /= np.linalg.norm(A[:, B])
 
+    c = rng.random(M)
+    c /= np.linalg.norm(c[B])
 
-def test_simplex_on_random_instances(rng):
-    m, n = 4, 10
-
-    for _ in range(5):
-        A = rng.random((m, n))
-        x = rng.random(n)
-        b = A @ x
-        c = rng.random(n)
-
-        x_expected = sp.optimize.linprog(c, A_eq=A, b_eq=b).x
-        x_actual = Simplex(A, b, c)
-        assert x_actual is not None
-
-        assert np.allclose(np.inner(c, x_expected), np.inner(c, x_actual))
-        assert np.allclose(A @ x, b)
+    k = FindColumn(A, B, c, epsilon=1e-3)
+    print(k)

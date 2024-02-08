@@ -450,8 +450,6 @@ class BlockEncoding(QObject):
                     queries_quantum=n_times,
                 )
 
-        return self.matrix
-
     def __hash__(self):
         return id(self)
 
