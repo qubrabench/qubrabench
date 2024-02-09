@@ -1,13 +1,13 @@
-from typing import Hashable, Optional
+from typing import Optional
 
 import numpy as np
 
-from ..benchmark import QueryStats
-from ..datastructures.blockencoding import BlockEncoding
+from ..benchmark import BlockEncoding, quantum_subroutine
 
 __all__ = ["solve"]
 
 
+@quantum_subroutine
 def solve(
     A: BlockEncoding,
     b: BlockEncoding,
@@ -29,12 +29,7 @@ def solve(
         Block-encoded solution vector.
     """
 
-    costs: dict[Hashable, QueryStats] = {}
-
     if error is not None:
-        if condition_number_A is None:
-            condition_number_A = np.linalg.cond(A.matrix)
-
         if not np.isclose(A.error, 0):
             raise ValueError(
                 f"solve expects a zero-error block-encoding of A, but input has an error of {A.error}"
@@ -44,47 +39,41 @@ def solve(
                 f"solve expects a zero-error block-encoding of b, but input has an error of {b.error}"
             )
 
+        if condition_number_A is None:
+            condition_number_A = np.linalg.cond(A.matrix)
+
         condition_number_A = max(condition_number_A, np.sqrt(12))
         error = min(error, 0.24)
 
-        alpha, k, eps = A.alpha, condition_number_A, error
-
-        q_star_term_1 = (
-            (1741 * alpha * eps / 500)
-            * np.sqrt(k**2 + 1)
-            * (
-                (133 / 125 + 4 / (25 * np.power(k, 1.0 / 3)))
-                * np.pi
-                * np.log(2 * k + 3)
-                + 1
-            )
-        )
-        q_star_term_2 = (
-            (351 / 50)
-            * np.log(2 * k + 3) ** 2
-            * (np.log(451 * np.log(2 * k + 3) ** 2 / eps) + 1)
-        )
-        q_star_term_3 = alpha * k * np.log(32 / eps)
-
-        q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
-        q = q_star / (0.39 - 0.201 * eps)
-
-        for obj, stats in A.costs.items():
-            if obj not in costs:
-                costs[obj] = QueryStats()
-            costs[obj] += QueryStats(
-                quantum_expected_quantum_queries=(
-                    q * stats.quantum_expected_quantum_queries
-                )
-            )
-        for obj, stats in b.costs.items():
-            if obj not in costs:
-                costs[obj] = QueryStats()
-            costs[obj] += QueryStats(
-                quantum_expected_quantum_queries=(
-                    2 * q * stats.quantum_expected_quantum_queries
-                )
-            )
+        q = qlsa_query_count(A.alpha, condition_number_A, error)
+    else:
+        q = 0
 
     y = np.linalg.solve(A.matrix, b.matrix)
-    return BlockEncoding(y, alpha=np.linalg.norm(y), error=error, costs=costs)
+    return BlockEncoding(
+        y, alpha=np.linalg.norm(y), error=error, uses=[(A, q), (b, 2 * q)]
+    )
+
+
+def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
+    q_star_term_1 = (
+        (1741 * alpha * eps / 500)
+        * np.sqrt(kappa**2 + 1)
+        * (
+            (133 / 125 + 4 / (25 * np.power(kappa, 1.0 / 3)))
+            * np.pi
+            * np.log(2 * kappa + 3)
+            + 1
+        )
+    )
+    q_star_term_2 = (
+        (351 / 50)
+        * np.log(2 * kappa + 3) ** 2
+        * (np.log(451 * np.log(2 * kappa + 3) ** 2 / eps) + 1)
+    )
+    q_star_term_3 = alpha * kappa * np.log(32 / eps)
+
+    q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
+    q = q_star / (0.39 - 0.201 * eps)
+
+    return q

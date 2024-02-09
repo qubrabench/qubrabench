@@ -1,7 +1,7 @@
 import numpy as np
 
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.list import QList
+from qubrabench.datastructures.qlist import QList
 
 
 def test_qlist_iterate(rng):
