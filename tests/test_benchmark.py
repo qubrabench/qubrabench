@@ -7,12 +7,11 @@ import pytest
 from numpy.random import Generator
 
 from qubrabench.benchmark import (
+    BlockEncoding,
     QueryStats,
-    BenchmarkFrame,
     named_oracle,
     oracle,
     track_queries,
-    BlockEncoding,
 )
 
 

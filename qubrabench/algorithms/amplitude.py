@@ -5,7 +5,6 @@ import numpy.typing as npt
 
 from ..benchmark import BlockEncoding
 
-
 __all__ = ["estimate_amplitude"]
 
 
