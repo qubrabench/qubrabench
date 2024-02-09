@@ -6,6 +6,9 @@ import numpy.typing as npt
 from ..benchmark import BlockEncoding
 
 
+__all__ = ["estimate_amplitude"]
+
+
 def estimate_amplitude(
     prepare_psi: BlockEncoding,
     good_indices: npt.ArrayLike,
