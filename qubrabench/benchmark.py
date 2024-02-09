@@ -412,12 +412,6 @@ class BlockEncoding(QObject):
         cost_table: dict[Hash, QueryStats] = {}
 
         for obj, q_queries in self.uses:
-            obj_hash = _BenchmarkManager._get_hash(obj)
-            merge_into_with_sum_inplace(
-                cost_table,
-                {obj_hash: QueryStats(quantum_expected_quantum_queries=q_queries)},
-            )
-
             if isinstance(obj, BlockEncoding):
                 for sub_obj_hash, stats in obj.costs.items():
                     stats = stats._as_benchmarked()
@@ -434,6 +428,12 @@ class BlockEncoding(QObject):
                             )
                         },
                     )
+            else:
+                obj_hash = _BenchmarkManager._get_hash(obj)
+                merge_into_with_sum_inplace(
+                    cost_table,
+                    {obj_hash: QueryStats(quantum_expected_quantum_queries=q_queries)},
+                )
 
         merge_into_with_sum_inplace(
             cost_table, {hash(self): QueryStats(quantum_expected_quantum_queries=1)}
