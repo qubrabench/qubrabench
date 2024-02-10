@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 from sat import SatInstance
 from schoening import (
+    schoening_bruteforce_steps,
     schoening_solve,
     schoening_with_randomness,
-    schoening_bruteforce_steps,
 )
 
 from qubrabench.benchmark import QueryStats, track_queries

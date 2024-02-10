@@ -3,7 +3,8 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Callable, Iterable, Optional, TypeVar, Generic
+from typing import Callable, Generic, Iterable, Optional, TypeVar
+
 import numpy as np
 
 from ..benchmark import (
@@ -177,6 +178,7 @@ class SamplingDomain(ABC, Generic[E]):
         pass
 
 
+# TODO: Explain how costs are computed exactly.
 def search_by_sampling_with_replacement(
     domain: SamplingDomain[E],
     key: Callable[[E], bool],
@@ -209,6 +211,7 @@ def search_by_sampling_with_replacement(
         sub_frames_access: list[BenchmarkFrame] = []
         sub_frames_eval: list[BenchmarkFrame] = []
 
+        # TODO: Is this a valid approximation?
         for _ in range(max_iterations):
             with track_queries() as sub_frame_access:
                 x = domain.get_random_sample(rng)

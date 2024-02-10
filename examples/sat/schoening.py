@@ -1,15 +1,16 @@
 """This module provides the Schöning example for solving SAT instances."""
+
 from typing import Optional
-import numpy as np
+
 import attrs
+import numpy as np
+from sat import Assignment, SatInstance
 
 from qubrabench.algorithms.search import (
-    search_by_sampling_with_replacement,
     SamplingDomain,
+    search_by_sampling_with_replacement,
 )
-from qubrabench.benchmark import oracle, named_oracle
-
-from sat import SatInstance, Assignment
+from qubrabench.benchmark import named_oracle, oracle
 
 __all__ = ["schoening_solve", "schoening_bruteforce_steps"]
 

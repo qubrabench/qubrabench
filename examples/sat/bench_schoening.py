@@ -6,18 +6,16 @@ Benchmarking for variants of Schoening's algorithm.
 import logging
 from dataclasses import asdict
 from pathlib import Path
+
 import click
 import numpy as np
 import pandas as pd
 from bench_hillclimber import setup_default_logger
-from sat import SatInstance
 from bruteforce import bruteforce_solve
-from qubrabench.benchmark import track_queries, named_oracle
-from schoening import (
-    schoening_solve,
-    schoening_bruteforce_steps,
-)
+from sat import SatInstance
+from schoening import schoening_bruteforce_steps, schoening_solve
 
+from qubrabench.benchmark import named_oracle, track_queries
 from qubrabench.utils.plotting import PlottingStrategy
 
 
