@@ -1,8 +1,9 @@
 """This module handles different types of graph instance generation for community detection."""
 
-import numpy as np
+from typing import Optional, Sequence
+
 import networkx as nx
-import math
+import numpy as np
 
 __all__ = ["random_lfr_graph", "random_fcs_graph"]
 
@@ -50,52 +51,70 @@ def random_lfr_graph(
 def random_fcs_graph(
     n: int,
     *,
+    rng: np.random.Generator,
     community_size: int = 50,
     mu: float = 0.3,
     average_degree: float = 5,
-    rng: np.random.Generator,
+    max_iterations: Optional[int] = None,
 ) -> nx.Graph:
     """Generate an FCS type graph according to Cade et al.'s community detection paper (Appendix D, fixed)
 
     Args:
         n: Number of nodes in the graph
+        rng: source of randomness
         community_size: The size of the communities (S). Defaults to 50.
         mu: Mixing parameter. Defaults to 0.3.
         average_degree: <d>. Defaults to 5.
-        rng: source of randomness
+        max_iterations: maximum number of edges to sample before giving up, defaults to 100n
 
     Returns:
         A 1-indexed graph instance
+
+    Raises:
+        RuntimeError: when unable to generate graph within max_iterations edge samples.
     """
+    if max_iterations is None:
+        max_iterations = 100 * n
+
     graph = nx.Graph()
-    graph.add_nodes_from(range(n))
 
-    num_communities = math.ceil(n / community_size)
-    # note: community labels \in [0, num_communities), where l_u = u // community_size
+    nodes = 1 + np.arange(n)  # {1, ..., n}
+    graph.add_nodes_from(nodes)
 
-    num_edges_to_add = (average_degree * n) // 2
-    while num_edges_to_add > 0:
-        # pick a random target community
-        label = rng.integers(num_communities)
+    # no. of communities = \ceil{n / community_size}
+    n_communities: int = (n + community_size - 1) // community_size
+    community_labels = np.arange(n_communities)
 
-        # community `label` is the set of nodes [start, end)
-        start = label * community_size
-        end = min(start + community_size, n)
+    # assign labels
+    communities: dict[int, Sequence[int]] = {}
+    for ix, label in enumerate(community_labels):
+        start = ix * community_size
+        communities[label] = nodes[start : start + community_size]
 
-        # pick first node from community `label`
-        u = rng.integers(start, end)
+    # generate edges
+    edges_needed = (average_degree * n) // 2
+    for _ in range(max_iterations):
+        if edges_needed == 0:
+            break
 
-        # pick second node from the above community `label` with probability `1 - mu`, otherwise from outside.
-        if rng.uniform() < 1 - mu:
-            v = rng.integers(start, end)
+        label_u = rng.choice(community_labels)
+        u = rng.choice(communities[label_u])
+
+        label_v: int
+        if rng.random() < mu:
+            label_v = rng.choice(
+                [label for label in community_labels if label != label_u]
+            )
         else:
-            v = rng.integers(n - (end - start))
-            if start <= v < end:
-                v += end - start  # skip this label
+            label_v = label_u
+        v = rng.choice(communities[label_v])
 
-        if not graph.has_edge(u, v):
+        if u != v and not graph.has_edge(u, v):
+            u, v = min(u, v), max(u, v)
             graph.add_edge(u, v)
-            num_edges_to_add -= 1
+            edges_needed -= 1
 
-    graph = remove_self_loops_and_index_from_one(graph)
+    if edges_needed != 0:
+        raise RuntimeError("unable to generate graph within the iteration limit")
+
     return graph

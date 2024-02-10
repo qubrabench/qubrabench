@@ -1,13 +1,13 @@
 """This module contains tests for the classical louvain community detection example."""
+
 from typing import Optional
 
-import numpy as np
-import networkx as nx
-import matplotlib.pyplot as plt
 import matplotlib as mpl
+import matplotlib.pyplot as plt
+import networkx as nx
+import numpy as np
 import pytest
-
-from louvain import LouvainGraph, Louvain
+from louvain import Louvain, LouvainGraph
 
 
 @pytest.fixture()
@@ -213,7 +213,12 @@ def test_louvain(graph_a):
     actual_communities = LouvainGraph.community_list_from_labels(labels)
     expected_communities = nx.algorithms.community.louvain_communities(graph_a)
 
-    assert actual_communities == expected_communities
+    def sort_communities(communities: list[set[int]]) -> list[list[int]]:
+        return sorted([sorted(list(c)) for c in communities])
+
+    assert sort_communities(actual_communities) == (
+        sort_communities(expected_communities)
+    )
 
 
 def debug_draw_communities(G: nx.Graph, communities: Optional[list[list[int]]] = None):

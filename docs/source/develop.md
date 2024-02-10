@@ -43,7 +43,7 @@ GitHub provides a [Quickstart Article](https://docs.github.com/en/get-started/qu
 ## Testing
 
 This library uses the [pytest](https://docs.pytest.org/) library, which makes testing very simple.
-You can use the predefined [tests](https://github.com/qubrabench/qubrabench/tree/development/tests), or write your own tests.
+You can use the predefined [tests](https://github.com/qubrabench/qubrabench/tree/main/tests), or write your own tests.
 To execute all tests in the project, by simply executing the following command in the project root:
 
 ```shell
@@ -84,7 +84,7 @@ Some algorithms and examples operate on randomly generated instances.
 To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
 RNG function parameters should never have default values.
 
-For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/development/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
+For testing purposes, there is a [fixture](https://github.com/qubrabench/qubrabench/blob/main/conftest.py) in place that optionally provides an RNG instance to test methods that have an `rng` parameter.
 
 ### Code Style
 
@@ -92,7 +92,7 @@ Public facing API functions should also contain `mypy` type hints.
 When type hints are present in the method declaration, they may be omitted from the docstring.
 For an extensive example see [here](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html).
 
-For formatting, make use of the [black](https://black.readthedocs.io/en/stable/) autoformatter with default configuration.
+For formatting, make use of the [black](https://black.readthedocs.io/en/stable/) autoformatter with default configuration and [isort](https://pycqa.github.io/isort/index.html) to sort imports.
 
 Linting will be checked by GitHub actions.
 This projects uses the [ruff](https://beta.ruff.rs/docs/) linter. 

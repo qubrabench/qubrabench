@@ -1,7 +1,18 @@
+import re
+from dataclasses import dataclass
+
+import numpy as np
+import numpy.typing as npt
 import pytest
 from numpy.random import Generator
 
-from qubrabench.benchmark import QueryStats, oracle, named_oracle, track_queries
+from qubrabench.benchmark import (
+    BlockEncoding,
+    QueryStats,
+    named_oracle,
+    oracle,
+    track_queries,
+)
 
 
 def random_stats(rng: Generator, *, not_benched=False):
@@ -210,3 +221,32 @@ def test_oracle_class_methods(rng):
             == get(ClassWithOracles.some_staticmethod)
             == N_a + N_b + N_c + N_class + N_child
         )
+
+
+@dataclass
+class ClassWithUnhashableMember:
+    unhashable: npt.NDArray
+
+    @oracle
+    def some_oracle(self):
+        pass
+
+
+def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
+    with pytest.raises(
+        TypeError, match=re.escape("unhashable type: 'ClassWithUnhashableMember'")
+    ):
+        obj = ClassWithUnhashableMember(np.zeros(5))
+        with track_queries():
+            obj.some_oracle()
+
+
+def test_block_encoding_nested_access():
+    n, m = 5, 6
+    U = BlockEncoding(np.eye(4), alpha=1, error=0)
+    V = BlockEncoding(np.eye(4), alpha=1, error=0, uses=[(U, n)])
+
+    with track_queries() as tracker:
+        V.access(n_times=m)
+        assert tracker.get_stats(U).quantum_expected_quantum_queries == n * m
+        assert tracker.get_stats(V).quantum_expected_quantum_queries == m

@@ -1,8 +1,10 @@
 """This module provides a classical louvain community detection example adapted from Cade et al.'s 2022 community detection paper"""
-import networkx as nx
-from functools import cached_property
-from methodtools import lru_cache
+
 from abc import ABC
+from functools import cached_property
+
+import networkx as nx
+from methodtools import lru_cache
 
 from qubrabench.benchmark import oracle
 

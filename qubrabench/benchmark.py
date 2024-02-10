@@ -1,14 +1,37 @@
-from typing import Optional, Generator, Any
-from functools import wraps, reduce
-from dataclasses import dataclass
-from contextlib import contextmanager
 import inspect
+import warnings
+from contextlib import contextmanager
+from dataclasses import dataclass
+from functools import cached_property, reduce, wraps
+from typing import Any, Callable, Generator, Hashable, Iterable, Optional, TypeAlias
 
-__all__ = ["QObject", "QueryStats", "track_queries", "oracle", "named_oracle"]
+import attrs
+import numpy as np
+import numpy.typing as npt
+
+__all__ = [
+    "QObject",
+    "QueryStats",
+    "track_queries",
+    "oracle",
+    "named_oracle",
+    "BlockEncoding",
+    "quantum_subroutine",
+    "Hash",
+    "BenchmarkError",
+]
+
+
+class BenchmarkError(Exception):
+    """Base class for raising benchmarking errors"""
 
 
 class QObject:
     pass
+
+
+Hash: TypeAlias = int
+"""hash type of a benchmarkable object"""
 
 
 @dataclass
@@ -78,10 +101,19 @@ class QueryStats:
         )
 
 
+def merge_into_with_sum_inplace(a: dict, b: dict):
+    """Union of two dictionaries, by adding the values for existing keys"""
+    for k, v in b.items():
+        if k not in a:
+            a[k] = v
+        else:
+            a[k] += v
+
+
 class BenchmarkFrame:
     """A benchmark stack frame, mapping oracle hashes to their computed stats"""
 
-    stats: dict[int, QueryStats]
+    stats: dict[Hash, QueryStats]
     _track_only_actual: bool
 
     def __init__(self):
@@ -99,6 +131,10 @@ class BenchmarkFrame:
     def _get_stats(self, obj: Any) -> QueryStats:
         h = _BenchmarkManager._get_hash(obj)
         return self._get_stats_from_hash(h)
+
+    def _get_stats(self, obj: Any) -> QueryStats:
+        """Get the statistics of a quantum oracle/data structure"""
+        return self._get_stats_from_hash(self.__get_hash(obj))
 
     def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
         if obj_hash not in self.stats:
@@ -335,6 +371,7 @@ def named_oracle(name: str):
             ...
             stats = tracker.get_stats("some_name")
     """
+    warnings.warn("named_oracle will be removed soon", DeprecationWarning)
 
     return oracle(name=name)
 
@@ -350,3 +387,97 @@ def _already_benchmarked():
     finally:
         if _BenchmarkManager.is_tracking():
             _BenchmarkManager.current_frame()._track_only_actual = prev_flag
+
+
+@attrs.define
+class BlockEncoding(QObject):
+    r"""
+    Unitary that block-encodes an $\epsilon$-approximation of $A/\alpha$ in the top-left block.
+    """
+
+    matrix: npt.NDArray[np.complex_]
+    """The encoded matrix A"""
+
+    alpha: float
+    """Subnormalization factor"""
+
+    error: float
+    """Approximation factor"""
+
+    uses: Iterable[tuple[Hashable, int]] = attrs.field(factory=list)
+    """BlockEncodings or data-structures used to implement the block-encoding unitary"""
+
+    @cached_property
+    def costs(self) -> dict[Hash, QueryStats]:
+        cost_table: dict[Hash, QueryStats] = {}
+
+        for obj, q_queries in self.uses:
+            if isinstance(obj, BlockEncoding):
+                for sub_obj_hash, stats in obj.costs.items():
+                    stats = stats._as_benchmarked()
+                    sub_q = (
+                        stats.quantum_expected_quantum_queries
+                        + stats.quantum_expected_classical_queries
+                    )
+
+                    merge_into_with_sum_inplace(
+                        cost_table,
+                        {
+                            sub_obj_hash: QueryStats(
+                                quantum_expected_quantum_queries=q_queries * sub_q
+                            )
+                        },
+                    )
+            else:
+                obj_hash = _BenchmarkManager._get_hash(obj)
+                merge_into_with_sum_inplace(
+                    cost_table,
+                    {obj_hash: QueryStats(quantum_expected_quantum_queries=q_queries)},
+                )
+
+        merge_into_with_sum_inplace(
+            cost_table, {hash(self): QueryStats(quantum_expected_quantum_queries=1)}
+        )
+        return cost_table
+
+    def access(self, *, n_times: int = 1):
+        """Access the block-encoded matrix via the implementing unitary"""
+        if _BenchmarkManager.is_benchmarking():
+            for obj_hash, stats in self.costs.items():
+                _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries_quantum=n_times,
+                )
+
+    def __hash__(self):
+        return id(self)
+
+
+def quantum_subroutine(func: Callable[..., BlockEncoding]):
+    """Wrapper to mark a function as a quantum subroutine.
+
+    A quantum subroutine must return a BlockEncoding as output.
+
+    The wrapper ensures that all oracle calls are accounted for in the costs of the block-encoding,
+    instead of throwing them to higher level tracker.
+    This way, we can ensure that the costs when using the block-encoding are correct.
+    """
+
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        if _BenchmarkManager.is_benchmarking():
+            tracker: BenchmarkFrame
+            with track_queries() as tracker:
+                result: BlockEncoding = func(*args, **kwargs)
+                if not isinstance(result, BlockEncoding):
+                    raise TypeError(
+                        f"quantum subroutine must return a BlockEncoding, instead got {type(result)}"
+                    )
+
+                merge_into_with_sum_inplace(result.costs, tracker.stats)
+            return result
+
+        return func(*args, **kwargs)
+
+    return wrapped_func

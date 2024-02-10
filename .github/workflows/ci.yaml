@@ -3,7 +3,7 @@ name: CI
 on:
   push:
     branches:
-      - development
+      - main
   pull_request:
   workflow_dispatch:
 
@@ -19,9 +19,12 @@ jobs:
         with:
           jupyter: true
 
+      - name: Check imports sorted
+        uses: isort/isort-action@v1
+
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           status: ${{ job.status }}
           notification_title: ""
@@ -42,7 +45,7 @@ jobs:
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           status: ${{ job.status }}
           notification_title: ""
@@ -78,7 +81,7 @@ jobs:
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           status: ${{ job.status }}
           notification_title: ""
@@ -115,7 +118,7 @@ jobs:
 
       - name: Deploy to GH pages
         uses: peaceiris/actions-gh-pages@v3
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/development' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           publish_branch: gh-pages
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -124,7 +127,7 @@ jobs:
 
       - name: Notify Slack
         uses: ravsamhq/notify-slack-action@v2
-        if: always()
+        if: ${{ always() && github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         with:
           status: ${{ job.status }}
           notification_title: ""

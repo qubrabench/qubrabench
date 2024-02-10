@@ -1,7 +1,7 @@
 """This module collects test functions surrounding the hillclimber example."""
 
-import pytest
 import hillclimber
+import pytest
 
 
 def test_maxsat_values_100(rng) -> None:

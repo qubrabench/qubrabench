@@ -2,17 +2,18 @@
 This module extends the initial Louvain class with quantum variants that track query statistics.
 Most variants differ only in how the graph is iterated while moving community labels.
 """
-import numpy as np
-import networkx as nx
+
 import math
-from typing import Optional, Iterable
+from typing import Iterable, Optional
+
+import networkx as nx
+import numpy as np
+from louvain import Louvain, LouvainGraph
 from methodtools import lru_cache
 
-from qubrabench.benchmark import QueryStats, track_queries, BenchmarkFrame
-from qubrabench.algorithms.search import search as qsearch
 from qubrabench.algorithms.max import max as qmax
-
-from louvain import Louvain, LouvainGraph
+from qubrabench.algorithms.search import search as qsearch
+from qubrabench.benchmark import BenchmarkFrame, QueryStats, track_queries
 
 
 class QuantumLouvainBase(Louvain):

@@ -1,3 +1,3 @@
-from qubrabench.algorithms import search, max
+from qubrabench.algorithms import amplitude, linalg, max, search
 
-__all__ = ["search", "max"]
+__all__ = ["search", "max", "linalg", "amplitude"]

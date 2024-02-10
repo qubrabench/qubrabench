@@ -7,10 +7,10 @@ from typing import Callable, Iterable, Optional, TypeVar, Generic
 import numpy as np
 
 from ..benchmark import (
-    _BenchmarkManager,
     BenchmarkFrame,
-    track_queries,
     _already_benchmarked,
+    _BenchmarkManager,
+    track_queries,
 )
 
 __all__ = ["search", "search_by_sampling_with_replacement", "SamplingDomain"]
@@ -22,21 +22,27 @@ def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
     *,
-    rng: np.random.Generator,
+    rng: Optional[np.random.Generator] = None,
     error: Optional[float] = None,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
-    """Search a list in random order for an element satisfying the given predicate, while keeping track of query statistics.
+    """Search a list for an element satisfying the given predicate.
 
-    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(1))
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0)
     2
+
+    By default performs a linear scan on the iterable and returns the first element satisfying the `key`.
+    If the optional random generator `rng` is provided, instead shuffles the input iterable before scanning for a solution.
+
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(42))
+    4
 
     Args:
         iterable: iterable to be searched over
         key: function to test if an element satisfies the predicate
-        rng: np.random.Generator instance as source of randomness
-        error: upper bound on the failure probability of the quantum algorithm.
-        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+        rng: random generator - if provided shuffle the input before scanning
+        error: upper bound on the failure probability of the quantum algorithm
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm
 
     Raises:
         ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
@@ -46,6 +52,7 @@ def search(
     """
 
     is_benchmarking = _BenchmarkManager.is_benchmarking()
+    classical_is_random_search = rng is not None
 
     # collect stats
     if is_benchmarking:
@@ -60,6 +67,9 @@ def search(
         sub_frames_access: list[BenchmarkFrame] = []
         sub_frames_eval: list[BenchmarkFrame] = []
 
+        sub_frames_linear_scan: list[BenchmarkFrame] = []
+        linear_scan_solution_found = False
+
         it = iter(iterable)
         iterable_copy = []
         while True:
@@ -71,22 +81,31 @@ def search(
                 N += 1
                 iterable_copy.append((x, sub_frame_access))
                 sub_frames_access.append(sub_frame_access)
+                if not linear_scan_solution_found:
+                    sub_frames_linear_scan.append(sub_frame_access)
 
             with track_queries() as sub_frame_eval:
+                solution_found = False
                 if key(x):
                     T += 1
+                    solution_found = True
                 sub_frames_eval.append(sub_frame_eval)
+
+                if not linear_scan_solution_found:
+                    sub_frames_linear_scan.append(sub_frame_eval)
+                linear_scan_solution_found |= solution_found
 
         frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
         for obj_hash, stats in frame.stats.items():
-            _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash,
-                base_stats=stats,
-                queries=(N + 1) / (T + 1),
-            )
+            if classical_is_random_search:
+                _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries=(N + 1) / (T + 1),
+                )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj_hash,
@@ -99,14 +118,27 @@ def search(
                 ),
             )
 
+        # classical expected queries for a linear scan
+        if not classical_is_random_search:
+            frame_linear_scan = _BenchmarkManager.combine_sequence_frames(
+                sub_frames_linear_scan
+            )
+            for obj_hash, stats in frame_linear_scan.stats.items():
+                _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                    obj_hash,
+                    base_stats=stats,
+                    queries=1,
+                )
+
         iterable = iterable_copy
 
     with _already_benchmarked():
         # run the classical sampling-without-replacement algorithm
-        try:
-            rng.shuffle(iterable)
-        except TypeError:
-            pass
+        if classical_is_random_search:
+            try:
+                rng.shuffle(iterable)
+            except TypeError:
+                pass
 
         for x in iterable:
             if is_benchmarking:

@@ -1,4 +1,4 @@
-from typing import TypeVar, TypeAlias, Union
+from typing import TypeAlias, TypeVar, Union
 
 
 class AbsentParameter:
