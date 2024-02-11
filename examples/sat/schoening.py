@@ -14,13 +14,13 @@ from qubrabench.benchmark import oracle
 
 __all__ = [
     "schoening_solve",
-    "schoening_bruteforce_steps",
-    "schoening_with_randomness",
+    "schoening_solve__bruteforce_over_starting_assigment",
+    "schoening_random_walk",
 ]
 
 
 @oracle
-def schoening_with_randomness(
+def schoening_random_walk(
     inst: SatInstance, initial_assignment: np.ndarray, walk_steps: np.ndarray
 ) -> Optional[Assignment]:
     """
@@ -111,7 +111,7 @@ def schoening_solve(
     # find a choice of randomness that makes Schoening's algorithm accept
     randomness = search_by_sampling_with_replacement(
         SchoeningDomain(inst.n, inst.n, 3 * inst.n),
-        key=lambda r: schoening_with_randomness(inst, r[0], r[1]) is not None,
+        key=lambda r: schoening_random_walk(inst, r[0], r[1]) is not None,
         error=error,
         rng=rng,
     )
@@ -119,11 +119,11 @@ def schoening_solve(
     # return satisfying assignment (if any was found)
     if randomness is not None:
         assignment, steps = randomness
-        return schoening_with_randomness(inst, assignment, steps)
+        return schoening_random_walk(inst, assignment, steps)
     return None
 
 
-def schoening_bruteforce_steps(
+def schoening_solve__bruteforce_over_starting_assigment(
     inst: SatInstance,
     *,
     rng: np.random.Generator,
@@ -149,9 +149,9 @@ def schoening_bruteforce_steps(
 
     # define predicate, if steps lead to satisfying assignment return that
     def pred(steps) -> Optional[Assignment]:
-        for _ in range(10**5):
+        for _ in range(10**3):
             initial_assignment = SchoeningDomain.generate_random_assignment(n, rng)
-            assignment = schoening_with_randomness(inst, initial_assignment, steps)
+            assignment = schoening_random_walk(inst, initial_assignment, steps)
             if assignment is not None:
                 return assignment
         return None

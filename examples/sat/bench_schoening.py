@@ -14,7 +14,10 @@ import pandas as pd
 from bench_hillclimber import setup_default_logger
 from bruteforce import bruteforce_solve
 from sat import Assignment, SatInstance
-from schoening import schoening_bruteforce_steps, schoening_solve
+from schoening import (
+    schoening_solve,
+    schoening_solve__bruteforce_over_starting_assigment,
+)
 
 from qubrabench.benchmark import track_queries
 from qubrabench.utils.plotting import PlottingStrategy
@@ -78,7 +81,7 @@ def generate(r, seed, n, runs, dest: Path, verbose, variant):
         Callable[[SatInstance, np.random.Generator, float], Optional[Assignment]],
     ] = {
         "standard": schoening_solve,
-        "steps": schoening_bruteforce_steps,
+        "bruteforce_assigments": schoening_solve__bruteforce_over_starting_assigment,
         "bruteforce": bruteforce_solve,  # default
     }
 
@@ -116,7 +119,7 @@ def generate(r, seed, n, runs, dest: Path, verbose, variant):
             orig = pd.read_json(dest, orient="split")
         else:
             orig = None
-            dest.parent.mkdir(parents=True)
+            dest.parent.mkdir(parents=True, exist_ok=True)
         history = pd.concat([orig, history], ignore_index=True)
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
