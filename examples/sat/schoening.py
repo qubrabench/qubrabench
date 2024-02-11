@@ -7,10 +7,7 @@ import numpy as np
 import numpy.typing as npt
 from sat import Assignment, SatInstance
 
-from qubrabench.algorithms.search import (
-    SamplingDomain,
-    search_by_sampling_with_replacement,
-)
+from qubrabench.algorithms.search import SamplingDomain, search_by_sampling
 from qubrabench.benchmark import oracle
 
 __all__ = [
@@ -117,7 +114,7 @@ def schoening_solve(
     assert inst.k == 3
 
     # find a choice of randomness that makes Schoening's algorithm accept
-    randomness = search_by_sampling_with_replacement(
+    randomness = search_by_sampling(
         SchoeningDomain(inst.n, inst.n, 3 * inst.n),
         key=lambda r: schoening_random_walk(inst, r[0], r[1]) is not None,
         error=error,
@@ -164,7 +161,7 @@ def schoening_solve__bruteforce_over_starting_assigment(
                 return assignment
         return None
 
-    result = search_by_sampling_with_replacement(
+    result = search_by_sampling(
         domain,
         key=lambda r: pred(r) is not None,
         rng=rng,

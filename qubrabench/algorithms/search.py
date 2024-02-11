@@ -14,7 +14,7 @@ from ..benchmark import (
     track_queries,
 )
 
-__all__ = ["search", "search_by_sampling_with_replacement", "SamplingDomain"]
+__all__ = ["search", "search_by_sampling", "SamplingDomain"]
 
 E = TypeVar("E")
 
@@ -158,28 +158,30 @@ def search(
 
 
 class SamplingDomain(ABC, Generic[E]):
-    """
-    Class used for search routines requiring elaborate sampling with replacement. To search against a predicate, please
-    refer to the function search_custom.
-    If your use-case involves simpler search spaces, e.g. ones that can be stored as a list in memory, please use the
-    function search for that.
+    """Base class for domains supporting search by random sampling.
+
+    Define a space that is too large to fully enumerate, but can be efficiently sampled from.
+    This is used by the `search_by_sampling` method to repeatedly sample an element till a solution one is found.
     """
 
     @abstractmethod
     def get_size(self) -> int:
-        pass
+        """Total size of the domain (number of elements)."""
 
     @abstractmethod
     def get_probability_of_sampling_solution(self, key) -> float:
-        pass
+        """A lower-bound on the probability that a single sample is a solution.
+
+        Used to compute classical and quantum expected query counts.
+        """
 
     @abstractmethod
     def get_random_sample(self, rng: np.random.Generator) -> E:
-        pass
+        """Produce a single random sample from the space."""
 
 
 # TODO: Explain how costs are computed exactly.
-def search_by_sampling_with_replacement(
+def search_by_sampling(
     domain: SamplingDomain[E],
     key: Callable[[E], bool],
     *,
@@ -187,7 +189,7 @@ def search_by_sampling_with_replacement(
     error: float,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
-    """Search a domain by sampling with replacement, for an element satisfying the given predicate, while keeping track of query statistics.
+    """Search a domain by repeated sampling for an element satisfying the given predicate, while keeping track of query statistics.
 
     Args:
         domain: sampling domain to be searched over
