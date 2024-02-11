@@ -2,7 +2,8 @@
     and calculates the expected quantum query costs to a predicate function
 """
 
-from typing import Callable, Iterable, Optional, TypeVar
+from abc import ABC, abstractmethod
+from typing import Callable, Generic, Iterable, Optional, TypeVar
 
 import numpy as np
 
@@ -13,7 +14,7 @@ from ..benchmark import (
     track_queries,
 )
 
-__all__ = ["search"]
+__all__ = ["search", "search_by_sampling", "SamplingDomain"]
 
 E = TypeVar("E")
 
@@ -154,6 +155,111 @@ def search(
                 return elem
 
     return None
+
+
+class SamplingDomain(ABC, Generic[E]):
+    """Base class for domains supporting search by random sampling.
+
+    Define a space that is too large to fully enumerate, but can be efficiently sampled from.
+    This is used by the `search_by_sampling` method to repeatedly sample an element till a solution one is found.
+    """
+
+    @abstractmethod
+    def get_size(self) -> int:
+        """Total size of the domain (number of elements)."""
+
+    @abstractmethod
+    def get_probability_of_sampling_solution(self, key) -> float:
+        """A lower-bound on the probability that a single sample is a solution.
+
+        Used to compute classical and quantum expected query counts.
+        """
+
+    @abstractmethod
+    def get_random_sample(self, rng: np.random.Generator) -> E:
+        """Produce a single random sample from the space."""
+
+
+def search_by_sampling(
+    domain: SamplingDomain[E],
+    key: Callable[[E], bool],
+    *,
+    rng: np.random.Generator,
+    error: float,
+    max_classical_queries: int = 130,
+) -> Optional[E]:
+    r"""Search a domain by repeated sampling for an element satisfying the given predicate.
+
+    This method assumes that the solutions are distributed uniformly at random through the search domain.
+    If the probability of a single sample being a solution is $f$,
+    and we want a failure probability (error) at most $\epsilon$,
+    then we sample $3 * \log_{1 - f}(\epsilon)$ elements.
+
+    The query counts are computed assuming that this is a representative sample of key evaluation cost.
+
+    Caution:
+        If there are anamolies in the space (solutions not evenly distributed, or a few elements have largely different key costs),
+        then the stats computed here may not be accurate.
+
+    Args:
+        domain: sampling domain to be searched over
+        key: function to test if an element satisfies the predicate
+        rng: np.random.Generator instance as source of randomness
+        error: upper bound on the failure probability of the quantum algorithm.
+        max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
+
+    Returns:
+        An element that satisfies the predicate, or None if no such argument can be found.
+    """
+
+    N = domain.get_size()
+    f = domain.get_probability_of_sampling_solution(key)
+    max_iterations = int(3 * np.log(error) / np.log(1.0 - f))
+
+    is_benchmarking = _BenchmarkManager.is_benchmarking()
+
+    # collect stats
+    if is_benchmarking:
+        sub_frames_access: list[BenchmarkFrame] = []
+        sub_frames_eval: list[BenchmarkFrame] = []
+
+        # TODO: Is this a valid approximation?
+        for _ in range(max_iterations):
+            with track_queries() as sub_frame_access:
+                x = domain.get_random_sample(rng)
+                sub_frames_access.append(sub_frame_access)
+
+            with track_queries() as sub_frame_eval:
+                key(x)
+                sub_frames_eval.append(sub_frame_eval)
+
+        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
+        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
+        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
+
+        for obj_hash, stats in frame.stats.items():
+            _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                obj_hash,
+                base_stats=stats,
+                queries=max_iterations,
+            )
+
+            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                obj_hash,
+                base_stats=stats,
+                queries_classical=cade_et_al_expected_classical_queries(
+                    N, f * N, max_classical_queries
+                ),
+                queries_quantum=cade_et_al_expected_quantum_queries(
+                    N, f * N, error, max_classical_queries
+                ),
+            )
+
+    with _already_benchmarked():
+        for _ in range(max_iterations):
+            x = domain.get_random_sample(rng)
+            if key(x):
+                return x
 
 
 def cade_et_al_expected_quantum_queries(N: int, T: int, eps: float, K: int) -> float:

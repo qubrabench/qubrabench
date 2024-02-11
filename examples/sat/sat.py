@@ -7,6 +7,8 @@ import numpy as np
 import numpy.typing as npt
 import scipy  # type: ignore
 
+from qubrabench.benchmark import oracle
+
 Assignment = npt.ArrayLike
 W = TypeVar("W", bound=np.generic)
 
@@ -41,6 +43,7 @@ class SatInstance:
         """Number of clauses"""
         return self.clauses.shape[0]
 
+    @oracle
     def evaluate(self, x: Assignment) -> Any:
         """
         Evaluates Boolean formula for given assignment of variables.
@@ -74,6 +77,9 @@ class SatInstance:
         clauses = scipy.sparse.csr_matrix(clauses)
 
         return SatInstance(k=k, clauses=clauses)
+
+    def __hash__(self):
+        return id(self)
 
 
 @dataclass(frozen=True)
