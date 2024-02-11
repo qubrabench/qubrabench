@@ -81,6 +81,7 @@ class SchoeningDomain(SamplingDomain[tuple[Assignment, WalkSteps]]):
         return 2**self.n_assignment * 3**self.n_walk_steps
 
     def get_probability_of_sampling_solution(self, key) -> float:
+        # FIXME: this value is only upto soft-O. TODO account for poly/const factors.
         return 0.75**self.n
 
     def get_random_sample(

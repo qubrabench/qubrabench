@@ -71,7 +71,7 @@ def generate(r, seed, n, runs, dest: Path, verbose, variant):
 
     Example:
 
-        bench_schoening.py --strategy=steps -r 3 -n 100 --save results.json
+        bench_schoening.py --variant=standard -r 3 -n 100 --save results.json
     """
     setup_default_logger(verbose)
     rng = np.random.default_rng(seed)
