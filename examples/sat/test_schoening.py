@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from sat import SatInstance
 from schoening import (
-    evaluate,
     schoening_bruteforce_steps,
     schoening_solve,
     schoening_with_randomness,
@@ -28,9 +27,6 @@ def test_solve(rng) -> None:
     with track_queries() as tracker:
         x = schoening_solve(inst, rng=rng, error=10**-5)
 
-        # check that found a solution
-        assert x is not None and inst.evaluate(x)
-
         # check stats
         assert tracker.get_stats(schoening_with_randomness) == QueryStats(
             classical_actual_queries=2,
@@ -39,12 +35,15 @@ def test_solve(rng) -> None:
             quantum_expected_quantum_queries=pytest.approx(0),
         )
 
-        assert tracker.get_stats(evaluate) == QueryStats(
+        assert tracker.get_stats(inst.evaluate) == QueryStats(
             classical_actual_queries=4,
             classical_expected_queries=380,
             quantum_expected_classical_queries=pytest.approx(16.22222222222222),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
+
+        # validate solution
+        assert x is not None and inst.evaluate(x)
 
 
 def test_bruteforce_steps(rng) -> None:
@@ -62,9 +61,6 @@ def test_bruteforce_steps(rng) -> None:
     with track_queries() as tracker:
         x = schoening_bruteforce_steps(inst, rng=rng, error=10**-5)
 
-        # check that found a solution
-        assert x is not None and inst.evaluate(x)
-
         # check stats
         assert tracker.get_stats(schoening_with_randomness) == QueryStats(
             classical_actual_queries=3,
@@ -73,9 +69,12 @@ def test_bruteforce_steps(rng) -> None:
             quantum_expected_quantum_queries=pytest.approx(0),
         )
 
-        assert tracker.get_stats(evaluate) == QueryStats(
+        assert tracker.get_stats(inst.evaluate) == QueryStats(
             classical_actual_queries=7,
             classical_expected_queries=pytest.approx(636),
             quantum_expected_classical_queries=pytest.approx(29.703703703703702),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
+
+        # validate solution
+        assert x is not None and inst.evaluate(x)

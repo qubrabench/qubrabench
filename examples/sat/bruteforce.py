@@ -1,7 +1,7 @@
 """Module concerning solving SAT instance by brute forcing."""
 
 import itertools
-from typing import Callable, Optional
+from typing import Optional
 
 import numpy as np
 from sat import Assignment, SatInstance
@@ -11,7 +11,6 @@ import qubrabench as qb
 
 def bruteforce_solve(
     inst: SatInstance,
-    evaluate: Callable,
     *,
     rng: np.random.Generator,
     error: Optional[float] = None,
@@ -20,7 +19,6 @@ def bruteforce_solve(
 
     Args:
         inst: The instance to be solved
-        evaluate: evaluate the formula on a given input assignment
         rng: Source of randomness
         error: Upper bound on the quantum failure rate. Defaults to None.
 
@@ -31,4 +29,4 @@ def bruteforce_solve(
     domain = [np.array(x, dtype=int) for x in itertools.product([-1, 1], repeat=inst.n)]
 
     # brute-force search
-    return qb.algorithms.search.search(domain, evaluate, error=error, rng=rng)
+    return qb.algorithms.search.search(domain, inst.evaluate, error=error, rng=rng)

@@ -15,14 +15,8 @@ from qubrabench.benchmark import oracle
 __all__ = [
     "schoening_solve",
     "schoening_bruteforce_steps",
-    "evaluate",
     "schoening_with_randomness",
 ]
-
-
-@oracle
-def evaluate(inst: SatInstance, assigment: Assignment) -> bool:
-    return inst.evaluate(assigment)
 
 
 @oracle
@@ -42,7 +36,7 @@ def schoening_with_randomness(
     """
     assignment = np.copy(initial_assignment)
 
-    if evaluate(inst, assignment):
+    if inst.evaluate(assignment):
         return assignment
 
     # iterate over the steps of the random walk
@@ -56,7 +50,7 @@ def schoening_with_randomness(
         var = vars_[step]
         assignment[var] *= -1
 
-        if evaluate(inst, assignment):
+        if inst.evaluate(assignment):
             return assignment
 
     return None

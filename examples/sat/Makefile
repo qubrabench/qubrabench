@@ -38,7 +38,7 @@ bench-steep-hillclimber-complete:
 	$(BENCH_HILLCLIMBER) plot $(FNAME) "$(DATA_DIR)/plot_reference/" "hill_climb_cade_steep.json"
 
 bench-schoening-quick:
-	$(eval FNAME = $(DATA_DIR)/data-quick-$(shell date +%Y-%m-%d-%H-%M-%S).json)
+	$(eval FNAME = $(DATA_DIR)/schoening/data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 5 --runs 10 --save $(FNAME)
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 6 --runs 10 --save $(FNAME)
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 7 --runs 10 --save $(FNAME)
@@ -49,9 +49,9 @@ bench-schoening-quick:
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 7 -variant=standard --runs 10 --save $(FNAME)
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 8 -variant=standard --runs 10 --save $(FNAME)
 	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 9 -variant=standard --runs 10 --save $(FNAME)
-	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 5 -variant=steps --runs 10 --save $(FNAME)
-	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 6 -variant=steps --runs 10 --save $(FNAME)
-	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 7 -variant=steps --runs 10 --save $(FNAME)
-	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 8 -variant=steps --runs 10 --save $(FNAME)
-	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 9 -variant=steps --runs 10 --save $(FNAME)
+	#	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 5 -variant=steps --runs 10 --save $(FNAME)
+	#	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 6 -variant=steps --runs 10 --save $(FNAME)
+	#	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 7 -variant=steps --runs 10 --save $(FNAME)
+	#	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 8 -variant=steps --runs 10 --save $(FNAME)
+	#	$(BENCH_SCHOENING) generate $(BENCH_OPTS) -r 3 -n 9 -variant=steps --runs 10 --save $(FNAME)
 	$(BENCH_SCHOENING) plot $(FNAME)

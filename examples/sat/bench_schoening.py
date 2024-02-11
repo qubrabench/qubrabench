@@ -14,7 +14,7 @@ import pandas as pd
 from bench_hillclimber import setup_default_logger
 from bruteforce import bruteforce_solve
 from sat import Assignment, SatInstance
-from schoening import evaluate, schoening_bruteforce_steps, schoening_solve
+from schoening import schoening_bruteforce_steps, schoening_solve
 
 from qubrabench.benchmark import track_queries
 from qubrabench.utils.plotting import PlottingStrategy
@@ -38,7 +38,7 @@ def cli():
     type=int,
     required=True,
 )
-@click.option("-variant", type=str, default=None, show_default=True)
+@click.option("-variant", type=str, default="bruteforce", show_default=True)
 @click.option(
     "--seed",
     help="Seed for the random operations.",
@@ -62,7 +62,7 @@ def cli():
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def generate(r, seed, n, runs, dest, verbose, variant):
+def generate(r, seed, n, runs, dest: Path, verbose, variant):
     """
     Benchmark Schoening's algorithm for both strategies, bruteforcing assignments and steps.
 
@@ -79,7 +79,7 @@ def generate(r, seed, n, runs, dest, verbose, variant):
     ] = {
         "standard": schoening_solve,
         "steps": schoening_bruteforce_steps,
-        None: bruteforce_solve,
+        "bruteforce": bruteforce_solve,  # default
     }
 
     solve = solve_variants[variant]
@@ -92,16 +92,12 @@ def generate(r, seed, n, runs, dest, verbose, variant):
         inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
         with track_queries() as tracker:
             solve(inst, rng=rng, error=1e-5)
-            stats = tracker.get_stats(evaluate)
+            stats = tracker.get_stats(inst.evaluate)
 
             # save record to history
             rec = asdict(stats)
             rec["n"] = n
             rec["r"] = r
-            # rec["variant"] = variant
-            # rec["classical_control_method_calls"] = tracker.get_stats(
-            #     "inst.evaluate"
-            # ).classical_actual_queries
             history.append(rec)
 
     # return pandas dataframe
@@ -109,14 +105,18 @@ def generate(r, seed, n, runs, dest, verbose, variant):
         [list(row.values()) for row in history], columns=list(history[0].keys())
     )
 
-    history.insert(0, "variant", variant)
+    history.insert(0, "variant", variant or "bruteforce")
 
     logging.info(history.groupby(["r", "n"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
         logging.info(f"saving to {dest}...")
-        orig = pd.read_json(dest, orient="split") if dest.exists() else None
+        if dest.exists():
+            orig = pd.read_json(dest, orient="split")
+        else:
+            orig = None
+            dest.parent.mkdir(parents=True)
         history = pd.concat([orig, history], ignore_index=True)
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
