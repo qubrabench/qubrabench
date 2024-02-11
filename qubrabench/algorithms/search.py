@@ -180,7 +180,6 @@ class SamplingDomain(ABC, Generic[E]):
         """Produce a single random sample from the space."""
 
 
-# TODO: Explain how costs are computed exactly.
 def search_by_sampling(
     domain: SamplingDomain[E],
     key: Callable[[E], bool],
@@ -189,7 +188,18 @@ def search_by_sampling(
     error: float,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
-    """Search a domain by repeated sampling for an element satisfying the given predicate, while keeping track of query statistics.
+    r"""Search a domain by repeated sampling for an element satisfying the given predicate.
+
+    This method assumes that the solutions are distributed uniformly at random through the search domain.
+    If the probability of a single sample being a solution is $f$,
+    and we want a failure probability (error) at most $\epsilon$,
+    then we sample $3 * \log_{1 - f}(\epsilon)$ elements.
+
+    The query counts are computed assuming that this is a representative sample of key evaluation cost.
+
+    Caution:
+        If there are anamolies in the space (solutions not evenly distributed, or a few elements have largely different key costs),
+        then the stats computed here may not be accurate.
 
     Args:
         domain: sampling domain to be searched over
