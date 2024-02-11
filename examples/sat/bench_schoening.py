@@ -6,16 +6,17 @@ Benchmarking for variants of Schoening's algorithm.
 import logging
 from dataclasses import asdict
 from pathlib import Path
+from typing import Callable, Optional
 
 import click
 import numpy as np
 import pandas as pd
 from bench_hillclimber import setup_default_logger
 from bruteforce import bruteforce_solve
-from sat import SatInstance
-from schoening import schoening_bruteforce_steps, schoening_solve
+from sat import Assignment, SatInstance
+from schoening import evaluate, schoening_bruteforce_steps, schoening_solve
 
-from qubrabench.benchmark import named_oracle, track_queries
+from qubrabench.benchmark import track_queries
 from qubrabench.utils.plotting import PlottingStrategy
 
 
@@ -72,37 +73,35 @@ def generate(r, seed, n, runs, dest, verbose, variant):
     setup_default_logger(verbose)
     rng = np.random.default_rng(seed)
 
+    solve_variants: dict[
+        str,
+        Callable[[SatInstance, np.random.Generator, float], Optional[Assignment]],
+    ] = {
+        "standard": schoening_solve,
+        "steps": schoening_bruteforce_steps,
+        None: bruteforce_solve,
+    }
+
+    solve = solve_variants[variant]
+
     history = []
     for run in range(runs):
         logging.debug(f"r={r}, n={n}, variant={variant}, #{run}")
 
-        # as schoening uses 3-SAT, k=3
+        # k=3 as schoening solves 3-SAT
         inst = SatInstance.random(k=3, n=n, m=r * n, rng=rng)
-        variants = {
-            "standard": lambda i: schoening_solve(i, error=10**5, rng=rng),
-            "steps": lambda i: schoening_bruteforce_steps(i, error=10**-5, rng=rng),
-        }
         with track_queries() as tracker:
-            if variant is not None:
-                variants["standard"](inst)
-            else:
-                bruteforce_solve(
-                    inst,
-                    (named_oracle("inst.evaluate"))(lambda k: inst.evaluate(k)),
-                    error=10**-5,
-                    rng=rng,
-                )
-
-            stats = tracker.get_stats("inst.evaluate")
+            solve(inst, rng=rng, error=1e-5)
+            stats = tracker.get_stats(evaluate)
 
             # save record to history
             rec = asdict(stats)
             rec["n"] = n
             rec["r"] = r
-            rec["variant"] = variant
-            rec["classical_control_method_calls"] = tracker.get_stats(
-                "inst.evaluate"
-            ).classical_actual_queries
+            # rec["variant"] = variant
+            # rec["classical_control_method_calls"] = tracker.get_stats(
+            #     "inst.evaluate"
+            # ).classical_actual_queries
             history.append(rec)
 
     # return pandas dataframe
@@ -110,9 +109,9 @@ def generate(r, seed, n, runs, dest, verbose, variant):
         [list(row.values()) for row in history], columns=list(history[0].keys())
     )
 
-    history.insert(0, "impl", "bruteforce sat" if variant is None else variant)
+    history.insert(0, "variant", variant)
 
-    logging.info(history.groupby(["r", "n", "variant"]).mean(numeric_only=True))
+    logging.info(history.groupby(["r", "n"]).mean(numeric_only=True))
 
     # save
     if dest is not None:
@@ -135,7 +134,7 @@ class SchoeningPlottingStrategy(PlottingStrategy):
         return ["r"]
 
     def get_data_group_column_names(self):
-        return ["impl"]
+        return ["variant"]
 
     def compute_aggregates(self, data, *, quantum_factor):
         # compute combined query costs of quantum search

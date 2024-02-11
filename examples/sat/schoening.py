@@ -10,9 +10,19 @@ from qubrabench.algorithms.search import (
     SamplingDomain,
     search_by_sampling_with_replacement,
 )
-from qubrabench.benchmark import named_oracle, oracle
+from qubrabench.benchmark import oracle
 
-__all__ = ["schoening_solve", "schoening_bruteforce_steps"]
+__all__ = [
+    "schoening_solve",
+    "schoening_bruteforce_steps",
+    "evaluate",
+    "schoening_with_randomness",
+]
+
+
+@oracle
+def evaluate(inst: SatInstance, assigment: Assignment) -> bool:
+    return inst.evaluate(assigment)
 
 
 @oracle
@@ -32,11 +42,9 @@ def schoening_with_randomness(
     """
     assignment = np.copy(initial_assignment)
 
-    # FIXME: get_stats(inst.evaluate) won't work, as underlying matrix can't be hashed.
-    eval = (named_oracle("inst.evaluate"))(lambda k: inst.evaluate(k))
-
-    if eval(assignment):
+    if evaluate(inst, assignment):
         return assignment
+
     # iterate over the steps of the random walk
     for step in walk_steps:
         # choose an unsatisfied clause
@@ -48,7 +56,7 @@ def schoening_with_randomness(
         var = vars_[step]
         assignment[var] *= -1
 
-        if eval(assignment):
+        if evaluate(inst, assignment):
             return assignment
 
     return None
