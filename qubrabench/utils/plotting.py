@@ -195,7 +195,7 @@ class PlottingStrategy(ABC):
             return self.colors[data_group]
 
         mcolor_names: list = [
-            c for c in mcolors.CSS4_COLORS if c not in self.colors.values()
+            c for c in mcolors.TABLEAU_COLORS if c not in self.colors.values()
         ]
         new_color = np.random.choice(mcolor_names)
         self.colors[data_group] = new_color
