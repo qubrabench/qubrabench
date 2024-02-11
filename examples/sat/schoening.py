@@ -1,9 +1,10 @@
 """This module provides the Schöning example for solving SAT instances."""
 
-from typing import Optional
+from typing import Optional, TypeAlias
 
 import attrs
 import numpy as np
+import numpy.typing as npt
 from sat import Assignment, SatInstance
 
 from qubrabench.algorithms.search import (
@@ -18,10 +19,12 @@ __all__ = [
     "schoening_random_walk",
 ]
 
+WalkSteps: TypeAlias = npt.NDArray[np.int_]
+
 
 @oracle
 def schoening_random_walk(
-    inst: SatInstance, initial_assignment: np.ndarray, walk_steps: np.ndarray
+    inst: SatInstance, initial_assignment: Assignment, walk_steps: WalkSteps
 ) -> Optional[Assignment]:
     """
     Run Schoening's algorithm with fixed random choices.
@@ -57,19 +60,24 @@ def schoening_random_walk(
 
 
 @attrs.define
-class SchoeningDomain(SamplingDomain[tuple[np.ndarray, np.ndarray]]):
-    """The class SchoeningDomain implements the methods declared for a SamplingDomain. We use this class for search spaces that cannot be stored in memory."""
+class SchoeningDomain(SamplingDomain[tuple[Assignment, WalkSteps]]):
+    """Represents a sampling domain for the random choices in the Schoening algorithm."""
 
     n: int
+    """number of variables in the 3-SAT instance"""
+
     n_assignment: int
+    """number of random bits used to generate the starting assigment of the random walk"""
+
     n_walk_steps: int
+    """number of random trits used to generate the walk steps (i.e. variable to flip in unsat clause)"""
 
     @staticmethod
-    def generate_random_assignment(n, rng: np.random.Generator):
+    def generate_random_assignment(n, rng: np.random.Generator) -> Assignment:
         return rng.integers(2, size=n) * 2 - 1
 
     @staticmethod
-    def generate_walk_steps(m, rng: np.random.Generator):
+    def generate_walk_steps(m, rng: np.random.Generator) -> WalkSteps:
         return rng.integers(3, size=m)
 
     def get_size(self) -> int:
@@ -80,7 +88,7 @@ class SchoeningDomain(SamplingDomain[tuple[np.ndarray, np.ndarray]]):
 
     def get_random_sample(
         self, rng: np.random.Generator
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> tuple[Assignment, WalkSteps]:
         return (
             self.generate_random_assignment(self.n_assignment, rng),
             self.generate_walk_steps(self.n_walk_steps, rng),
@@ -131,7 +139,7 @@ def schoening_solve__bruteforce_over_starting_assigment(
 ) -> Optional[Assignment]:
     """
     Find a satisfying assignment of a 3-SAT formula by using a variant of Schöning's algorithm,
-    bruteforcing over all sequences of steps.
+    by running quantum search over the walk steps, and bruteforcing over the starting assignment.
 
     Args:
         inst: The 3-SAT Instance for which to find a satisfying assignment.
