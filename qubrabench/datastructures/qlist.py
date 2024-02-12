@@ -26,3 +26,6 @@ class QList(QObject, Generic[T]):
 
     def __len__(self):
         return len(self.__data)
+
+    def __hash__(self):
+        return id(self)

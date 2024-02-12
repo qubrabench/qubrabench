@@ -12,7 +12,7 @@ def solve(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
-    error: Optional[float] = None,
+    error: float = 0.24,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
     """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
@@ -29,25 +29,22 @@ def solve(
         Block-encoded solution vector.
     """
 
-    if error is not None:
-        if not np.isclose(A.error, 0):
-            raise ValueError(
-                f"solve expects a zero-error block-encoding of A, but input has an error of {A.error}"
-            )
-        if not np.isclose(b.error, 0):
-            raise ValueError(
-                f"solve expects a zero-error block-encoding of b, but input has an error of {b.error}"
-            )
+    if not np.isclose(A.error, 0):
+        raise ValueError(
+            f"solve expects a zero-error block-encoding of A, but input has an error of {A.error}"
+        )
+    if not np.isclose(b.error, 0):
+        raise ValueError(
+            f"solve expects a zero-error block-encoding of b, but input has an error of {b.error}"
+        )
 
-        if condition_number_A is None:
-            condition_number_A = np.linalg.cond(A.matrix)
+    if condition_number_A is None:
+        condition_number_A = np.linalg.cond(A.matrix)
 
-        condition_number_A = max(condition_number_A, np.sqrt(12))
-        error = min(error, 0.24)
+    condition_number_A = max(condition_number_A, np.sqrt(12))
+    error = min(error, 0.24)
 
-        q = qlsa_query_count(A.alpha, condition_number_A, error)
-    else:
-        q = 0
+    q = qlsa_query_count(A.alpha, condition_number_A, error)
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(

@@ -1,5 +1,6 @@
 import inspect
 import warnings
+from abc import ABC
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
@@ -26,7 +27,7 @@ class BenchmarkError(Exception):
     """Base class for raising benchmarking errors"""
 
 
-class QObject:
+class QObject(ABC, Hashable):
     pass
 
 
@@ -404,7 +405,7 @@ class BlockEncoding(QObject):
     error: float
     """Approximation factor"""
 
-    uses: Iterable[tuple[Hashable, int]] = attrs.field(factory=list)
+    uses: Iterable[tuple[Hashable, float]] = attrs.field(factory=list)
     """BlockEncodings or data-structures used to implement the block-encoding unitary"""
 
     @cached_property
