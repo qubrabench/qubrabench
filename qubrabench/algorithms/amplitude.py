@@ -36,7 +36,7 @@ def estimate_amplitude(
         failure_probability: upper bound on the probability of failure of the quantum algorithm
 
     References:
-        [1] _Quantum Amplitude Amplification and Estimation_
+        [1] *Quantum Amplitude Amplification and Estimation*
             Brassard, Hoyer, Mosca, Tapp. 2000.
             https://doi.org/10.48550/arXiv.quant-ph/0005055
     """
