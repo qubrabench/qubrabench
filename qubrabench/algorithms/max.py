@@ -103,7 +103,7 @@ def max(
         if is_benchmarking:
             for sub_frame in sub_frames_access:
                 for obj_hash, stats in sub_frame.stats.items():
-                    _BenchmarkManager.current_frame()._get_stats_from_hash(
+                    _BenchmarkManager.current_frame()._get_or_init_stats(
                         obj_hash
                     ).classical_actual_queries += stats.classical_actual_queries
 
