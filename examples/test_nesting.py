@@ -1,8 +1,10 @@
-import pytest
-import numpy as np
-from nesting import example
-from qubrabench.benchmark import track_queries
 from pprint import pprint
+
+import numpy as np
+import pytest
+from nesting import example
+
+from qubrabench.benchmark import track_queries
 
 
 @pytest.mark.parametrize("N", [4, 10, 20])
@@ -26,6 +28,6 @@ def test_example_planted_stats(rng):
     b = A @ x
 
     with track_queries() as tracker:
-        result = example(A, b)
+        example(A, b)
         print()
         pprint(tracker.stats)

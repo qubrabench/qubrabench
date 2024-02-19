@@ -1,8 +1,7 @@
-import numpy as np
 import numpy.typing as npt
+
 import qubrabench.algorithms as qba
 from qubrabench.datastructures.qndarray import (
-    Qndarray,
     block_encode_matrix,
     state_preparation_unitary,
 )
