@@ -84,13 +84,13 @@ def max(
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
-        for obj_hash, stats in frame.stats.items():
+        for obj, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash, queries=N, base_stats=stats
+                obj, queries=N, base_stats=stats
             )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
-                obj_hash,
+                obj,
                 queries_classical=0,
                 queries_quantum=cade_et_al_expected_quantum_queries(N, error),
                 base_stats=stats,
@@ -102,9 +102,9 @@ def max(
     with _already_benchmarked():
         if is_benchmarking:
             for sub_frame in sub_frames_access:
-                for obj_hash, stats in sub_frame.stats.items():
+                for obj, stats in sub_frame.stats.items():
                     _BenchmarkManager.current_frame()._get_or_init_stats(
-                        obj_hash
+                        obj
                     ).classical_actual_queries += stats.classical_actual_queries
 
         key_of_max_elem = None

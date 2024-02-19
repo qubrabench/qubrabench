@@ -100,16 +100,16 @@ def search(
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
-        for obj_hash, stats in frame.stats.items():
+        for obj, stats in frame.stats.items():
             if classical_is_random_search:
                 _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                    obj_hash,
+                    obj,
                     base_stats=stats,
                     queries=(N + 1) / (T + 1),
                 )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
-                obj_hash,
+                obj,
                 base_stats=stats,
                 queries_classical=cade_et_al_expected_classical_queries(
                     N, T, max_classical_queries
@@ -124,9 +124,9 @@ def search(
             frame_linear_scan = _BenchmarkManager.combine_sequence_frames(
                 sub_frames_linear_scan
             )
-            for obj_hash, stats in frame_linear_scan.stats.items():
+            for obj, stats in frame_linear_scan.stats.items():
                 _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                    obj_hash,
+                    obj,
                     base_stats=stats,
                     queries=1,
                 )
@@ -145,9 +145,9 @@ def search(
             if is_benchmarking:
                 elem, sub_frame = x
                 # account for iterable access stats
-                for obj_hash, stats in sub_frame.stats.items():
+                for obj, stats in sub_frame.stats.items():
                     _BenchmarkManager.current_frame()._get_or_init_stats(
-                        obj_hash
+                        obj
                     ).classical_actual_queries += stats.classical_actual_queries
             else:
                 elem = x
@@ -237,15 +237,15 @@ def search_by_sampling(
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
-        for obj_hash, stats in frame.stats.items():
+        for obj, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                obj_hash,
+                obj,
                 base_stats=stats,
                 queries=max_iterations,
             )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
-                obj_hash,
+                obj,
                 base_stats=stats,
                 queries_classical=cade_et_al_expected_classical_queries(
                     N, f * N, max_classical_queries
