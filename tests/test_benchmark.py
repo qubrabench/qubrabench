@@ -6,13 +6,7 @@ import numpy.typing as npt
 import pytest
 from numpy.random import Generator
 
-from qubrabench.benchmark import (
-    BlockEncoding,
-    QueryStats,
-    named_oracle,
-    oracle,
-    track_queries,
-)
+from qubrabench.benchmark import BlockEncoding, QueryStats, oracle, track_queries
 
 
 def random_stats(rng: Generator, *, not_benched=False):
@@ -114,24 +108,6 @@ def test_oracle(rng):
             for _ in range(N):
                 some_oracle()
             assert tracker.get_stats(some_oracle).classical_actual_queries == N
-
-
-@named_oracle("oracle")
-def some_named_oracle():
-    pass
-
-
-def test_named_oracle(rng):
-    for _ in range(10):
-        N = rng.integers(5, 50)
-        with track_queries() as tracker:
-            for _ in range(N):
-                some_named_oracle()
-            assert (
-                tracker.get_stats("oracle").classical_actual_queries
-                == tracker.get_stats(some_named_oracle).classical_actual_queries
-                == N
-            )
 
 
 class ClassWithOracles:

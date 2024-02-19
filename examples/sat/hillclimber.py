@@ -11,7 +11,7 @@ from sat import Assignment, W, WeightedSatInstance
 
 from qubrabench.algorithms.max import max
 from qubrabench.algorithms.search import search
-from qubrabench.benchmark import named_oracle, track_queries
+from qubrabench.benchmark import oracle, track_queries
 
 
 def hill_climber(
@@ -54,7 +54,7 @@ def hill_climber(
     if error is not None:
         error /= n
 
-    @named_oracle("hillclimb_step")
+    @oracle
     def hillclimb_step():
         nonlocal x, w, inst
 
@@ -78,7 +78,7 @@ def hill_climber(
         if steep:
             result = max(
                 zip(neighbors, weights),
-                key=named_oracle("inst.weight")(lambda it: it[1]),
+                key=oracle(lambda it: it[1]),
                 error=error,
             )
             if result is None:
@@ -92,7 +92,7 @@ def hill_climber(
         else:
             result = search(
                 zip(neighbors, weights),
-                key=named_oracle("inst.weight")(lambda it: it[1] > w),
+                key=oracle(lambda it: it[1] > w),
                 error=error,
                 rng=rng,
             )
@@ -144,14 +144,16 @@ def run(
         )
         with track_queries() as tracker:
             hill_climber(inst, error=error, rng=rng, steep=steep)
-            stats = tracker.get_stats("inst.weight")
+            stats = tracker.get_function_stats_by_qualname(
+                "hill_climber.<locals>.hillclimb_step.<locals>.<lambda>"
+            )
 
             # save record to history
             rec = asdict(stats)
             rec["n"] = n
             rec["k"] = k
             rec["r"] = r
-            rec["classical_control_method_calls"] = tracker.get_stats(
+            rec["classical_control_method_calls"] = tracker.get_function_stats_by_name(
                 "hillclimb_step"
             ).classical_actual_queries
             history.append(rec)

@@ -1,5 +1,4 @@
 import inspect
-import warnings
 from abc import ABC
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -15,7 +14,6 @@ __all__ = [
     "QueryStats",
     "track_queries",
     "oracle",
-    "named_oracle",
     "BlockEncoding",
     "quantum_subroutine",
     "BenchmarkError",
@@ -128,6 +126,23 @@ class BenchmarkFrame:
         if key not in self.stats:
             raise ValueError(f"object {obj} has not been benchmarked!")
         return self.stats[key]
+
+    def get_stats_by_filter(self, filter_key: Callable[[Hashable], bool]) -> QueryStats:
+        result = QueryStats()
+        for obj, stats in self.stats.items():
+            if filter_key(obj):
+                result += stats
+        return result
+
+    def get_function_stats_by_name(self, name: str) -> QueryStats:
+        return self.get_stats_by_filter(
+            lambda obj: (getattr(obj, "__name__", None) == name)
+        )
+
+    def get_function_stats_by_qualname(self, qualname: str) -> QueryStats:
+        return self.get_stats_by_filter(
+            lambda obj: (getattr(obj, "__qualname__", None) == qualname)
+        )
 
     def _get_or_init_stats(self, obj: Hashable) -> QueryStats:
         if obj not in self.stats:
@@ -267,7 +282,7 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
         _BenchmarkManager._stack.pop()
 
 
-def oracle(func=None, *, name: Optional[str] = None):
+def oracle(func):
     """Wrapper to track queries for functions.
 
     Usage:
@@ -310,56 +325,29 @@ def oracle(func=None, *, name: Optional[str] = None):
             assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
 
-    def decorator(fun):
-        is_bound_method: bool = next(iter(inspect.signature(fun).parameters), None) in [
-            "self",
-            "cls",
-        ]
+    is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
+        "self",
+        "cls",
+    ]
 
-        @wraps(fun)
-        def wrapped_func(*args, **kwargs):
-            if _BenchmarkManager.is_tracking():
-                hashables: set[Hashable] = {wrapped_func}
-                if is_bound_method:
-                    self = args[0]
-                    hashables.add((wrapped_func, self))
-                    if isinstance(self, QObject):
-                        hashables.add(self)
-                if name is not None:
-                    hashables.add(name)
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        if _BenchmarkManager.is_tracking():
+            hashables: set[Hashable] = {wrapped_func}
+            if is_bound_method:
+                self = args[0]
+                hashables.add((wrapped_func, self))
+                if isinstance(self, QObject):
+                    hashables.add(self)
 
-                frame = _BenchmarkManager.current_frame()
-                for key in hashables:
-                    stats = frame._get_or_init_stats(key)
-                    stats._record_query(n=1, only_actual=frame._track_only_actual)
+            frame = _BenchmarkManager.current_frame()
+            for key in hashables:
+                stats = frame._get_or_init_stats(key)
+                stats._record_query(n=1, only_actual=frame._track_only_actual)
 
-            return fun(*args, **kwargs)
+        return func(*args, **kwargs)
 
-        return wrapped_func
-
-    if func is not None:
-        return decorator(func)
-    return decorator
-
-
-def named_oracle(name: str):
-    """Wrapper to track queries for functions.
-
-    Usage:
-
-    .. code:: python
-
-        @named_oracle("some_name")
-        def some_func(*args, **kwargs):
-            ...
-
-        with track_queries() as tracker:
-            ...
-            stats = tracker.get_stats("some_name")
-    """
-    warnings.warn("named_oracle will be removed soon", DeprecationWarning)
-
-    return oracle(name=name)
+    return wrapped_func
 
 
 @contextmanager
