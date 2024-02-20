@@ -22,7 +22,8 @@ class Qndarray(QObject, Generic[T]):
 
     >>> a = np.array([[1, 2], [3, 4]])
     >>> qa = Qndarray(a)
-    >>> print(qa[0, 0]) # 1
+    >>> qa[0, 0]
+    1
 
     Accessing entries:
         Use `qndarray[i, j, ...]` with `ndim` indices.
@@ -33,7 +34,8 @@ class Qndarray(QObject, Generic[T]):
 
         >>> a = np.array([[1, 2], [3, 4]])
         >>> row_0 = a[0, :]
-        >>> print(row_0[0]) # 1
+        >>> row_0[0]
+        1
     """
 
     __data: npt.NDArray[T]
