@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from nesting import example, generate_random_matrix_of_condition_number
 
-from qubrabench.benchmark import track_queries, QueryStats
+from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 
 

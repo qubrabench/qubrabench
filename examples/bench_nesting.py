@@ -85,6 +85,8 @@ def plot(data_file):
     fig, ax = plt.subplots()
     ax.set_xlabel(r"condition number $\kappa_A$")
     ax.set_ylabel("queries (A)")
+    # ax.set_yscale("log")
+
     for N, group in data.groupby("N"):
         gdata = group.groupby("k_A")
         means = gdata.mean(numeric_only=True)

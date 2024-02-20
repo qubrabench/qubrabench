@@ -4,8 +4,8 @@ BENCH_OPTS ?=
 
 bench-example:
 	$(eval FNAME = $(DATA_DIR)/data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
-	for N in 10 20 30 ; do \
-		for k in 10 20 30 40 50 ; do \
+	for N in 20 30 40 ; do \
+		for k in 10 20 30 40 50 60 70 ; do \
 			echo "N = $$N, k = $$k" ; \
 			$(BENCH) benchmark $(BENCH_OPTS) -N $$N -k $$k --save $(FNAME) ; \
 		done \
