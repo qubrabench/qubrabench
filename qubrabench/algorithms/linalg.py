@@ -54,7 +54,7 @@ def solve(
 
 def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
     q_star_term_1 = (
-        (1741 * alpha * eps / 500)
+        (1741 * alpha * np.e / 500)
         * np.sqrt(kappa**2 + 1)
         * (
             (133 / 125 + 4 / (25 * np.power(kappa, 1.0 / 3)))
