@@ -11,6 +11,33 @@ T = TypeVar("T")
 
 
 class Qndarray(QObject, Generic[T]):
+    """Quantum-accessible ndarray object.
+
+    This behaves like numpy.ndarray, but also tracks accesses to elements.
+
+    NOTE:
+         It does not support the full generality of numpy ndarrays.
+         Currently only supports indexing to either access entries or get subviews.
+         If you reshape or copy the data, it is considered a new object, whose stats are tracked separately.
+
+    >>> a = np.array([[1, 2], [3, 4]])
+    >>> qa = Qndarray(a)
+    >>> qa[0, 0]
+    1
+
+    Accessing entries:
+        Use `qndarray[i, j, ...]` with `ndim` indices.
+
+    Creating views:
+        When accessed using ranges for indices, or only a subset of indices,
+        it creates a view object instead, whose queries are tracked as queries to the original object.
+
+        >>> a = np.array([[1, 2], [3, 4]])
+        >>> row_0 = a[0, :]
+        >>> row_0[0]
+        1
+    """
+
     __data: npt.NDArray[T]
     __view_of: Optional["Qndarray[T]"]
 

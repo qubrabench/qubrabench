@@ -4,7 +4,7 @@ from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 
 
-def test_qmatrix_iterate(rng):
+def test_qndarray_iterate(rng):
     for _ in range(5):
         N, M = rng.integers(10, 50, size=2)
         mat = rng.random(size=(N, M))
@@ -29,7 +29,30 @@ def test_qmatrix_iterate(rng):
             )
 
 
-def test_matrix_idempotent():
+def test_qndarray_constructor_idempotent():
     a = Qndarray(np.eye(3))
     b = Qndarray(a)
     assert a == b
+
+
+def test_qndarray_view():
+    a = Qndarray(np.eye(3))
+    row = a[0, :]
+
+    with track_queries() as tracker:
+        _ = row[0]
+        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
+
+
+def test_qndarray_nested_views():
+    a = Qndarray(np.eye(3))
+    b = a[:, :]
+    row = b[0, :]
+
+    with track_queries() as tracker:
+        _ = row[0]
+
+        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(b) == QueryStats(classical_actual_queries=1)
