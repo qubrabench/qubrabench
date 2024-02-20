@@ -1,6 +1,5 @@
 import numpy as np
-
-# from pytest import approx
+from pytest import approx
 from simplex import FindColumn
 
 from qubrabench.benchmark import track_queries
@@ -18,10 +17,9 @@ def test_find_column(rng):
     A = Qndarray(A)
     c = Qndarray(c)
 
-    with track_queries():  # as tracker:
+    with track_queries() as tracker:
         k = FindColumn(A, B, c, epsilon=1e-3)
         assert k == 2
 
-        # TODO(anurudhp) debug
-        # queries = tracker.get_stats(A).quantum_expected_quantum_queries
-        # assert queries == approx(50351090.3742553)
+        queries = tracker.get_stats(A).quantum_expected_quantum_queries
+        assert queries == approx(50351090.3742553)
