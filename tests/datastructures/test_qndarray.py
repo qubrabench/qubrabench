@@ -37,7 +37,7 @@ def test_qndarray_constructor_idempotent():
 
 def test_qndarray_view():
     a = Qndarray(np.eye(3))
-    row = a[:, 0]
+    row = a[0, :]
 
     with track_queries() as tracker:
         _ = row[0]
@@ -48,7 +48,7 @@ def test_qndarray_view():
 def test_qndarray_nested_views():
     a = Qndarray(np.eye(3))
     b = a[:, :]
-    row = b[:, 0]
+    row = b[0, :]
 
     with track_queries() as tracker:
         _ = row[0]
