@@ -1,9 +1,12 @@
 import numpy as np
 import numpy.typing as npt
+import pandas as pd
 import scipy
 
 import qubrabench.algorithms as qba
+from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import (
+    Qndarray,
     block_encode_matrix,
     state_preparation_unitary,
 )
@@ -26,6 +29,7 @@ def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
         )
         >= 0.25,
         error=error,
+        max_classical_queries=0,
     )
     return ix is not None
 
@@ -50,3 +54,48 @@ def generate_random_matrix_of_condition_number(
     V = scipy.stats.special_ortho_group.rvs(N, random_state=rng)
 
     return U @ np.diag(D_scaled) @ V
+
+
+def run(
+    N: int,
+    condition_number: float,
+    *,
+    error: float,
+    rng: np.random.Generator,
+    n_runs: int = 5,
+) -> pd.DataFrame:
+    """Benchmark the example.
+
+    Args:
+        N: dimension of A and b.
+        condition_number: condition number of A
+        error: upper bound on failure probability of the entire algorithm
+        n_runs: number of repetitions
+        rng: random generator
+    """
+    history = []
+    for _ in range(n_runs):
+        A = generate_random_matrix_of_condition_number(N, condition_number, rng=rng)
+        b = rng.random(N)
+
+        with track_queries() as tracker:
+            A = Qndarray(A)
+            b = Qndarray(b)
+            _ = example(A, b, error=error)
+
+            stats_A: QueryStats = tracker.get_stats(A)
+            stats_b: QueryStats = tracker.get_stats(b)
+
+            history.append(
+                {
+                    "N": N,
+                    "k_A": condition_number,
+                    "queries_A": stats_A.quantum_expected_quantum_queries,
+                    "queries_b": stats_b.quantum_expected_quantum_queries,
+                }
+            )
+
+    df = pd.DataFrame(
+        [list(row.values()) for row in history], columns=list(history[0].keys())
+    )
+    return df

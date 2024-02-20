@@ -34,7 +34,7 @@ def test_example_planted_stats(rng):
 
         stats = tracker.get_stats(A)
         assert stats.quantum_expected_quantum_queries == pytest.approx(
-            1.2732825559734272e20
+            9.891555910914348e19
         )
 
 
