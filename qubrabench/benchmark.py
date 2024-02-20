@@ -1,10 +1,9 @@
 import inspect
-import warnings
 from abc import ABC
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
-from typing import Any, Callable, Generator, Hashable, Iterable, Optional, TypeAlias
+from typing import Any, Callable, Generator, Hashable, Iterable, Optional
 
 import attrs
 import numpy as np
@@ -15,10 +14,8 @@ __all__ = [
     "QueryStats",
     "track_queries",
     "oracle",
-    "named_oracle",
     "BlockEncoding",
     "quantum_subroutine",
-    "Hash",
     "BenchmarkError",
 ]
 
@@ -29,10 +26,6 @@ class BenchmarkError(Exception):
 
 class QObject(ABC, Hashable):
     pass
-
-
-Hash: TypeAlias = int
-"""hash type of a benchmarkable object"""
 
 
 @dataclass
@@ -114,7 +107,7 @@ def merge_into_with_sum_inplace(a: dict, b: dict):
 class BenchmarkFrame:
     """A benchmark stack frame, mapping oracle hashes to their computed stats"""
 
-    stats: dict[Hash, QueryStats]
+    stats: dict[Hashable, QueryStats]
     _track_only_actual: bool
 
     def __init__(self):
@@ -124,32 +117,46 @@ class BenchmarkFrame:
     def get_stats(self, obj: Any) -> QueryStats:
         """Get the statistics of a quantum oracle/data structure"""
 
-        h = _BenchmarkManager._get_hash(obj)
-        if h not in self.stats:
+        key: Hashable
+        if inspect.ismethod(obj):
+            key = obj.__func__, obj.__self__
+        else:
+            key = obj
+
+        if key not in self.stats:
             raise ValueError(f"object {obj} has not been benchmarked!")
-        return self.stats[h]
+        return self.stats[key]
 
-    def _get_stats(self, obj: Any) -> QueryStats:
-        h = _BenchmarkManager._get_hash(obj)
-        return self._get_stats_from_hash(h)
+    def get_stats_by_filter(self, filter_key: Callable[[Hashable], bool]) -> QueryStats:
+        result = QueryStats()
+        for obj, stats in self.stats.items():
+            if filter_key(obj):
+                result += stats
+        return result
 
-    def _get_stats(self, obj: Any) -> QueryStats:
-        """Get the statistics of a quantum oracle/data structure"""
-        return self._get_stats_from_hash(self.__get_hash(obj))
+    def get_function_stats_by_name(self, name: str) -> QueryStats:
+        return self.get_stats_by_filter(
+            lambda obj: (getattr(obj, "__name__", None) == name)
+        )
 
-    def _get_stats_from_hash(self, obj_hash: int) -> QueryStats:
-        if obj_hash not in self.stats:
-            self.stats[obj_hash] = QueryStats()
-        return self.stats[obj_hash]
+    def get_function_stats_by_qualname(self, qualname: str) -> QueryStats:
+        return self.get_stats_by_filter(
+            lambda obj: (getattr(obj, "__qualname__", None) == qualname)
+        )
+
+    def _get_or_init_stats(self, obj: Hashable) -> QueryStats:
+        if obj not in self.stats:
+            self.stats[obj] = QueryStats()
+        return self.stats[obj]
 
     def _add_classical_expected_queries(
         self,
-        obj_hash: int,
+        obj: Hashable,
         *,
         base_stats: QueryStats,
         queries: float,
     ):
-        stats = self._get_stats_from_hash(obj_hash)
+        stats = self._get_or_init_stats(obj)
         base_stats = base_stats._as_benchmarked()
 
         if stats.classical_expected_queries is None:
@@ -160,13 +167,13 @@ class BenchmarkFrame:
 
     def _add_quantum_expected_queries(
         self,
-        obj_hash: int,
+        obj: Hashable,
         *,
         base_stats: QueryStats,
         queries_classical: float = 0,
         queries_quantum: float = 0,
     ):
-        stats = self._get_stats_from_hash(obj_hash)
+        stats = self._get_or_init_stats(obj)
         base_stats = base_stats._as_benchmarked()
 
         if stats.quantum_expected_classical_queries is None:
@@ -194,13 +201,6 @@ class _BenchmarkManager:
         assert False, f"should not create object of class {cls}"
 
     @staticmethod
-    def _get_hash(obj: Any) -> int:
-        """hashing used to store the stats"""
-        if inspect.ismethod(obj):
-            return hash((obj.__func__, obj.__self__))
-        return hash(obj)
-
-    @staticmethod
     def is_tracking() -> bool:
         return len(_BenchmarkManager._stack) > 0
 
@@ -222,13 +222,13 @@ class _BenchmarkManager:
             benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
 
         frame = BenchmarkFrame()
-        for obj_hash in benchmark_objects:
+        for obj in benchmark_objects:
             sub_frame_stats = [
-                sub_frame._get_stats_from_hash(obj_hash)._as_benchmarked()
+                sub_frame._get_or_init_stats(obj)._as_benchmarked()
                 for sub_frame in frames
             ]
 
-            frame.stats[obj_hash] = QueryStats(
+            frame.stats[obj] = QueryStats(
                 classical_expected_queries=max(
                     stats.classical_expected_queries for stats in sub_frame_stats
                 ),
@@ -251,11 +251,11 @@ class _BenchmarkManager:
 
         frame = BenchmarkFrame()
         frame.stats = {
-            obj_hash: reduce(
+            obj: reduce(
                 QueryStats.__add__,
-                [sub_frame._get_stats_from_hash(obj_hash) for sub_frame in frames],
+                [sub_frame._get_or_init_stats(obj) for sub_frame in frames],
             )
-            for obj_hash in benchmark_objects
+            for obj in benchmark_objects
         }
         return frame
 
@@ -282,7 +282,7 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
         _BenchmarkManager._stack.pop()
 
 
-def oracle(func=None, *, name: Optional[str] = None):
+def oracle(func):
     """Wrapper to track queries for functions.
 
     Usage:
@@ -325,56 +325,29 @@ def oracle(func=None, *, name: Optional[str] = None):
             assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
 
-    def decorator(fun):
-        is_bound_method: bool = next(iter(inspect.signature(fun).parameters), None) in [
-            "self",
-            "cls",
-        ]
+    is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
+        "self",
+        "cls",
+    ]
 
-        @wraps(fun)
-        def wrapped_func(*args, **kwargs):
-            if _BenchmarkManager.is_tracking():
-                hashes = {hash(wrapped_func)}
-                if is_bound_method:
-                    self = args[0]
-                    hashes.add(hash((wrapped_func, self)))
-                    if isinstance(self, QObject):
-                        hashes.add(hash(self))
-                if name is not None:
-                    hashes.add(hash(name))
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        if _BenchmarkManager.is_tracking():
+            hashables: set[Hashable] = {wrapped_func}
+            if is_bound_method:
+                self = args[0]
+                hashables.add((wrapped_func, self))
+                if isinstance(self, QObject):
+                    hashables.add(self)
 
-                frame = _BenchmarkManager.current_frame()
-                for h in hashes:
-                    stats = frame._get_stats_from_hash(h)
-                    stats._record_query(n=1, only_actual=frame._track_only_actual)
+            frame = _BenchmarkManager.current_frame()
+            for key in hashables:
+                stats = frame._get_or_init_stats(key)
+                stats._record_query(n=1, only_actual=frame._track_only_actual)
 
-            return fun(*args, **kwargs)
+        return func(*args, **kwargs)
 
-        return wrapped_func
-
-    if func is not None:
-        return decorator(func)
-    return decorator
-
-
-def named_oracle(name: str):
-    """Wrapper to track queries for functions.
-
-    Usage:
-
-    .. code:: python
-
-        @named_oracle("some_name")
-        def some_func(*args, **kwargs):
-            ...
-
-        with track_queries() as tracker:
-            ...
-            stats = tracker.get_stats("some_name")
-    """
-    warnings.warn("named_oracle will be removed soon", DeprecationWarning)
-
-    return oracle(name=name)
+    return wrapped_func
 
 
 @contextmanager
@@ -409,12 +382,14 @@ class BlockEncoding(QObject):
     """BlockEncodings or data-structures used to implement the block-encoding unitary"""
 
     @cached_property
-    def costs(self) -> dict[Hash, QueryStats]:
-        cost_table: dict[Hash, QueryStats] = {}
+    def costs(self) -> dict[Hashable, QueryStats]:
+        cost_table: dict[Hashable, QueryStats] = {
+            self: QueryStats(quantum_expected_quantum_queries=1)
+        }
 
         for obj, q_queries in self.uses:
             if isinstance(obj, BlockEncoding):
-                for sub_obj_hash, stats in obj.costs.items():
+                for sub_obj, stats in obj.costs.items():
                     stats = stats._as_benchmarked()
                     sub_q = (
                         stats.quantum_expected_quantum_queries
@@ -424,21 +399,17 @@ class BlockEncoding(QObject):
                     merge_into_with_sum_inplace(
                         cost_table,
                         {
-                            sub_obj_hash: QueryStats(
+                            sub_obj: QueryStats(
                                 quantum_expected_quantum_queries=q_queries * sub_q
                             )
                         },
                     )
             else:
-                obj_hash = _BenchmarkManager._get_hash(obj)
                 merge_into_with_sum_inplace(
                     cost_table,
-                    {obj_hash: QueryStats(quantum_expected_quantum_queries=q_queries)},
+                    {obj: QueryStats(quantum_expected_quantum_queries=q_queries)},
                 )
 
-        merge_into_with_sum_inplace(
-            cost_table, {hash(self): QueryStats(quantum_expected_quantum_queries=1)}
-        )
         return cost_table
 
     def access(self, *, n_times: int = 1):
