@@ -1,8 +1,6 @@
-from pprint import pprint
-
 import numpy as np
 import pytest
-from nesting import example
+from nesting import example, generate_random_matrix_of_condition_number
 
 from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.qndarray import Qndarray
@@ -28,8 +26,21 @@ def test_example_planted_stats(rng):
     x /= np.linalg.norm(x)
     b = A @ x
 
+    assert np.linalg.cond(A) == 406.1253740708785
+
     with track_queries() as tracker:
         A = Qndarray(A)
         example(A, b)
-        print()
-        pprint(tracker.get_stats(A))
+
+        stats = tracker.get_stats(A)
+        assert stats.quantum_expected_quantum_queries == pytest.approx(
+            1.2732825559734272e20
+        )
+
+
+@pytest.mark.parametrize("N", [4, 8, 16, 50, 100, 200])
+@pytest.mark.parametrize("kappa", [10, 100, 1000])
+def test_random_matrix_with_condition_number(rng, N: int, kappa: float):
+    for _ in range(5):
+        U = generate_random_matrix_of_condition_number(N, kappa, rng=rng)
+        assert np.linalg.cond(U) == pytest.approx(kappa)

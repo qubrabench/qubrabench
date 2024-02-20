@@ -1,4 +1,6 @@
+import numpy as np
 import numpy.typing as npt
+import scipy
 
 import qubrabench.algorithms as qba
 from qubrabench.datastructures.qndarray import (
@@ -26,3 +28,25 @@ def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
         error=error,
     )
     return ix is not None
+
+
+def generate_random_matrix_of_condition_number(
+    N: int, condition_number: float, *, rng: np.random.Generator, l2_norm: float = 1
+):
+    r"""Generate a random N x N matrix with bounded condition number.
+
+    Args:
+        N: dimension of the matrix
+        condition_number: approximate condition number of the required matrix
+        rng: random generator
+        l2_norm: upper bound on the spectral norm of the output matrix
+
+    Returns:
+        Random N x N matrix with condition number atmost the given value.
+    """
+    U = scipy.stats.special_ortho_group.rvs(N, random_state=rng)
+    D = rng.random(size=N)
+    D_scaled = np.interp(D, (D.min(), D.max()), (l2_norm / condition_number, l2_norm))
+    V = scipy.stats.special_ortho_group.rvs(N, random_state=rng)
+
+    return U @ np.diag(D_scaled) @ V
