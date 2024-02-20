@@ -33,3 +33,26 @@ def test_qndarray_constructor_idempotent():
     a = Qndarray(np.eye(3))
     b = Qndarray(a)
     assert a == b
+
+
+def test_qndarray_view():
+    a = Qndarray(np.eye(3))
+    row = a[:, 0]
+
+    with track_queries() as tracker:
+        _ = row[0]
+        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
+
+
+def test_qndarray_nested_views():
+    a = Qndarray(np.eye(3))
+    b = a[:, :]
+    row = b[:, 0]
+
+    with track_queries() as tracker:
+        _ = row[0]
+
+        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
+        assert tracker.get_stats(b) == QueryStats(classical_actual_queries=1)

@@ -25,7 +25,8 @@ class BenchmarkError(Exception):
 
 
 class QObject(ABC, Hashable):
-    pass
+    def __eq__(self, other):
+        return hash(self) == hash(other)
 
 
 @dataclass
