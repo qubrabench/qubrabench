@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from nesting import example, generate_random_matrix_of_condition_number
 
-from qubrabench.benchmark import track_queries
+from qubrabench.benchmark import track_queries, QueryStats
 from qubrabench.datastructures.qndarray import Qndarray
 
 
@@ -33,8 +33,11 @@ def test_example_planted_stats(rng):
         example(A, b)
 
         stats = tracker.get_stats(A)
-        assert stats.quantum_expected_quantum_queries == pytest.approx(
-            9.891555910914348e19
+        assert stats == QueryStats(
+            classical_actual_queries=0,
+            classical_expected_queries=0,
+            quantum_expected_classical_queries=0,
+            quantum_expected_quantum_queries=pytest.approx(9.891555910914348e19),
         )
 
 
