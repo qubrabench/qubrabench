@@ -5,6 +5,7 @@ import pytest
 from nesting import example
 
 from qubrabench.benchmark import track_queries
+from qubrabench.datastructures.qndarray import Qndarray
 
 
 @pytest.mark.parametrize("N", [4, 10, 20])
@@ -28,6 +29,7 @@ def test_example_planted_stats(rng):
     b = A @ x
 
     with track_queries() as tracker:
+        A = Qndarray(A)
         example(A, b)
         print()
-        pprint(tracker.stats)
+        pprint(tracker.get_stats(A))
