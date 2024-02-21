@@ -50,12 +50,15 @@ def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
     if U.matrix.shape != V.matrix.shape:
         raise ValueError("U and V must block-encode same sized matrices")
 
-    u = U.matrix / U.alpha
-    v = V.matrix / V.alpha
+    u = U.matrix / U.subnormalization_factor
+    v = V.matrix / V.subnormalization_factor
     return BlockEncoding(
         0.5 * np.concatenate((u + v, v - u)),
-        alpha=1,
-        error=max(U.error / U.alpha, V.error / V.alpha),
+        subnormalization_factor=1,
+        precision=max(
+            U.precision / U.subnormalization_factor,
+            V.precision / V.subnormalization_factor,
+        ),
         uses=[(U, 1), (V, 1)],
     )
 
@@ -210,7 +213,9 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
         res = np.block([a.get_raw_data(), b.get_raw_data()])
         alpha = np.linalg.norm(res)
 
-    return BlockEncoding(res, alpha=alpha, error=0, uses=[(a, rank), (b, rank)])
+    return BlockEncoding(
+        res, subnormalization_factor=alpha, precision=0, uses=[(a, rank), (b, rank)]
+    )
 
 
 @quantum_subroutine
@@ -226,8 +231,8 @@ def RedCost(
 
     return BlockEncoding(
         np.array([np.inner(np.block([-c.get_raw_data()[B], 1]), sol.matrix)]),
-        alpha=sol.alpha * np.sqrt(2),
-        error=sol.error,
+        subnormalization_factor=sol.subnormalization_factor * np.sqrt(2),
+        precision=sol.precision,
         uses=[(sol, 1), (c, 1)],
     )
 

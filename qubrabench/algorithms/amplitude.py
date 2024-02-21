@@ -45,14 +45,14 @@ def estimate_amplitude(
             f"estimate_amplitude: Expected a block-encoding (i.e. state preparation unitary) of a vector, got encoding of shape {prepare_psi.matrix.shape}"
         )
 
-    if not np.isclose(prepare_psi.error, 0):
+    if not np.isclose(prepare_psi.precision, 0):
         # TODO analyze cost for robust version
         warnings.warn(
             "estimate_amplitude: query costs for robust version is not yet implemented, results may be incorrect",
             UserWarning,
         )
 
-        prec_sub = np.abs(prepare_psi.error / prepare_psi.alpha)
+        prec_sub = np.abs(prepare_psi.precision / prepare_psi.subnormalization_factor)
         if precision < prec_sub:
             raise RuntimeError(
                 f"estimate_amplitude: Input block-encoding is too imprecise to estimate correctly:"
@@ -61,7 +61,12 @@ def estimate_amplitude(
         precision -= prec_sub
 
     # actual value to estimate
-    a = np.linalg.norm(prepare_psi.matrix[good_indices] / prepare_psi.alpha) ** 2
+    a = (
+        np.linalg.norm(
+            prepare_psi.matrix[good_indices] / prepare_psi.subnormalization_factor
+        )
+        ** 2
+    )
 
     k: int
     if failure_probability >= 1 - 8 / np.pi**2:
