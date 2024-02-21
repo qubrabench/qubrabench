@@ -28,7 +28,7 @@ Basis: TypeAlias = Sequence[int]
 def solve_linear_system(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    return qba.linalg.solve(enc_A, enc_b, error=eps)
+    return qba.linalg.solve(enc_A, enc_b, max_failure_probability=eps)
 
 
 @quantum_subroutine
@@ -225,7 +225,14 @@ def RedCost(
     """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
     rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
-    sol = qba.linalg.solve(lhs_mat, rhs_vec, error=epsilon / (10 * np.sqrt(2)))
+    sol = qba.linalg.solve(
+        lhs_mat,
+        rhs_vec,
+        precision=epsilon / (10 * np.sqrt(2)),
+        max_failure_probability=(
+            1 / 3
+        ),  # TODO is this correct? it's missing in the paper.
+    )
 
     c = Qndarray(c)
 

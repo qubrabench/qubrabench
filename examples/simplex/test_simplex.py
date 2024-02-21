@@ -22,4 +22,4 @@ def test_find_column(rng):
         assert k == 2
 
         queries = tracker.get_stats(A).quantum_expected_quantum_queries
-        assert queries == approx(50351090.3742553)
+        assert queries == approx(43645071.062891126)
