@@ -19,7 +19,7 @@ def classical_algorithm(A: npt.NDArray, b: npt.NDArray) -> bool:
     return any(np.abs(x[i]) >= 0.5 for i in range(N))
 
 
-def example(
+def quantum_algorithm(
     A: npt.NDArray, b: npt.NDArray, *, max_failure_probability: float = 1e-5
 ) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
@@ -102,7 +102,7 @@ def run(
         with track_queries() as tracker:
             A = Qndarray(A)
             b = Qndarray(b)
-            _ = example(A, b, max_failure_probability=1 / 3)
+            _ = quantum_algorithm(A, b, max_failure_probability=1 / 3)
 
             stats_A: QueryStats = tracker.get_stats(A)
             stats_b: QueryStats = tracker.get_stats(b)

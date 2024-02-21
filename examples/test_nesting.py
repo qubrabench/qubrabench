@@ -1,6 +1,10 @@
 import numpy as np
 import pytest
-from nesting import example, generate_random_matrix_of_condition_number
+from nesting import (
+    classical_algorithm,
+    generate_random_matrix_of_condition_number,
+    quantum_algorithm,
+)
 
 from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import Qndarray
@@ -14,8 +18,8 @@ def test_example_planted(rng, N: int):
         x /= np.linalg.norm(x)
         b = A @ x
 
-        expected = np.any(np.abs(x) >= 0.5)
-        actual = example(A, b)
+        expected = classical_algorithm(A, b)
+        actual = quantum_algorithm(A, b)
         assert expected == actual
 
 
@@ -30,7 +34,7 @@ def test_example_planted_stats(rng):
 
     with track_queries() as tracker:
         A = Qndarray(A)
-        example(A, b)
+        _ = quantum_algorithm(A, b)
 
         stats = tracker.get_stats(A)
         assert stats == QueryStats(
