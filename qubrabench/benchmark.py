@@ -368,22 +368,18 @@ def _already_benchmarked():
 class BlockEncoding(QObject):
     r"""Unitary that block-encodes an approximation of a (subnormalized version of a) matrix.
 
-    A unitary program $U$ possibly using ancilla such that
+    Given a matrix $A$, subnormalization factor $\alpha$ and precision $\epsilon$,
+    this object represents a unitary program $U$ (possibly using ancilla) satisfying
 
     .. math::
 
-        U = \begin{pmatrix} \tilde{A} & \cdot \\ \cdot & \cdot \end{pmatrix}
+        \| A - \alpha (\langle 0 | \otimes I) U (|0\rangle \otimes I) \|_2 \le \epsilon
 
-    satisfying
+    This can also be visualized as
 
     .. math::
 
-        \| A - \alpha (\langle 0 | \otimes I) U (|0\rangle \otimes I) \| \le \epsilon
-
-    Attributes:
-        matrix: A
-        subnormalization_factor: $\alpha$
-        precision: $\epsilon$
+        U \approx \begin{pmatrix} A/\alpha & \cdot \\ \cdot & \cdot \end{pmatrix}
     """
 
     matrix: npt.NDArray[np.complex_]
@@ -395,7 +391,7 @@ class BlockEncoding(QObject):
     precision: float
     r"""The spectral norm of the difference between the expected and actual encoded matrices.
     
-    If the block of the unitary is $B$, then the precision is given by $\| A - \alpha B \|_2$.
+    If the top-left block of the unitary is $B$, then the precision is given by $\| A - \alpha B \|_2$.
     """
 
     uses: Iterable[tuple[Hashable, float]] = attrs.field(factory=list)

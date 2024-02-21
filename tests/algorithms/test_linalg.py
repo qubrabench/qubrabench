@@ -6,11 +6,7 @@ from qubrabench.algorithms.linalg import (
     solve,
 )
 from qubrabench.benchmark import track_queries
-from qubrabench.datastructures.qndarray import (
-    Qndarray,
-    block_encode_matrix,
-    state_preparation_unitary,
-)
+from qubrabench.datastructures.qndarray import Qndarray
 
 
 def random_instance(rng, N: int) -> tuple[Qndarray, Qndarray]:
@@ -22,12 +18,8 @@ def random_instance(rng, N: int) -> tuple[Qndarray, Qndarray]:
 @pytest.mark.parametrize("N", [5, 10, 15, 20, 25, 30])
 def test_solve(rng, N: int):
     A, b = random_instance(rng, N)
-
-    enc_A = block_encode_matrix(A, eps=0)
-    enc_b = state_preparation_unitary(b, eps=0)
-    enc_y = solve(enc_A, enc_b, max_failure_probability=0, precision=1e-5)
-
-    np.testing.assert_allclose(enc_A.matrix @ enc_y.matrix, enc_b.matrix)
+    enc_y = solve(A, b, max_failure_probability=0, precision=1e-5)
+    np.testing.assert_allclose(A.get_raw_data() @ enc_y.matrix, b.get_raw_data())
 
 
 def test_solve_stats(rng):
@@ -36,11 +28,9 @@ def test_solve_stats(rng):
     precision = 1e-5
 
     A, b = random_instance(rng, N)
-    enc_A = block_encode_matrix(A, eps=0)
-    enc_b = state_preparation_unitary(b, eps=0)
     enc_y = solve(
-        enc_A,
-        enc_b,
+        A,
+        b,
         max_failure_probability=max_failure_probability,
         precision=precision,
     )

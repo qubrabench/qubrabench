@@ -3,12 +3,51 @@ from typing import Optional
 import numpy as np
 
 from ..benchmark import BlockEncoding, quantum_subroutine
+from ..datastructures.qndarray import (
+    QNDArrayLike,
+    block_encode_matrix,
+    state_preparation_unitary,
+)
 
-__all__ = ["solve"]
+__all__ = ["solve", "qlsa"]
 
 
 @quantum_subroutine
 def solve(
+    A: QNDArrayLike,
+    b: QNDArrayLike,
+    *,
+    max_failure_probability: float,
+    precision: float,
+    condition_number_A: Optional[float] = None,
+) -> BlockEncoding:
+    """Solve the linear system Ax = b, producing a quantum state encoding x.
+
+    See `qlsa` for query costs.
+
+    Args:
+        A: input matrix
+        b: input vector
+        max_failure_probability: upper bound on probability of failure
+        precision: the l1 norm distance of the output unit vector to the actual solution (scaled to unit)
+        condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
+
+    Returns:
+        Block-encoded solution vector.
+    """
+    enc_A = block_encode_matrix(A, eps=0)
+    enc_b = state_preparation_unitary(b, eps=0)
+    return qlsa(
+        enc_A,
+        enc_b,
+        max_failure_probability=max_failure_probability,
+        precision=precision,
+        condition_number_A=condition_number_A,
+    )
+
+
+@quantum_subroutine
+def qlsa(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
@@ -17,7 +56,6 @@ def solve(
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
     """Quantum Linear Solver as described in https://doi.org/10.48550/arXiv.2305.11352
-
 
     Given block-encodings for $A$ and $b$, find an approximation of $y$ satisfying $Ay = b$.
 
