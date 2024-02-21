@@ -87,8 +87,9 @@ def qlsa_query_count_with_failure_probability(
     if 1 - max_failure_probability <= expected_success_probability:
         n_repeat_expected = 1
     else:
-        n_repeat_expected = np.emath.log(
-            max_failure_probability, 1 - expected_success_probability
+        n_repeat_expected = np.emath.logn(
+            1 - expected_success_probability,
+            max_failure_probability,
         )
 
     return q_star * n_repeat_expected
