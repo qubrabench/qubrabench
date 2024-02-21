@@ -12,18 +12,24 @@ def solve(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
-    error: float = 0.24,
+    max_failure_probability: float,
+    precision: float,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
-    """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
+    """Quantum Linear Solver as described in https://doi.org/10.48550/arXiv.2305.11352
+
 
     Given block-encodings for $A$ and $b$, find an approximation of $y$ satisfying $Ay = b$.
 
     Args:
         A: block-encoded input matrix
         b: block-encoded input vector
-        error: approximation factor of the solution vector
+        max_failure_probability: probability of failure
+        precision: the l1 norm distance of the output unit vector to the actual solution (scaled to unit)
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
+
+    Raises:
+        ValueError: if input block-encodings do not have zero precision.
 
     Returns:
         Block-encoded solution vector.
@@ -42,20 +48,55 @@ def solve(
         condition_number_A = np.linalg.cond(A.matrix)
 
     condition_number_A = max(condition_number_A, np.sqrt(12))
-    error = min(error, 0.24)
+    precision = min(precision, 0.24)
 
-    q = qlsa_query_count(A.subnormalization_factor, condition_number_A, error)
+    q = qlsa_query_count_with_failure_probability(
+        A.subnormalization_factor,
+        condition_number_A,
+        precision,
+        max_failure_probability,
+    )
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(
         y,
         subnormalization_factor=np.linalg.norm(y),
-        precision=error,
+        precision=precision,
         uses=[(A, q), (b, 2 * q)],
     )
 
 
+def qlsa_query_count_with_failure_probability(
+    block_encoding_subnormalization_A: float,
+    condition_number_A: float,
+    l1_precision: float,
+    max_failure_probability: float,
+) -> float:
+    """Query cost expression from https://doi.org/10.48550/arXiv.2305.11352, accounting for arbitrary success probability."""
+    q_star = qlsa_query_count(
+        alpha=block_encoding_subnormalization_A,
+        kappa=condition_number_A,
+        eps=l1_precision,
+    )
+
+    # Q* queries for success probability at least (0.39 - 0.201 * \epsilon)
+    expected_success_probability = 0.39 - 0.201 * l1_precision
+
+    # repeat if neccessary
+    n_repeat_expected: int
+    if 1 - max_failure_probability <= expected_success_probability:
+        n_repeat_expected = 1
+    else:
+        n_repeat_expected = np.emath.logn(
+            1 - expected_success_probability,
+            max_failure_probability,
+        )
+
+    return q_star * n_repeat_expected
+
+
 def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
+    """Query cost expression from Theorem 1 of https://doi.org/10.48550/arXiv.2305.11352"""
     q_star_term_1 = (
         (1741 * alpha * np.e / 500)
         * np.sqrt(kappa**2 + 1)
@@ -74,6 +115,5 @@ def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
     q_star_term_3 = alpha * kappa * np.log(32 / eps)
 
     q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
-    q = q_star / (0.39 - 0.201 * eps)
 
-    return q
+    return q_star
