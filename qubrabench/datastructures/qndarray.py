@@ -128,7 +128,10 @@ def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockE
         raw_matrix = matrix
 
     return BlockEncoding(
-        raw_matrix, alpha=np.sqrt(raw_matrix.size), error=eps, uses=uses
+        raw_matrix,
+        subnormalization_factor=np.sqrt(raw_matrix.size),
+        precision=eps,
+        uses=uses,
     )
 
 
@@ -149,5 +152,8 @@ def state_preparation_unitary(
         raw_vector = vector
 
     return BlockEncoding(
-        raw_vector, alpha=np.linalg.norm(raw_vector), error=eps, uses=uses
+        raw_vector,
+        subnormalization_factor=np.linalg.norm(raw_vector),
+        precision=eps,
+        uses=uses,
     )

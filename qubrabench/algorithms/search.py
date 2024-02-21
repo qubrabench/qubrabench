@@ -24,7 +24,7 @@ def search(
     key: Callable[[E], bool],
     *,
     rng: Optional[np.random.Generator] = None,
-    error: Optional[float] = None,
+    max_failure_probability: Optional[float] = None,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
     """Search a list for an element satisfying the given predicate.
@@ -42,7 +42,7 @@ def search(
         iterable: iterable to be searched over
         key: function to test if an element satisfies the predicate
         rng: random generator - if provided shuffle the input before scanning
-        error: upper bound on the failure probability of the quantum algorithm
+        max_failure_probability: upper bound on the failure probability of the quantum algorithm
         max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm
 
     Raises:
@@ -57,7 +57,7 @@ def search(
 
     # collect stats
     if is_benchmarking:
-        if error is None:
+        if max_failure_probability is None:
             raise ValueError(
                 "search() parameter 'error' not provided, cannot compute quantum query statistics"
             )
@@ -115,7 +115,7 @@ def search(
                     N, T, max_classical_queries
                 ),
                 queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, T, error, max_classical_queries
+                    N, T, max_failure_probability, max_classical_queries
                 ),
             )
 
@@ -185,7 +185,7 @@ def search_by_sampling(
     key: Callable[[E], bool],
     *,
     rng: np.random.Generator,
-    error: float,
+    max_failure_probability: float,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
     r"""Search a domain by repeated sampling for an element satisfying the given predicate.
@@ -205,7 +205,7 @@ def search_by_sampling(
         domain: sampling domain to be searched over
         key: function to test if an element satisfies the predicate
         rng: np.random.Generator instance as source of randomness
-        error: upper bound on the failure probability of the quantum algorithm.
+        max_failure_probability: upper bound on the failure probability of the quantum algorithm.
         max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm.
 
     Returns:
@@ -214,7 +214,7 @@ def search_by_sampling(
 
     N = domain.get_size()
     f = domain.get_probability_of_sampling_solution(key)
-    max_iterations = int(3 * np.log(error) / np.log(1.0 - f))
+    max_iterations = int(3 * np.log(max_failure_probability) / np.log(1.0 - f))
 
     is_benchmarking = _BenchmarkManager.is_benchmarking()
 
@@ -251,7 +251,7 @@ def search_by_sampling(
                     N, f * N, max_classical_queries
                 ),
                 queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, f * N, error, max_classical_queries
+                    N, f * N, max_failure_probability, max_classical_queries
                 ),
             )
 

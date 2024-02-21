@@ -50,12 +50,15 @@ def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
     if U.matrix.shape != V.matrix.shape:
         raise ValueError("U and V must block-encode same sized matrices")
 
-    u = U.matrix / U.alpha
-    v = V.matrix / V.alpha
+    u = U.matrix / U.subnormalization_factor
+    v = V.matrix / V.subnormalization_factor
     return BlockEncoding(
         0.5 * np.concatenate((u + v, v - u)),
-        alpha=1,
-        error=max(U.error / U.alpha, V.error / V.alpha),
+        subnormalization_factor=1,
+        precision=max(
+            U.precision / U.subnormalization_factor,
+            V.precision / V.subnormalization_factor,
+        ),
         uses=[(U, 1), (V, 1)],
     )
 
@@ -210,7 +213,9 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
         res = np.block([a.get_raw_data(), b.get_raw_data()])
         alpha = np.linalg.norm(res)
 
-    return BlockEncoding(res, alpha=alpha, error=0, uses=[(a, rank), (b, rank)])
+    return BlockEncoding(
+        res, subnormalization_factor=alpha, precision=0, uses=[(a, rank), (b, rank)]
+    )
 
 
 @quantum_subroutine
@@ -228,8 +233,8 @@ def RedCost(
 
     return BlockEncoding(
         np.array([np.inner(np.block([-c.get_raw_data()[B], 1]), sol.matrix)]),
-        alpha=sol.alpha * np.sqrt(2),
-        error=sol.error,
+        subnormalization_factor=sol.subnormalization_factor * np.sqrt(2),
+        precision=sol.precision,
         uses=[(sol, 1), (c, 1)],
     )
 
@@ -271,7 +276,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     return qba.search.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
-        error=1.0 / 3.0,
+        max_failure_probability=1.0 / 3.0,
     )
 
 
@@ -337,7 +342,7 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         row = qba.search.search(
             range(1, m + 1),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
-            error=delta_scaled,
+            max_failure_probability=delta_scaled,
         )
         return row
 
@@ -373,6 +378,6 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
     result = qba.search.search(
         range(1, m + 1),
         key=lambda el: not SignEstNFP(qlsa, el, epsilon=delta_scaled * 0.45),
-        error=1e-5,  # TODO check
+        max_failure_probability=1e-5,  # TODO check
     )
     return result is not None

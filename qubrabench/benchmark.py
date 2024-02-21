@@ -366,18 +366,37 @@ def _already_benchmarked():
 
 @attrs.define
 class BlockEncoding(QObject):
-    r"""
-    Unitary that block-encodes an $\epsilon$-approximation of $A/\alpha$ in the top-left block.
+    r"""Unitary that block-encodes an approximation of a (subnormalized version of a) matrix.
+
+    A unitary program $U$ possibly using ancilla such that
+
+    .. math::
+
+        U = \begin{pmatrix} \tilde{A} & \cdot \\ \cdot & \cdot \end{pmatrix}
+
+    satisfying
+
+    .. math::
+
+        \| A - \alpha (\langle 0 | \otimes I) U (|0\rangle \otimes I) \| \le \epsilon
+
+    Attributes:
+        matrix: A
+        subnormalization_factor: $\alpha$
+        precision: $\epsilon$
     """
 
     matrix: npt.NDArray[np.complex_]
-    """The encoded matrix A"""
+    """The block-encoded matrix A"""
 
-    alpha: float
-    """Subnormalization factor"""
+    subnormalization_factor: float
+    r"""Factor $\alpha$ s.t. $A / \alpha$ is block-encoded"""
 
-    error: float
-    """Approximation factor"""
+    precision: float
+    r"""The spectral norm of the difference between the expected and actual encoded matrices.
+    
+    If the block of the unitary is $B$, then the precision is given by $\| A - \alpha B \|_2$.
+    """
 
     uses: Iterable[tuple[Hashable, float]] = attrs.field(factory=list)
     """BlockEncodings or data-structures used to implement the block-encoding unitary"""

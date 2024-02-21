@@ -33,13 +33,13 @@ def solve(
         Block-encoded solution vector.
     """
 
-    if not np.isclose(A.error, 0):
+    if not np.isclose(A.precision, 0):
         raise ValueError(
-            f"solve expects a zero-error block-encoding of A, but input has an error of {A.error}"
+            f"solve expects a zero-error block-encoding of A, but input has an error of {A.precision}"
         )
-    if not np.isclose(b.error, 0):
+    if not np.isclose(b.precision, 0):
         raise ValueError(
-            f"solve expects a zero-error block-encoding of b, but input has an error of {b.error}"
+            f"solve expects a zero-error block-encoding of b, but input has an error of {b.precision}"
         )
 
     if condition_number_A is None:
@@ -54,11 +54,11 @@ def solve(
         raise ValueError(
             f"solve expects a max_failure_probability of 0.61, but {max_failure_probability} was provided."
         )
-    q = qlsa_query_count(A.alpha, condition_number_A, eps)
+    q = qlsa_query_count(A.subnormalization_factor, condition_number_A, eps)
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(
-        y, alpha=np.linalg.norm(y), error=eps, uses=[(A, q), (b, 2 * q)]
+        y, alpha=np.linalg.norm(y), precision=eps, uses=[(A, q), (b, 2 * q)]
     )
 
 

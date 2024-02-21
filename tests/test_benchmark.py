@@ -219,8 +219,8 @@ def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
 
 def test_block_encoding_nested_access():
     n, m = 5, 6
-    U = BlockEncoding(np.eye(4), alpha=1, error=0)
-    V = BlockEncoding(np.eye(4), alpha=1, error=0, uses=[(U, n)])
+    U = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0)
+    V = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(U, n)])
 
     with track_queries() as tracker:
         V.access(n_times=m)

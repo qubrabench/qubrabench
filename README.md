@@ -56,12 +56,15 @@ import numpy as np
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import oracle, track_queries
 
+
 @oracle
 def is_shor(user):
     return user.name == "Peter Shor"
 
+
 def find_shor(users):
-    return search(users, key=is_shor, error=1e-5)
+    return search(users, key=is_shor, max_failure_probability=1e-5)
+
 
 with track_queries() as tracker:
     maybe_shor = find_shor(users)
