@@ -25,7 +25,7 @@ def solve(
         A: block-encoded input matrix
         b: block-encoded input vector
         max_failure_probability: probability of failure
-        precision: how close should the solution be
+        precision: the l1 norm distance of the output unit vector to the actual solution (scaled to unit)
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
     Raises:
