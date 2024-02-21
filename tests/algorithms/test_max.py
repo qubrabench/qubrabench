@@ -11,7 +11,7 @@ from qubrabench.benchmark import QueryStats, oracle, track_queries
 def test_max_return_value():
     """Tests that the max function returns the maximum value."""
     N = 100
-    assert max(range(N), error=10**-5) == N - 1
+    assert max(range(N), max_failure_probability=10**-5) == N - 1
 
 
 def test_max_raises_on_empty_and_no_default():
@@ -22,7 +22,7 @@ def test_max_raises_on_empty_and_no_default():
             "max() arg is an empty sequence, and no default value provided"
         ),
     ):
-        max([], error=10**-5)
+        max([], max_failure_probability=10**-5)
 
 
 def test_max_raises_on_stats_requested_and_eps_missing():
@@ -38,7 +38,7 @@ def test_max_raises_on_stats_requested_and_eps_missing():
 
 
 def test_max_on_empty_with_default():
-    assert max([], error=10**-5, default=42) == 42
+    assert max([], max_failure_probability=10**-5, default=42) == 42
 
 
 def test_max_stats():
@@ -48,7 +48,7 @@ def test_max_stats():
         def key(x):
             return -((x - 50) ** 2)
 
-        result = max(range(100), key=key, error=10**-5)
+        result = max(range(100), key=key, max_failure_probability=10**-5)
         assert result == 50
 
         assert tracker.get_stats(key) == QueryStats(

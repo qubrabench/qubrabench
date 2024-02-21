@@ -269,7 +269,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     return qba.search.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
-        error=1.0 / 3.0,
+        max_failure_probability=1.0 / 3.0,
     )
 
 
@@ -335,7 +335,7 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         row = qba.search.search(
             range(1, m + 1),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
-            error=delta_scaled,
+            max_failure_probability=delta_scaled,
         )
         return row
 
@@ -371,6 +371,6 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
     result = qba.search.search(
         range(1, m + 1),
         key=lambda el: not SignEstNFP(qlsa, el, epsilon=delta_scaled * 0.45),
-        error=1e-5,  # TODO check
+        max_failure_probability=1e-5,  # TODO check
     )
     return result is not None
