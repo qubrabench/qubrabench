@@ -48,6 +48,7 @@ def solve(
         condition_number_A = np.linalg.cond(A.matrix)
 
     condition_number_A = max(condition_number_A, np.sqrt(12))
+    precision = min(precision, 0.24)
 
     q = qlsa_query_count_with_failure_probability(
         A.subnormalization_factor,
