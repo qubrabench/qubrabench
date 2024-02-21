@@ -58,7 +58,10 @@ def solve(
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(
-        y, alpha=np.linalg.norm(y), precision=eps, uses=[(A, q), (b, 2 * q)]
+        y,
+        subnormalization_factor=np.linalg.norm(y),
+        precision=eps,
+        uses=[(A, q), (b, 2 * q)],
     )
 
 

@@ -1,6 +1,7 @@
+import re
+
 import numpy as np
 import pytest
-import re
 
 from qubrabench.algorithms.linalg import qlsa_query_count, solve
 from qubrabench.benchmark import track_queries
@@ -54,10 +55,10 @@ def test_too_low_max_failure_prob(rng):
     """Test that passing a max_failure_probability of less than 0.61 throws a ValueError"""
     with pytest.raises(
         ValueError,
-        match=re.escape(rf"solve expects a max_failure_probability of 0.61"),
+        match=re.escape("solve expects a max_failure_probability of 0.61"),
     ):
         N = 10
         A, b = random_instance(rng, N)
         enc_A = block_encode_matrix(A, eps=0)
         enc_b = state_preparation_unitary(b, eps=0)
-        enc_y = solve(enc_A, enc_b, max_failure_probability=0.60)
+        _ = solve(enc_A, enc_b, max_failure_probability=0.60)
