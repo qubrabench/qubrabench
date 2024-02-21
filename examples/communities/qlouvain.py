@@ -83,7 +83,7 @@ class QLouvain(QuantumLouvainBase):
                 is not None
             ),
             rng=self.rng,
-            error=zeta,
+            max_failure_probability=zeta,
         )
 
     def find_first(self, eps: float) -> Optional[int]:
@@ -125,7 +125,7 @@ class QLouvain(QuantumLouvainBase):
             target_alpha = qmax(
                 G.neighbouring_communities(u),
                 key=lambda alpha: G.delta_modularity(u, alpha),
-                error=self.error,  # TODO check
+                max_failure_probability=self.error,  # TODO check
             )
 
             assert G.delta_modularity(u, target_alpha) > 0
@@ -142,7 +142,7 @@ class QLouvainSG(QLouvain):
                 for alpha in self.G.neighbouring_communities(u)
             ),
             rng=self.rng,
-            error=zeta,
+            max_failure_probability=zeta,
         )
 
 
@@ -156,7 +156,7 @@ class EdgeQLouvain(QuantumLouvainBase):
             node, target_community = qmax(
                 [(u, G.get_label(v)) for u, v in self.G.edges],
                 key=lambda it: G.delta_modularity(*it),
-                error=self.error,
+                max_failure_probability=self.error,
             )
 
             if G.delta_modularity(node, target_community) > 0:

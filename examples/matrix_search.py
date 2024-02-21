@@ -20,12 +20,12 @@ def find_row_all_ones(matrix: Qndarray, *, error: float, rng=None) -> int | None
                 range(M),
                 key=lambda j: matrix[i, j] == 0,
                 rng=rng,
-                error=error / (2 * N),
+                max_failure_probability=error / (2 * N),
             )
             is None
         ),
         rng=rng,
-        error=error / 2,
+        max_failure_probability=error / 2,
     )
 
 

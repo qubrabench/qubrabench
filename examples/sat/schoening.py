@@ -118,7 +118,7 @@ def schoening_solve(
     randomness = search_by_sampling(
         SchoeningDomain(inst.n, inst.n, 3 * inst.n),
         key=lambda r: schoening_random_walk(inst, r[0], r[1]) is not None,
-        error=error,
+        max_failure_probability=error,
         rng=rng,
     )
 
@@ -166,7 +166,7 @@ def schoening_solve__bruteforce_over_starting_assigment(
         domain,
         key=lambda r: pred(r) is not None,
         rng=rng,
-        error=error,
+        max_failure_probability=error,
     )
 
     if result is not None:
