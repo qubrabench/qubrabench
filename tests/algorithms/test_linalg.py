@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+import re
 
 from qubrabench.algorithms.linalg import qlsa_query_count, solve
 from qubrabench.benchmark import track_queries
@@ -32,7 +33,7 @@ def test_solve_stats(rng):
     A, b = random_instance(rng, N)
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    enc_y = solve(enc_A, enc_b, failure_probability=0.61 + 0.201*1e-5)
+    enc_y = solve(enc_A, enc_b, max_failure_probability=0.61 + 0.201 * 1e-5)
 
     with track_queries() as tracker:
         enc_y.access()
@@ -47,3 +48,18 @@ def test_solve_stats(rng):
     assert expected_query_count_A == 54161318.70301439
     assert queries_A == pytest.approx(expected_query_count_A)
     assert queries_b == pytest.approx(2 * queries_A)
+
+def test_too_low_max_failure_prob(rng):
+    """Test that passing a max_failure_probability of less than 0.61 throws a ValueError"""
+    with pytest.raises(
+            ValueError,
+            match=re.escape(
+                rf"solve expects a max_failure_probability of 0.61"
+            ),
+    ):
+        N = 10
+        A, b = random_instance(rng, N)
+        enc_A = block_encode_matrix(A, eps=0)
+        enc_b = state_preparation_unitary(b, eps=0)
+        enc_y = solve(enc_A, enc_b, max_failure_probability=0.60)
+

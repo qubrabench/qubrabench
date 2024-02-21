@@ -28,7 +28,7 @@ Basis: TypeAlias = Sequence[int]
 def solve_linear_system(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    return qba.linalg.solve(enc_A, enc_b, failure_probability=eps)
+    return qba.linalg.solve(enc_A, enc_b, max_failure_probability=eps)
 
 
 @quantum_subroutine
@@ -221,7 +221,7 @@ def RedCost(
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
     rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
     sol = qba.linalg.solve(
-        lhs_mat, rhs_vec, failure_probability=epsilon / (10 * np.sqrt(2))
+        lhs_mat, rhs_vec, max_failure_probability=epsilon / (10 * np.sqrt(2))
     )
 
     c = Qndarray(c)
