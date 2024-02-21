@@ -12,11 +12,12 @@ def solve(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
-    max_failure_probability: float = 0.61 + 0.204 * 1e-5,
-    precision: float = 1e-5,
+    max_failure_probability: float,
+    precision: float,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
-    """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
+    """Quantum Linear Solver as described in https://doi.org/10.48550/arXiv.2305.11352
+
 
     Given block-encodings for $A$ and $b$, find an approximation of $y$ satisfying $Ay = b$.
 
@@ -49,11 +50,11 @@ def solve(
 
     condition_number_A = max(condition_number_A, np.sqrt(12))
 
-    q = qlsa_query_count(
+    q = qlsa_query_count_with_failure_probability(
         A.subnormalization_factor,
         condition_number_A,
-        eps=precision,
-        delta=max_failure_probability,
+        precision,
+        max_failure_probability,
     )
 
     y = np.linalg.solve(A.matrix, b.matrix)
@@ -65,7 +66,36 @@ def solve(
     )
 
 
-def qlsa_query_count(alpha: float, kappa: float, eps: float, delta: float) -> float:
+def qlsa_query_count_with_failure_probability(
+    block_encoding_subnormalization_A: float,
+    condition_number_A: float,
+    l1_precision: float,
+    max_failure_probability: float,
+) -> float:
+    """Query cost expression from https://doi.org/10.48550/arXiv.2305.11352, accounting for arbitrary success probability."""
+    q_star = qlsa_query_count(
+        alpha=block_encoding_subnormalization_A,
+        kappa=condition_number_A,
+        eps=l1_precision,
+    )
+
+    # Q* queries for success probability at least (0.39 - 0.201 * \epsilon)
+    expected_success_probability = 0.39 - 0.201 * l1_precision
+
+    # repeat if neccessary
+    n_repeat_expected: int
+    if 1 - max_failure_probability <= expected_success_probability:
+        n_repeat_expected = 1
+    else:
+        n_repeat_expected = np.emath.log(
+            max_failure_probability, 1 - expected_success_probability
+        )
+
+    return q_star * n_repeat_expected
+
+
+def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
+    """Query cost expression from Theorem 1 of https://doi.org/10.48550/arXiv.2305.11352"""
     q_star_term_1 = (
         (1741 * alpha * np.e / 500)
         * np.sqrt(kappa**2 + 1)
@@ -84,11 +114,5 @@ def qlsa_query_count(alpha: float, kappa: float, eps: float, delta: float) -> fl
     q_star_term_3 = alpha * kappa * np.log(32 / eps)
 
     q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
-    # repeating k times to achieve desired failure prob
-    if 0.61 + 0.204 * eps > delta:
-        k = np.emath.logn(0.61 + 0.201 * eps, delta)
-    else:
-        k = 1
-    q = q_star / k
 
-    return q
+    return q_star
