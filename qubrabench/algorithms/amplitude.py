@@ -13,7 +13,7 @@ def estimate_amplitude(
     good_indices: npt.ArrayLike,
     *,
     precision: float,
-    failure_probability: float,
+    max_failure_probability: float,
 ) -> float:
     r"""Given a block-encoding of a state $\ket\psi$ and a good index or sequence of good indices,
     estimate the probability of measuring (in the standard basis) one of the good indices.
@@ -33,7 +33,7 @@ def estimate_amplitude(
         prepare_psi: unitary that prepares $\ket\psi$ with some success probability
         good_indices: index or sequence of indices for which to estimate the total squared amplitude
         precision: upper bound on the difference between the estimate and true value
-        failure_probability: upper bound on the probability of failure of the quantum algorithm
+        max_failure_probability: upper bound on the probability of failure of the quantum algorithm
 
     References:
         [1] *Quantum Amplitude Amplification and Estimation*
@@ -69,10 +69,10 @@ def estimate_amplitude(
     )
 
     k: int
-    if failure_probability >= 1 - 8 / np.pi**2:
+    if max_failure_probability >= 1 - 8 / np.pi**2:
         k = 1
     else:
-        k = 1 + int(np.ceil(0.5 / failure_probability))
+        k = 1 + int(np.ceil(0.5 / max_failure_probability))
 
     n_rounds = np.ceil(
         k * np.pi / (np.sqrt(precision + a * (1 - a)) - np.sqrt(a * (1 - a)))
