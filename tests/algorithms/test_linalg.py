@@ -1,5 +1,3 @@
-import re
-
 import numpy as np
 import pytest
 
@@ -34,7 +32,7 @@ def test_solve_stats(rng):
     A, b = random_instance(rng, N)
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    enc_y = solve(enc_A, enc_b, max_failure_probability=0.61 + 0.201 * 1e-5)
+    enc_y = solve(enc_A, enc_b, max_failure_probability=1e-5, precision=1e-5)
 
     with track_queries() as tracker:
         enc_y.access()
@@ -49,4 +47,3 @@ def test_solve_stats(rng):
     assert expected_query_count_A == 906881.1798468119
     assert queries_A == pytest.approx(expected_query_count_A)
     assert queries_b == pytest.approx(2 * queries_A)
-
