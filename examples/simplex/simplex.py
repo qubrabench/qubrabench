@@ -225,7 +225,7 @@ def RedCost(
     """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
     rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
-    sol = qba.linalg.solve(
+    sol = qba.linalg.qlsa(
         lhs_mat,
         rhs_vec,
         precision=epsilon / (10 * np.sqrt(2)),

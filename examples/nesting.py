@@ -5,11 +5,7 @@ import scipy
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.qndarray import (
-    Qndarray,
-    block_encode_matrix,
-    state_preparation_unitary,
-)
+from qubrabench.datastructures.qndarray import Qndarray
 
 
 def classical_algorithm(A: npt.NDArray, b: npt.NDArray) -> bool:
@@ -27,8 +23,6 @@ def quantum_algorithm(
     N = A.shape[0]
     eps: float = 1e-5
 
-    A = block_encode_matrix(A, eps=0)
-    b = state_preparation_unitary(b, eps=0)
     x = qba.linalg.solve(
         A,
         b,
