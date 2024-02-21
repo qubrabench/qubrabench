@@ -1,11 +1,16 @@
-from typing import Generic, Optional, TypeVar
+from typing import Generic, Optional, TypeAlias, TypeVar
 
 import numpy as np
 import numpy.typing as npt
 
 from ..benchmark import BlockEncoding, QObject, oracle
 
-__all__ = ["Qndarray", "block_encode_matrix", "state_preparation_unitary"]
+__all__ = [
+    "Qndarray",
+    "QNDArrayLike",
+    "block_encode_matrix",
+    "state_preparation_unitary",
+]
 
 T = TypeVar("T")
 
@@ -95,7 +100,10 @@ class Qndarray(QObject, Generic[T]):
         return id(self)
 
 
-def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockEncoding:
+QNDArrayLike: TypeAlias = npt.NDArray | Qndarray
+
+
+def block_encode_matrix(matrix: QNDArrayLike, *, eps: float) -> BlockEncoding:
     """Prepares a block-encoding of a dense matrix.
 
     Complexity is described in Lemma 48 of [QSVT2019] for sparse matrices,
@@ -135,9 +143,7 @@ def block_encode_matrix(matrix: npt.NDArray | Qndarray, *, eps: float) -> BlockE
     )
 
 
-def state_preparation_unitary(
-    vector: npt.ArrayLike | Qndarray, *, eps: float
-) -> BlockEncoding:
+def state_preparation_unitary(vector: QNDArrayLike, *, eps: float) -> BlockEncoding:
     if vector.ndim != 1:
         raise ValueError(
             f"Expected a vector to block encode, instead got shape {vector.shape}"
