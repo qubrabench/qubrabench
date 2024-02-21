@@ -226,7 +226,12 @@ def RedCost(
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
     rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
     sol = qba.linalg.solve(
-        lhs_mat, rhs_vec, max_failure_probability=epsilon / (10 * np.sqrt(2))
+        lhs_mat,
+        rhs_vec,
+        precision=epsilon / (10 * np.sqrt(2)),
+        max_failure_probability=(
+            1 / 3
+        ),  # TODO is this correct? it's missing in the paper.
     )
 
     c = Qndarray(c)
