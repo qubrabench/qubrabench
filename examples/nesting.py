@@ -12,6 +12,13 @@ from qubrabench.datastructures.qndarray import (
 )
 
 
+def classical_algorithm(A: npt.NDArray, b: npt.NDArray) -> bool:
+    assert A.ndim == 2 and A.shape[0] == A.shape[1]
+    N = A.shape[0]
+    x = np.linalg.solve(A, b)
+    return any(np.abs(x[i]) >= 0.5 for i in range(N))
+
+
 def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
@@ -22,16 +29,20 @@ def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
     b = state_preparation_unitary(b, eps=0)
     x = qba.linalg.solve(A, b, error=eps / 2)
 
-    ix = qba.search.search(
-        range(N),
-        key=lambda i: qba.amplitude.estimate_amplitude(
-            x, i, precision=eps, failure_probability=error
+    return (
+        qba.search.search(
+            range(N),
+            key=(
+                lambda i: qba.amplitude.estimate_amplitude(
+                    x, i, precision=eps, failure_probability=error
+                )
+                >= 0.25
+            ),
+            max_failure_probability=error,
+            max_classical_queries=0,
         )
-        >= 0.25,
-        error=error,
-        max_classical_queries=0,
+        is not None
     )
-    return ix is not None
 
 
 def generate_random_matrix_of_condition_number(
