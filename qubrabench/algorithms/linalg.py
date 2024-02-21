@@ -29,8 +29,7 @@ def solve(
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
     Raises:
-        ValueError: Raised when (1) any block-encoding used is expected to have zero-error, but doesn't
-        (2) max_failure_probability provided is too low
+        ValueError: if input block-encodings do not have zero precision.
 
     Returns:
         Block-encoded solution vector.
