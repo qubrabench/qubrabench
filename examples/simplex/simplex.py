@@ -79,7 +79,7 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     V = state_preparation_unitary(one_shot_k, eps=0)
 
     a = qba.amplitude.estimate_amplitude(
-        Interfere(U, V), k, precision=epsilon, failure_probability=3 / 4
+        Interfere(U, V), k, precision=epsilon, max_failure_probability=3 / 4
     )
     return a >= 0.5
 

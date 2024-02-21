@@ -19,7 +19,9 @@ def classical_algorithm(A: npt.NDArray, b: npt.NDArray) -> bool:
     return any(np.abs(x[i]) >= 0.5 for i in range(N))
 
 
-def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
+def example(
+    A: npt.NDArray, b: npt.NDArray, *, max_failure_probability: float = 1e-5
+) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
     N = A.shape[0]
@@ -27,18 +29,26 @@ def example(A: npt.NDArray, b: npt.NDArray, *, error: float = 1e-5) -> bool:
 
     A = block_encode_matrix(A, eps=0)
     b = state_preparation_unitary(b, eps=0)
-    x = qba.linalg.solve(A, b, error=eps / 2)
+    x = qba.linalg.solve(
+        A,
+        b,
+        precision=eps / 2,
+        max_failure_probability=max_failure_probability / (4 * N * N),
+    )
 
     return (
         qba.search.search(
             range(N),
             key=(
                 lambda i: qba.amplitude.estimate_amplitude(
-                    x, i, precision=eps, failure_probability=error
+                    x,
+                    i,
+                    precision=eps,
+                    max_failure_probability=max_failure_probability / (4 * N),
                 )
                 >= 0.25
             ),
-            max_failure_probability=error,
+            max_failure_probability=max_failure_probability / 2,
             max_classical_queries=0,
         )
         is not None
@@ -92,7 +102,7 @@ def run(
         with track_queries() as tracker:
             A = Qndarray(A)
             b = Qndarray(b)
-            _ = example(A, b, error=error)
+            _ = example(A, b, max_failure_probability=1 / 3)
 
             stats_A: QueryStats = tracker.get_stats(A)
             stats_b: QueryStats = tracker.get_stats(b)
