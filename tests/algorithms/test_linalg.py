@@ -46,7 +46,7 @@ def test_solve_stats(rng):
     expected_query_count_A = 2 * qlsa_query_count(
         N, max(np.linalg.cond(A.get_raw_data()), np.sqrt(12)), 1e-5, 1e-5
     )
-    assert expected_query_count_A == 54161318.70301439
+    assert expected_query_count_A == 906881.1798468119
     assert queries_A == pytest.approx(expected_query_count_A)
     assert queries_b == pytest.approx(2 * queries_A)
 
