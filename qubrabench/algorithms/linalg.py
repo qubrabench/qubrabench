@@ -13,6 +13,7 @@ def solve(
     b: BlockEncoding,
     *,
     max_failure_probability: float = 0.61 + 0.204 * 1e-5,
+    precision: float = 1e-5,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
     """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
@@ -23,6 +24,7 @@ def solve(
         A: block-encoded input matrix
         b: block-encoded input vector
         max_failure_probability: probability of failure
+        precision: how close should the solution be
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
     Raises:
@@ -47,25 +49,23 @@ def solve(
 
     condition_number_A = max(condition_number_A, np.sqrt(12))
 
-    eps = (max_failure_probability - (1 - 0.39)) / 0.201
-    eps = min(eps, 0.24)
-
-    if max_failure_probability < 0.61:
-        raise ValueError(
-            f"solve expects a max_failure_probability of 0.61, but {max_failure_probability} was provided."
-        )
-    q = qlsa_query_count(A.subnormalization_factor, condition_number_A, eps)
+    q = qlsa_query_count(
+        A.subnormalization_factor,
+        condition_number_A,
+        eps=precision,
+        delta=max_failure_probability,
+    )
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(
         y,
         subnormalization_factor=np.linalg.norm(y),
-        precision=eps,
+        precision=precision,
         uses=[(A, q), (b, 2 * q)],
     )
 
 
-def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
+def qlsa_query_count(alpha: float, kappa: float, eps: float, delta: float) -> float:
     q_star_term_1 = (
         (1741 * alpha * np.e / 500)
         * np.sqrt(kappa**2 + 1)
@@ -84,6 +84,11 @@ def qlsa_query_count(alpha: float, kappa: float, eps: float) -> float:
     q_star_term_3 = alpha * kappa * np.log(32 / eps)
 
     q_star = q_star_term_1 + q_star_term_2 + q_star_term_3
-    q = q_star / (0.39 - 0.201 * eps)
+    # repeating k times to achieve desired failure prob
+    if 0.61 + 0.204 * eps > delta:
+        k = np.emath.logn(0.61 + 0.201 * eps, delta)
+    else:
+        k = 1
+    q = q_star / k
 
     return q
