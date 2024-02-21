@@ -32,7 +32,7 @@ def test_solve_stats(rng):
     A, b = random_instance(rng, N)
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    enc_y = solve(enc_A, enc_b, error=1e-5)
+    enc_y = solve(enc_A, enc_b, failure_probability=1e-5)
 
     with track_queries() as tracker:
         enc_y.access()

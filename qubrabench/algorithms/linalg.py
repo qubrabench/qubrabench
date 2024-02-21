@@ -12,7 +12,7 @@ def solve(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
-    error: float = 0.24,
+    failure_probability: float = 0.24,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
     """Quantum Linear Solver as described in https://arxiv.org/abs/2305.11352.
@@ -22,7 +22,7 @@ def solve(
     Args:
         A: block-encoded input matrix
         b: block-encoded input vector
-        error: approximation factor of the solution vector
+        failure_probability: probability of failure
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
     Returns:
@@ -42,13 +42,15 @@ def solve(
         condition_number_A = np.linalg.cond(A.matrix)
 
     condition_number_A = max(condition_number_A, np.sqrt(12))
-    error = min(error, 0.24)
 
-    q = qlsa_query_count(A.alpha, condition_number_A, error)
+    eps = (failure_probability - 0.61) / 0.201
+    eps = min(eps, 0.24)
+
+    q = qlsa_query_count(A.alpha, condition_number_A, eps)
 
     y = np.linalg.solve(A.matrix, b.matrix)
     return BlockEncoding(
-        y, alpha=np.linalg.norm(y), error=error, uses=[(A, q), (b, 2 * q)]
+        y, alpha=np.linalg.norm(y), error=eps, uses=[(A, q), (b, 2 * q)]
     )
 
 
