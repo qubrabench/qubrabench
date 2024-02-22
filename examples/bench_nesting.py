@@ -1,3 +1,4 @@
+import os.path
 from pathlib import Path
 
 import click
@@ -113,6 +114,52 @@ def plot(data_file):
     fig.legend(loc="upper center")
     plt.show()
 
+@cli.command()
+@click.argument(
+    "data-file",
+    type=click.Path(dir_okay=False, readable=True, path_type=Path),
+    required=True,
+)
+def save_plot(data_file):
+    data = pd.read_json(data_file, orient="split")
+
+    colors = iter(["red", "blue", "green"])
+
+    fig, ax = plt.subplots()
+    ax.set_xlabel(r"condition number $\kappa_A$")
+    ax.set_ylabel("queries (A)")
+    # ax.set_yscale("log")
+
+    for N, group in data.groupby("N"):
+        gdata = group.groupby("k_A")
+        means = gdata.mean(numeric_only=True)
+        errors = gdata.sem(numeric_only=True)
+
+        color = next(colors)
+        y = "queries_A"
+
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
+        ax.plot(
+            means.index,
+            means[y],
+            marker="x",
+            label=f"N = {N}",
+            color=color,
+        )
+        ax.fill_between(
+            means.index,
+            means[y] + errors[y],
+            means[y] - errors[y],
+            alpha=0.4,
+            color=color,
+            )
+
+    plt.legend(fontsize="small")
+
+    filename, _ = os.path.splitext(data_file)
+    plt.savefig(f"{filename}.pdf", format="pdf")
 
 if __name__ == "__main__":
     cli()
