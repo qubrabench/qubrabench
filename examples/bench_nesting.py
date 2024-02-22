@@ -1,4 +1,3 @@
-import os.path
 from pathlib import Path
 
 import click
@@ -82,7 +81,7 @@ def benchmark(N, k, seed, runs, dest):
     "--display",
     is_flag=True,
     default=False,
-    help="Whether to immediately display the generated plot."
+    help="Whether to immediately display the generated plot.",
 )
 def plot(data_file: Path, display: bool):
     data = pd.read_json(data_file, orient="split")
@@ -118,7 +117,7 @@ def plot(data_file: Path, display: bool):
             means[y] - errors[y],
             alpha=0.4,
             color=color,
-            )
+        )
 
     plt.legend(fontsize="small")
 
@@ -127,6 +126,7 @@ def plot(data_file: Path, display: bool):
 
     if display:
         plt.show()
+
 
 if __name__ == "__main__":
     cli()
