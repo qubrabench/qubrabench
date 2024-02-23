@@ -2,12 +2,25 @@ from dataclasses import asdict
 
 import click
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 from qubrabench.utils.plotting import BasicPlottingStrategy
+
+
+def classical_algorithm(A: npt.NDArray) -> int | None:
+    N, M = A.shape
+
+    for i in range(N):
+        for j in range(M):
+            if A[i, j] == 0:
+                continue
+        return i
+
+    return None
 
 
 def find_row_all_ones(matrix: Qndarray, *, error: float, rng=None) -> int | None:
