@@ -15,5 +15,5 @@ bench-example:
 
 bench-matrix-search:
 	$(eval FNAME = $(DATA_DIR)/matrix-search-data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
-	$(MATRIX_SEARCH) 100 1000 --step=100 --save $(FNAME)
+	$(MATRIX_SEARCH) benchmark 100 1000 --step=100 --save $(FNAME)
 

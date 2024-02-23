@@ -3,6 +3,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Optional, TypeVar
 
 import click
+import matplotlib.pyplot as plt
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
@@ -70,6 +71,11 @@ def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**
     )
 
 
+@click.group()
+def cli():
+    pass
+
+
 class Plotter(BasicPlottingStrategy):
     def x_axis_label(self) -> str:
         return "N"
@@ -94,7 +100,7 @@ class Plotter(BasicPlottingStrategy):
         return "n"
 
 
-@click.command()
+@cli.command()
 @click.argument(
     "n_start",
     type=int,
@@ -117,17 +123,12 @@ class Plotter(BasicPlottingStrategy):
     required=False,
 )
 @click.option(
-    "--plot",
-    help="Display the plot",
-    is_flag=True,
-)
-@click.option(
     "--save",
     "dest",
     help="Save to JSON file (preserves existing data!).",
     type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def main(n_start, n_end, step, seed, plot, dest):
+def benchmark(n_start, n_end, step, seed, dest):
     rng = np.random.default_rng(seed=seed)
 
     data = []
@@ -147,8 +148,31 @@ def main(n_start, n_end, step, seed, plot, dest):
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
 
-    Plotter().plot(data, y_lower_lim=100)
+
+@cli.command()
+@click.argument(
+    "data-file",
+    type=click.Path(dir_okay=False, readable=True, path_type=Path),
+    required=True,
+)
+@click.option(
+    "--display",
+    is_flag=True,
+    default=False,
+    help="display the generated plot",
+)
+@click.option(
+    "--save",
+    is_flag=True,
+    default=False,
+    help="save plot as pdf file (with the same filename as the data-file)",
+)
+def plot(data_file, display, save):
+    data = pd.read_json(data_file, orient="split")
+    Plotter().plot(data, y_lower_lim=100, display=display)
+    if save:
+        plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
 
 
 if __name__ == "__main__":
-    main()
+    cli()

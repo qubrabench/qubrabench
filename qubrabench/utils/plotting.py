@@ -1,4 +1,3 @@
-import datetime
 from abc import ABC, abstractmethod
 
 import matplotlib.colors as mcolors
@@ -80,7 +79,12 @@ class PlottingStrategy(ABC):
         """
 
     def plot(
-        self, data: pd.DataFrame, *, quantum_factor: float = 2, y_lower_lim: float = 1
+        self,
+        data: pd.DataFrame,
+        *,
+        quantum_factor: float = 2,
+        y_lower_lim: float = 1,
+        display=True,
     ):
         """
         Plot benchmarking data.
@@ -89,6 +93,7 @@ class PlottingStrategy(ABC):
             data: a pandas DataFrame containing all the benchmark data.
             quantum_factor: conversion factor for the cost of a quantum query (w.r.t. classical queries).
             y_lower_lim: lower limit on the Y-axis (useful if the data starts at a large value)
+            display: display the plot at the end, defaults to True
 
         Raises:
             ValueError: if no columns are given to plot
@@ -174,8 +179,8 @@ class PlottingStrategy(ABC):
 
         fig.legend(loc="upper center")
         plt.subplots_adjust(top=0.7)
-        plt.savefig(f"{datetime.datetime.now()}.pdf", format="pdf")
-        plt.show()
+        if display:
+            plt.show()
 
     def make_plot_title(self, plot_params: list) -> str:
         """
