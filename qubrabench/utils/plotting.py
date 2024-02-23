@@ -50,7 +50,7 @@ class PlottingStrategy(ABC):
     def get_data_group_column_names(self) -> list[str]:
         """
         Generate a data line for each unique value in the specified columns.
-        Useful if you the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.
+        Useful if the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.
 
         Example: ["impl"] - a line will be generated for each unique `impl` label.
         """
