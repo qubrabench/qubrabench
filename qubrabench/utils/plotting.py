@@ -1,3 +1,4 @@
+import datetime
 from abc import ABC, abstractmethod
 
 import matplotlib.colors as mcolors
@@ -173,6 +174,7 @@ class PlottingStrategy(ABC):
 
         fig.legend(loc="upper center")
         plt.subplots_adjust(top=0.7)
+        plt.savefig(f"{datetime.datetime.now()}.pdf", format="pdf")
         plt.show()
 
     def make_plot_title(self, plot_params: list) -> str:
