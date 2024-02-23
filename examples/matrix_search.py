@@ -147,6 +147,8 @@ def main(n_start, n_end, step, seed, plot, dest):
         with dest.open("w") as f:
             f.write(history.to_json(orient="split"))
 
+    Plotter().plot(data, y_lower_lim=100)
+
 
 if __name__ == "__main__":
     main()
