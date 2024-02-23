@@ -1,35 +1,42 @@
 from dataclasses import asdict
+from typing import Callable, Iterable, Optional, TypeVar
 
 import click
 import numpy as np
 import numpy.typing as npt
 import pandas as pd
 
-from qubrabench.algorithms.search import search
+import qubrabench.algorithms.search as qb
 from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 from qubrabench.utils.plotting import BasicPlottingStrategy
+
+E = TypeVar("E")
+
+
+def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
+    for i in it:
+        if key(i):
+            return i
+    return None
 
 
 def classical_algorithm(A: npt.NDArray) -> int | None:
     N, M = A.shape
 
-    for i in range(N):
-        for j in range(M):
-            if A[i, j] == 0:
-                continue
-        return i
-
-    return None
+    return search(
+        range(N),
+        key=lambda i: (search(range(M), key=lambda j: A[i, j] == 0) is None),
+    )
 
 
 def find_row_all_ones(matrix: Qndarray, *, error: float, rng=None) -> int | None:
     """Given an N x N matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
     N, M = matrix.shape
-    return search(
+    return qb.search(
         range(N),
         key=lambda i: (
-            search(
+            qb.search(
                 range(M),
                 key=lambda j: matrix[i, j] == 0,
                 rng=rng,
