@@ -23,26 +23,28 @@ def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
     return None
 
 
-def classical_algorithm(A: npt.NDArray) -> int | None:
-    N, M = A.shape
+def find_row_all_ones_classical(A: npt.NDArray) -> int | None:
+    n, m = A.shape
 
     return search(
-        range(N),
-        key=lambda i: (search(range(M), key=lambda j: A[i, j] == 0) is None),
+        range(n),
+        key=lambda i: (search(range(m), key=lambda j: A[i, j] == 0) is None),
     )
 
 
-def find_row_all_ones(matrix: Qndarray, *, error: float, rng=None) -> int | None:
-    """Given an N x N matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
-    N, M = matrix.shape
+def find_row_all_ones_quantum(
+    matrix: Qndarray, *, error: float, rng=None
+) -> int | None:
+    """Given an n x m matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
+    n, m = matrix.shape
     return qb.search(
-        range(N),
+        range(n),
         key=lambda i: (
             qb.search(
-                range(M),
+                range(m),
                 key=lambda j: matrix[i, j] == 0,
                 rng=rng,
-                max_failure_probability=error / (2 * N),
+                max_failure_probability=error / (2 * n),
             )
             is None
         ),
@@ -57,7 +59,7 @@ def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**
         matrix = Qndarray(rng.choice([0, 1], size=(n, n)))
 
         with track_queries() as tracker:
-            find_row_all_ones(matrix, error=error, rng=rng)
+            find_row_all_ones_quantum(matrix, error=error, rng=rng)
             stats = tracker.get_stats(matrix)
 
             data = asdict(stats)
