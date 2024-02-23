@@ -77,7 +77,20 @@ def benchmark(N, k, seed, runs, dest):
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
     required=True,
 )
-def plot(data_file):
+@click.option(
+    "--display",
+    is_flag=True,
+    default=False,
+    help="display the generated plot",
+)
+@click.option(
+    "--save",
+    is_flag=True,
+    default=False,
+    help="save plot as pdf file (with the same filename as the data-file)",
+)
+def plot(data_file: Path, display: bool, save: bool):
+    """Generate plot for the given quantum query stats."""
     data = pd.read_json(data_file, orient="split")
 
     colors = iter(["red", "blue", "green"])
@@ -95,6 +108,9 @@ def plot(data_file):
         color = next(colors)
         y = "queries_A"
 
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+
         ax.plot(
             means.index,
             means[y],
@@ -110,8 +126,13 @@ def plot(data_file):
             color=color,
         )
 
-    fig.legend(loc="upper center")
-    plt.show()
+    plt.legend(fontsize="small")
+
+    if save:
+        plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
+
+    if display:
+        plt.show()
 
 
 if __name__ == "__main__":
