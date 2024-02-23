@@ -1,6 +1,7 @@
 BENCH = python ./bench_nesting.py
 DATA_DIR = ../data/example
 BENCH_OPTS ?=
+MATRIX_SEARCH = python ./matrix_search.py
 
 bench-example:
 	$(eval FNAME = $(DATA_DIR)/data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
@@ -11,3 +12,8 @@ bench-example:
 		done \
 	done
 	@echo "saved data to $(FNAME)"
+
+bench-matrix-search:
+	$(eval FNAME = $(DATA_DIR)/matrix-search-data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
+	$(MATRIX_SEARCH) 100 1000 --step=100 --save $(FNAME)
+

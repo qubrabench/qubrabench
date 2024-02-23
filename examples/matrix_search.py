@@ -1,4 +1,5 @@
 from dataclasses import asdict
+from pathlib import Path
 from typing import Callable, Iterable, Optional, TypeVar
 
 import click
@@ -120,7 +121,13 @@ class Plotter(BasicPlottingStrategy):
     help="Display the plot",
     is_flag=True,
 )
-def main(n_start, n_end, step, seed, plot):
+@click.option(
+    "--save",
+    "dest",
+    help="Save to JSON file (preserves existing data!).",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+)
+def main(n_start, n_end, step, seed, plot, dest):
     rng = np.random.default_rng(seed=seed)
 
     data = []
@@ -130,8 +137,15 @@ def main(n_start, n_end, step, seed, plot):
 
     data = pd.concat(data, ignore_index=True)
 
-    if plot:
-        Plotter().plot(data, y_lower_lim=100)
+    if dest is not None:
+        if dest.exists():
+            orig = pd.read_json(dest, orient="split")
+        else:
+            orig = None
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        history = pd.concat([orig, data], ignore_index=True)
+        with dest.open("w") as f:
+            f.write(history.to_json(orient="split"))
 
 
 if __name__ == "__main__":
