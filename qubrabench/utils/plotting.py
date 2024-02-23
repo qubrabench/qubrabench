@@ -50,7 +50,7 @@ class PlottingStrategy(ABC):
     def get_data_group_column_names(self) -> list[str]:
         """
         Generate a data line for each unique value in the specified columns.
-        Useful if you the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.
+        Useful if the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.
 
         Example: ["impl"] - a line will be generated for each unique `impl` label.
         """
@@ -79,7 +79,15 @@ class PlottingStrategy(ABC):
         """
 
     def plot(
-        self, data: pd.DataFrame, *, quantum_factor: float = 2, y_lower_lim: float = 1
+        self,
+        data: pd.DataFrame,
+        *,
+        quantum_factor: float = 2,
+        y_lower_lim: float = 1,
+        x_log_scale: bool = True,
+        y_log_scale: bool = True,
+        show_grid: bool = True,
+        display: bool = True,
     ):
         """
         Plot benchmarking data.
@@ -88,6 +96,10 @@ class PlottingStrategy(ABC):
             data: a pandas DataFrame containing all the benchmark data.
             quantum_factor: conversion factor for the cost of a quantum query (w.r.t. classical queries).
             y_lower_lim: lower limit on the Y-axis (useful if the data starts at a large value)
+            x_log_scale: plot X-axis on log-scale
+            y_log_scale: plot Y-axis on log-scale
+            show_grid: show axis grids
+            display: display the plot at the end, defaults to True
 
         Raises:
             ValueError: if no columns are given to plot
@@ -131,11 +143,16 @@ class PlottingStrategy(ABC):
 
             ax.set_xlim(x_min, x_max)
             ax.set_ylim(y_lower_lim, 10**y_scale_exponent)
-            ax.set_xscale("log")
-            ax.set_yscale("log")
+            if x_log_scale:
+                ax.set_xscale("log")
+            if y_log_scale:
+                ax.set_yscale("log")
             ax.set_xlabel(self.x_axis_label())
             ax.set_ylabel(self.y_axis_label())
-            ax.grid(which="both")
+            if show_grid:
+                ax.grid(which="both")
+            ax.spines["right"].set_visible(False)
+            ax.spines["top"].set_visible(False)
 
             # group data lines
             if not data_group_column_names:
@@ -150,7 +167,9 @@ class PlottingStrategy(ABC):
 
                 impl_name = self.make_plot_label(impl_params)
                 for col, (col_name, marker) in self.get_column_names_to_plot().items():
-                    text = f"{col_name} ({impl_name})"
+                    text = f"{col_name}"
+                    if impl_name:
+                        text += " ({impl_name})"
                     if text in seen_labels:
                         text = "__nolabel__"
                     else:
@@ -171,9 +190,10 @@ class PlottingStrategy(ABC):
                         color=self.color_for_data_group(impl_name),
                     )
 
-        fig.legend(loc="upper center")
+        plt.legend()
         plt.subplots_adjust(top=0.7)
-        plt.show()
+        if display:
+            plt.show()
 
     def make_plot_title(self, plot_params: list) -> str:
         """

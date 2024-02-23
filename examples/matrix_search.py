@@ -1,26 +1,50 @@
 from dataclasses import asdict
+from pathlib import Path
+from typing import Callable, Iterable, Optional, TypeVar
 
 import click
+import matplotlib.pyplot as plt
 import numpy as np
+import numpy.typing as npt
 import pandas as pd
 
-from qubrabench.algorithms.search import search
+import qubrabench.algorithms.search as qb
 from qubrabench.benchmark import track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 from qubrabench.utils.plotting import BasicPlottingStrategy
 
+E = TypeVar("E")
 
-def find_row_all_ones(matrix: Qndarray, *, error: float, rng=None) -> int | None:
-    """Given an N x N matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
-    N, M = matrix.shape
+
+def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
+    for i in it:
+        if key(i):
+            return i
+    return None
+
+
+def find_row_all_ones_classical(A: npt.NDArray) -> int | None:
+    n, m = A.shape
+
     return search(
-        range(N),
+        range(n),
+        key=lambda i: (search(range(m), key=lambda j: A[i, j] == 0) is None),
+    )
+
+
+def find_row_all_ones_quantum(
+    matrix: Qndarray, *, error: float, rng=None
+) -> int | None:
+    """Given an n x m matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
+    n, m = matrix.shape
+    return qb.search(
+        range(n),
         key=lambda i: (
-            search(
-                range(M),
+            qb.search(
+                range(m),
                 key=lambda j: matrix[i, j] == 0,
                 rng=rng,
-                max_failure_probability=error / (2 * N),
+                max_failure_probability=error / (2 * n),
             )
             is None
         ),
@@ -35,7 +59,7 @@ def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**
         matrix = Qndarray(rng.choice([0, 1], size=(n, n)))
 
         with track_queries() as tracker:
-            find_row_all_ones(matrix, error=error, rng=rng)
+            find_row_all_ones_quantum(matrix, error=error, rng=rng)
             stats = tracker.get_stats(matrix)
 
             data = asdict(stats)
@@ -49,12 +73,17 @@ def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**
     )
 
 
+@click.group()
+def cli():
+    pass
+
+
 class Plotter(BasicPlottingStrategy):
     def x_axis_label(self) -> str:
         return "N"
 
     def y_axis_label(self) -> str:
-        return "queries"
+        return "queries (A)"
 
     def compute_aggregates(
         self, data: pd.DataFrame, *, quantum_factor: float
@@ -73,7 +102,7 @@ class Plotter(BasicPlottingStrategy):
         return "n"
 
 
-@click.command()
+@cli.command()
 @click.argument(
     "n_start",
     type=int,
@@ -96,11 +125,12 @@ class Plotter(BasicPlottingStrategy):
     required=False,
 )
 @click.option(
-    "--plot",
-    help="Display the plot",
-    is_flag=True,
+    "--save",
+    "dest",
+    help="Save to JSON file (preserves existing data!).",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
 )
-def main(n_start, n_end, step, seed, plot):
+def benchmark(n_start, n_end, step, seed, dest):
     rng = np.random.default_rng(seed=seed)
 
     data = []
@@ -110,9 +140,43 @@ def main(n_start, n_end, step, seed, plot):
 
     data = pd.concat(data, ignore_index=True)
 
-    if plot:
-        Plotter().plot(data, y_lower_lim=100)
+    if dest is not None:
+        if dest.exists():
+            orig = pd.read_json(dest, orient="split")
+        else:
+            orig = None
+            dest.parent.mkdir(parents=True, exist_ok=True)
+        history = pd.concat([orig, data], ignore_index=True)
+        with dest.open("w") as f:
+            f.write(history.to_json(orient="split"))
+
+
+@cli.command()
+@click.argument(
+    "data-file",
+    type=click.Path(dir_okay=False, readable=True, path_type=Path),
+    required=True,
+)
+@click.option(
+    "--display",
+    is_flag=True,
+    default=False,
+    help="display the generated plot",
+)
+@click.option(
+    "--save",
+    is_flag=True,
+    default=False,
+    help="save plot as pdf file (with the same filename as the data-file)",
+)
+def plot(data_file, display, save):
+    data = pd.read_json(data_file, orient="split")
+    Plotter().plot(
+        data, y_lower_lim=100, display=display, x_log_scale=False, show_grid=False
+    )
+    if save:
+        plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
 
 
 if __name__ == "__main__":
-    main()
+    cli()

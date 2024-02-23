@@ -1,5 +1,5 @@
 import numpy as np
-from matrix_search import find_row_all_ones
+from matrix_search import find_row_all_ones_quantum
 from pytest import approx
 
 from qubrabench.algorithms.search import (
@@ -17,7 +17,7 @@ def test_find_row_all_ones_on_nearly_good_matrix(rng):
     mat = Qndarray(1 - np.eye(N, dtype=int))
 
     with track_queries() as tracker:
-        find_row_all_ones(mat, error=eps)
+        find_row_all_ones_quantum(mat, error=eps)
 
         stats = tracker.get_stats(mat)
 
