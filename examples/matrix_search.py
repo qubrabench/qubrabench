@@ -32,17 +32,15 @@ def find_row_all_ones_classical(A: NDArray) -> int | None:
     )
 
 
-def find_row_all_ones_quantum(
-    matrix: Qndarray, *, error: float, rng=None
-) -> int | None:
-    """Given an n x m matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
-    n, m = matrix.shape
+def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | None:
+    """Given an n x m matrix A of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
+    n, m = A.shape
     return qb.search(
         range(n),
         key=lambda i: (
             qb.search(
                 range(m),
-                key=lambda j: matrix[i, j] == 0,
+                key=lambda j: A[i, j] == 0,
                 rng=rng,
                 max_failure_probability=error / (2 * n),
             )

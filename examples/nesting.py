@@ -10,9 +10,9 @@ from qubrabench.datastructures.qndarray import Qndarray
 
 def classical_algorithm(A: NDArray, b: NDArray) -> bool:
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
-    N = A.shape[0]
+    n = A.shape[0]
     x = np.linalg.solve(A, b)
-    return any(np.abs(x[i]) >= 0.5 for i in range(N))
+    return any(np.abs(x[i]) >= 0.5 for i in range(n))
 
 
 def quantum_algorithm(
@@ -20,25 +20,25 @@ def quantum_algorithm(
 ) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
-    N = A.shape[0]
+    n = A.shape[0]
     eps: float = 1e-5
 
     x = qba.linalg.solve(
         A,
         b,
         precision=eps / 2,
-        max_failure_probability=max_failure_probability / (4 * N * N),
+        max_failure_probability=max_failure_probability / (4 * n * n),
     )
 
     return (
         qba.search.search(
-            range(N),
+            range(n),
             key=(
                 lambda i: qba.amplitude.estimate_amplitude(
                     x,
                     i,
                     precision=eps,
-                    max_failure_probability=max_failure_probability / (4 * N),
+                    max_failure_probability=max_failure_probability / (4 * n),
                 )
                 >= 0.25
             ),
