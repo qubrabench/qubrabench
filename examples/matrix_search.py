@@ -5,8 +5,8 @@ from typing import Callable, Iterable, Optional, TypeVar
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
+from numpy.typing import NDArray
 
 import qubrabench.algorithms.search as qb
 from qubrabench.benchmark import track_queries
@@ -23,7 +23,7 @@ def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
     return None
 
 
-def find_row_all_ones_classical(A: npt.NDArray) -> int | None:
+def find_row_all_ones_classical(A: NDArray) -> int | None:
     n, m = A.shape
 
     return search(
