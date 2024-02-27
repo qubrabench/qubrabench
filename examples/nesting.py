@@ -27,7 +27,7 @@ def quantum_algorithm(
     x = qba.linalg.solve(
         A,
         b,
-        precision=1e-10 / 2,
+        precision=1e-5 / 2,
         max_failure_probability=max_failure_probability / (4 * n * n),
     )
 
@@ -38,7 +38,7 @@ def quantum_algorithm(
                 lambda i: qba.amplitude.estimate_amplitude(
                     x,
                     i,
-                    precision=1e-10,
+                    precision=1e-5,
                     max_failure_probability=max_failure_probability / (4 * n),
                 )
                 >= 0.25
