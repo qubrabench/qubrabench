@@ -1,6 +1,8 @@
+"""Given an n x m matrix A of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
+
 from dataclasses import asdict
 from pathlib import Path
-from typing import Callable, Iterable, Optional, TypeVar
+from typing import TypeVar
 
 import click
 import matplotlib.pyplot as plt
@@ -16,28 +18,22 @@ from qubrabench.utils.plotting import BasicPlottingStrategy
 E = TypeVar("E")
 
 
-def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
-    for i in it:
-        if key(i):
-            return i
-    return None
-
-
 def find_row_all_ones_classical(A: NDArray) -> int | None:
     n, m = A.shape
 
-    return search(
-        range(n),
-        key=lambda i: (search(range(m), key=lambda j: A[i, j] == 0) is None),
-    )
+    for i in range(n):
+        for j in range(m):
+            if A[i, j] == 0:
+                break
+        else:
+            return i
 
 
 def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | None:
-    """Given an n x m matrix A of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
     n, m = A.shape
-    return qb.search(
-        range(n),
-        key=lambda i: (
+
+    def check_row(i):
+        return (
             qb.search(
                 range(m),
                 key=lambda j: A[i, j] == 0,
@@ -45,7 +41,11 @@ def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | N
                 max_failure_probability=error / (2 * n),
             )
             is None
-        ),
+        )
+
+    return qb.search(
+        range(n),
+        key=check_row,
         rng=rng,
         max_failure_probability=error / 2,
     )

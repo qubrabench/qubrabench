@@ -21,12 +21,11 @@ def quantum_algorithm(
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
     n = A.shape[0]
-    eps: float = 1e-5
 
     x = qba.linalg.solve(
         A,
         b,
-        precision=eps / 2,
+        precision=1e-10 / 2,
         max_failure_probability=max_failure_probability / (4 * n * n),
     )
 
@@ -37,7 +36,7 @@ def quantum_algorithm(
                 lambda i: qba.amplitude.estimate_amplitude(
                     x,
                     i,
-                    precision=eps,
+                    precision=1e-10,
                     max_failure_probability=max_failure_probability / (4 * n),
                 )
                 >= 0.25
