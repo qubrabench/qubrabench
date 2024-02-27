@@ -8,7 +8,9 @@ import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from numpy.typing import NDArray
+
+# from numpy.typing import NDArray
+from numpy import ndarray
 
 import qubrabench.algorithms.search as qb
 from qubrabench.benchmark import track_queries
@@ -18,7 +20,7 @@ from qubrabench.utils.plotting import BasicPlottingStrategy
 E = TypeVar("E")
 
 
-def find_row_all_ones_classical(A: NDArray) -> int | None:
+def find_row_all_ones_classical(A: ndarray) -> int | None:
     n, m = A.shape
 
     for i in range(n):

@@ -1,14 +1,16 @@
 import numpy as np
 import pandas as pd
 import scipy
-from numpy.typing import NDArray
+
+# from numpy.typing import NDArray
+from numpy import ndarray
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 
 
-def classical_algorithm(A: NDArray, b: NDArray) -> bool:
+def classical_algorithm(A: ndarray, b: ndarray) -> bool:
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
     n = A.shape[0]
     x = np.linalg.solve(A, b)
@@ -16,7 +18,7 @@ def classical_algorithm(A: NDArray, b: NDArray) -> bool:
 
 
 def quantum_algorithm(
-    A: NDArray, b: NDArray, *, max_failure_probability: float = 1e-5
+    A: ndarray, b: ndarray, *, max_failure_probability: float = 1e-5
 ) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
