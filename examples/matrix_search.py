@@ -175,6 +175,7 @@ def plot(data_file, display, save):
         data, y_lower_lim=100, display=display, x_log_scale=False, show_grid=False
     )
     if save:
+        plt.tight_layout()
         plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
 
 
