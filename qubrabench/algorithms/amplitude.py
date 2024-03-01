@@ -9,7 +9,7 @@ __all__ = ["estimate_amplitude"]
 
 
 def estimate_amplitude(
-    prepare_psi: BlockEncoding,
+    x: BlockEncoding,
     good_indices: npt.ArrayLike,
     *,
     precision: float,
@@ -20,7 +20,7 @@ def estimate_amplitude(
 
     Algorithm analysis is described in Ref. [1], Theorem 12 (Amplitude Estimation).
 
-    When $\ket\psi = \sum_i \alpha_i \ket{i}$, then this method produces an estimate of $a$ s.t.
+    When $\ket{x} = \sum_i \alpha_i \ket{i}$, then this method produces an estimate of $a$ s.t.
 
     .. math::
 
@@ -30,7 +30,7 @@ def estimate_amplitude(
     this is factored into the subroutine in the quantum part (i.e. "under-the-square-root")
 
     Args:
-        prepare_psi: unitary that prepares $\ket\psi$ with some success probability
+        x: block-encoded access to vector x, such as a unitary that prepares $\ket{x}$ with some success probability
         good_indices: index or sequence of indices for which to estimate the total squared amplitude
         precision: upper bound on the difference between the estimate and true value
         max_failure_probability: upper bound on the probability of failure of the quantum algorithm
@@ -40,19 +40,19 @@ def estimate_amplitude(
             Brassard, Hoyer, Mosca, Tapp. 2000.
             https://doi.org/10.48550/arXiv.quant-ph/0005055
     """
-    if prepare_psi.matrix.ndim != 1:
+    if x.matrix.ndim != 1:
         raise ValueError(
-            f"estimate_amplitude: Expected a block-encoding (i.e. state preparation unitary) of a vector, got encoding of shape {prepare_psi.matrix.shape}"
+            f"estimate_amplitude: Expected a block-encoding (i.e. state preparation unitary) of a vector, got encoding of shape {x.matrix.shape}"
         )
 
-    if not np.isclose(prepare_psi.precision, 0):
+    if not np.isclose(x.precision, 0):
         # TODO analyze cost for robust version
         warnings.warn(
             "estimate_amplitude: query costs for robust version is not yet implemented, results may be incorrect",
             UserWarning,
         )
 
-        prec_sub = np.abs(prepare_psi.precision / prepare_psi.subnormalization_factor)
+        prec_sub = np.abs(x.precision / x.subnormalization_factor)
         if precision < prec_sub:
             raise RuntimeError(
                 f"estimate_amplitude: Input block-encoding is too imprecise to estimate correctly:"
@@ -61,12 +61,7 @@ def estimate_amplitude(
         precision -= prec_sub
 
     # actual value to estimate
-    a = (
-        np.linalg.norm(
-            prepare_psi.matrix[good_indices] / prepare_psi.subnormalization_factor
-        )
-        ** 2
-    )
+    a = np.linalg.norm(x.matrix[good_indices] / x.subnormalization_factor) ** 2
 
     k: int
     if max_failure_probability >= 1 - 8 / np.pi**2:
@@ -77,6 +72,6 @@ def estimate_amplitude(
     n_rounds = np.ceil(
         k * np.pi / (np.sqrt(precision + a * (1 - a)) - np.sqrt(a * (1 - a)))
     )
-    prepare_psi.access(n_times=n_rounds)
+    x.access(n_times=n_rounds)
 
     return a
