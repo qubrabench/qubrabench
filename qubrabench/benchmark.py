@@ -256,6 +256,11 @@ class _BenchmarkManager:
         for sub_frame in frames:
             benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
 
+        if len(benchmark_objects) > 1:
+            raise NotImplementedError(
+                "cannot combine subroutines that use multiple oracles"
+            )
+
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
             sub_frame_stats = [
