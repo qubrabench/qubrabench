@@ -1,12 +1,16 @@
+"""Given an n x m matrix A of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
+
 from dataclasses import asdict
 from pathlib import Path
-from typing import Callable, Iterable, Optional, TypeVar
+from typing import TypeVar
 
 import click
 import matplotlib.pyplot as plt
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
+
+# from numpy.typing import NDArray
+from numpy import ndarray
 
 import qubrabench.algorithms.search as qb
 from qubrabench.benchmark import track_queries
@@ -16,38 +20,34 @@ from qubrabench.utils.plotting import BasicPlottingStrategy
 E = TypeVar("E")
 
 
-def search(it: Iterable[E], *, key: Callable[[E], bool]) -> Optional[E]:
-    for i in it:
-        if key(i):
-            return i
-    return None
-
-
-def find_row_all_ones_classical(A: npt.NDArray) -> int | None:
+def find_row_all_ones_classical(A: ndarray) -> int | None:
     n, m = A.shape
 
-    return search(
-        range(n),
-        key=lambda i: (search(range(m), key=lambda j: A[i, j] == 0) is None),
-    )
+    for i in range(n):
+        for j in range(m):
+            if A[i, j] == 0:
+                break
+        else:
+            return i
 
 
-def find_row_all_ones_quantum(
-    matrix: Qndarray, *, error: float, rng=None
-) -> int | None:
-    """Given an n x m matrix of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
-    n, m = matrix.shape
-    return qb.search(
-        range(n),
-        key=lambda i: (
+def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | None:
+    n, m = A.shape
+
+    def check_row(i):
+        return (
             qb.search(
                 range(m),
-                key=lambda j: matrix[i, j] == 0,
+                key=lambda j: A[i, j] == 0,
                 rng=rng,
                 max_failure_probability=error / (2 * n),
             )
             is None
-        ),
+        )
+
+    return qb.search(
+        range(n),
+        key=check_row,
         rng=rng,
         max_failure_probability=error / 2,
     )
@@ -175,6 +175,7 @@ def plot(data_file, display, save):
         data, y_lower_lim=100, display=display, x_log_scale=False, show_grid=False
     )
     if save:
+        plt.tight_layout()
         plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
 
 

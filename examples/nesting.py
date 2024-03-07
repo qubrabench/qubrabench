@@ -1,44 +1,45 @@
 import numpy as np
-import numpy.typing as npt
 import pandas as pd
 import scipy
+
+# from numpy.typing import NDArray
+from numpy import ndarray
 
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench.datastructures.qndarray import Qndarray
 
 
-def classical_algorithm(A: npt.NDArray, b: npt.NDArray) -> bool:
+def classical_algorithm(A: ndarray, b: ndarray) -> bool:
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
-    N = A.shape[0]
+    n = A.shape[0]
     x = np.linalg.solve(A, b)
-    return any(np.abs(x[i]) >= 0.5 for i in range(N))
+    return any(np.abs(x[i]) >= 0.5 for i in range(n))
 
 
 def quantum_algorithm(
-    A: npt.NDArray, b: npt.NDArray, *, max_failure_probability: float = 1e-5
+    A: ndarray, b: ndarray, *, max_failure_probability: float = 1e-5
 ) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
-    N = A.shape[0]
-    eps: float = 1e-5
+    n = A.shape[0]
 
     x = qba.linalg.solve(
         A,
         b,
-        precision=eps / 2,
-        max_failure_probability=max_failure_probability / (4 * N * N),
+        precision=1e-5 / 2,
+        max_failure_probability=max_failure_probability / (4 * n * n),
     )
 
     return (
         qba.search.search(
-            range(N),
+            range(n),
             key=(
                 lambda i: qba.amplitude.estimate_amplitude(
                     x,
                     i,
-                    precision=eps,
-                    max_failure_probability=max_failure_probability / (4 * N),
+                    precision=1e-5,
+                    max_failure_probability=max_failure_probability / (4 * n),
                 )
                 >= 0.25
             ),

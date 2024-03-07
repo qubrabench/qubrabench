@@ -129,6 +129,7 @@ def plot(data_file: Path, display: bool, save: bool):
     plt.legend(fontsize="small")
 
     if save:
+        plt.tight_layout()
         plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
 
     if display:
