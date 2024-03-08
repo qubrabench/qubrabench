@@ -36,13 +36,13 @@ dynamic = ["version"]
 
 [project.optional-dependencies]
 dev = [
-    "black[jupyter]",
+    "black[jupyter]~=24.0",
     "isort>=5.12",
+    "ruff~=0.3",
     "pytest~=7.3",
     "mypy~=1.2",
     "pandas-stubs~=2.0",
     "networkx-stubs~=0.0",
-    "ruff~=0.0",
     "sphinx~=7.0.1",
     "sphinxcontrib-napoleon~=0.7",
     "myst-parser~=2.0",
@@ -64,7 +64,7 @@ markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 testpaths = "qubrabench tests examples"
 
 [tool.ruff]
-ignore = ["E501"] # Never enforce `E501` (line length violations). Length = 88 auto-checked by black.
+lint.ignore = ["E501"] # Never enforce `E501` (line length violations). Length = 88 auto-checked by black.
 
 [tool.mypy]
 plugins = ["numpy.typing.mypy_plugin"]
