@@ -11,6 +11,7 @@ from ..benchmark import (
     BenchmarkFrame,
     _already_benchmarked,
     _BenchmarkManager,
+    _qubrabench_method,
     track_queries,
 )
 
@@ -19,23 +20,24 @@ __all__ = ["search", "search_by_sampling", "SamplingDomain"]
 E = TypeVar("E")
 
 
+@_qubrabench_method
 def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
     *,
-    max_fail_probability: Optional[float] = None,
+    max_fail_probability: float,
     rng: Optional[np.random.Generator] = None,
     max_classical_queries: int = 130,
 ) -> Optional[E]:
     """Search a list for an element satisfying the given predicate.
 
-    >>> search([1,2,3,4,5], lambda x: x % 2 == 0)
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, max_fail_probability=1/3)
     2
 
     By default performs a linear scan on the iterable and returns the first element satisfying the `key`.
     If the optional random generator `rng` is provided, instead shuffles the input iterable before scanning for a solution.
 
-    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(42))
+    >>> search([1,2,3,4,5], lambda x: x % 2 == 0, rng=np.random.default_rng(42), max_fail_probability=1/3)
     4
 
     Args:
@@ -44,9 +46,6 @@ def search(
         max_fail_probability: upper bound on the failure probability of the quantum algorithm
         rng: random generator - if provided shuffle the input before scanning
         max_classical_queries: maximum number of classical queries before entering the quantum part of the algorithm
-
-    Raises:
-        ValueError: Raised when the error bound is not provided and statistics cannot be calculated.
 
     Returns:
         An element that satisfies the predicate, or None if no such argument can be found.
@@ -57,11 +56,6 @@ def search(
 
     # collect stats
     if is_benchmarking:
-        if max_fail_probability is None:
-            raise ValueError(
-                "search() parameter 'error' not provided, cannot compute quantum query statistics"
-            )
-
         N = 0
         T = 0
 
@@ -180,6 +174,7 @@ class SamplingDomain(ABC, Generic[E]):
         """Produce a single random sample from the space."""
 
 
+@_qubrabench_method
 def search_by_sampling(
     domain: SamplingDomain[E],
     key: Callable[[E], bool],

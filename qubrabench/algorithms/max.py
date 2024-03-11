@@ -12,6 +12,7 @@ from ..benchmark import (
     BenchmarkFrame,
     _already_benchmarked,
     _BenchmarkManager,
+    _qubrabench_method,
     track_queries,
 )
 from .search import cade_et_al_F
@@ -21,10 +22,11 @@ __all__ = ["max"]
 E = TypeVar("E")
 
 
+@_qubrabench_method
 def max(
     iterable: Iterable[E],
     *,
-    max_fail_probability: Optional[float] = None,
+    max_fail_probability: float,
     default: OptionalParameter[E] = _absent,
     key: Optional[Callable[[E], Any]] = None,
 ) -> E:
@@ -37,7 +39,6 @@ def max(
         max_fail_probability: upper bound on the failure probability of the quantum algorithm.
 
     Raises:
-        ValueError: Raised when the failure rate `error` is not provided and statistics cannot be calculated.
         ValueError: Raised when iterable is an empty sequence and no default is provided.
 
     Returns:
@@ -54,11 +55,6 @@ def max(
 
     # collect stats
     if is_benchmarking:
-        if max_fail_probability is None:
-            raise ValueError(
-                "max() parameter 'error' not provided, cannot compute quantum query statistics"
-            )
-
         N = 0
 
         sub_frames_access: list[BenchmarkFrame] = []

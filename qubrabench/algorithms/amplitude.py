@@ -3,11 +3,12 @@ import warnings
 import numpy as np
 import numpy.typing as npt
 
-from ..benchmark import BlockEncoding
+from ..benchmark import BlockEncoding, _qubrabench_method
 
 __all__ = ["estimate_amplitude"]
 
 
+@_qubrabench_method
 def estimate_amplitude(
     x: BlockEncoding,
     good_indices: npt.ArrayLike,
