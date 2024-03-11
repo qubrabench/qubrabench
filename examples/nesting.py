@@ -18,7 +18,7 @@ def classical_algorithm(A: ndarray, b: ndarray) -> bool:
 
 
 def quantum_algorithm(
-    A: ndarray, b: ndarray, *, max_failure_probability: float = 1e-5
+    A: ndarray, b: ndarray, *, max_fail_probability: float = 1e-5
 ) -> bool:
     r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
@@ -28,7 +28,7 @@ def quantum_algorithm(
         A,
         b,
         precision=1e-5 / 2,
-        max_failure_probability=max_failure_probability / (4 * n * n),
+        max_fail_probability=max_fail_probability / (4 * n * n),
     )
 
     return (
@@ -39,11 +39,11 @@ def quantum_algorithm(
                     x,
                     i,
                     precision=1e-5,
-                    max_failure_probability=max_failure_probability / (4 * n),
+                    max_fail_probability=max_fail_probability / (4 * n),
                 )
                 >= 0.25
             ),
-            max_failure_probability=max_failure_probability / 2,
+            max_fail_probability=max_fail_probability / 2,
             max_classical_queries=0,
         )
         is not None
@@ -97,7 +97,7 @@ def run(
         with track_queries() as tracker:
             A = Qndarray(A)
             b = Qndarray(b)
-            _ = quantum_algorithm(A, b, max_failure_probability=1 / 3)
+            _ = quantum_algorithm(A, b, max_fail_probability=1 / 3)
 
             stats_A: QueryStats = tracker.get_stats(A)
             stats_b: QueryStats = tracker.get_stats(b)

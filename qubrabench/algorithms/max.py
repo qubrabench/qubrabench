@@ -24,9 +24,9 @@ E = TypeVar("E")
 def max(
     iterable: Iterable[E],
     *,
+    max_fail_probability: Optional[float] = None,
     default: OptionalParameter[E] = _absent,
     key: Optional[Callable[[E], Any]] = None,
-    max_failure_probability: Optional[float] = None,
 ) -> E:
     """Find the largest element in a list.
 
@@ -34,7 +34,7 @@ def max(
         iterable: iterable to find the maximum in
         default: default value to return if iterable is empty.
         key: function that maps iterable elements to values that are comparable. By default, use the iterable elements.
-        max_failure_probability: upper bound on the failure probability of the quantum algorithm.
+        max_fail_probability: upper bound on the failure probability of the quantum algorithm.
 
     Raises:
         ValueError: Raised when the failure rate `error` is not provided and statistics cannot be calculated.
@@ -54,7 +54,7 @@ def max(
 
     # collect stats
     if is_benchmarking:
-        if max_failure_probability is None:
+        if max_fail_probability is None:
             raise ValueError(
                 "max() parameter 'error' not provided, cannot compute quantum query statistics"
             )
@@ -93,7 +93,7 @@ def max(
                 obj,
                 queries_classical=0,
                 queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, max_failure_probability
+                    N, max_fail_probability
                 ),
                 base_stats=stats,
             )

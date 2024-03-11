@@ -30,5 +30,5 @@ def bruteforce_solve(
 
     # brute-force search
     return qb.algorithms.search.search(
-        domain, inst.evaluate, max_failure_probability=error, rng=rng
+        domain, inst.evaluate, max_fail_probability=error, rng=rng
     )

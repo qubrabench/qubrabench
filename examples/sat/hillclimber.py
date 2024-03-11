@@ -79,7 +79,7 @@ def hill_climber(
             result = max(
                 zip(neighbors, weights),
                 key=oracle(lambda it: it[1]),
-                max_failure_probability=error,
+                max_fail_probability=error,
             )
             if result is None:
                 return x
@@ -93,7 +93,7 @@ def hill_climber(
             result = search(
                 zip(neighbors, weights),
                 key=oracle(lambda it: it[1] > w),
-                max_failure_probability=error,
+                max_fail_probability=error,
                 rng=rng,
             )
             if result is None:
