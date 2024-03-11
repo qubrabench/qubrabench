@@ -43,6 +43,13 @@ class QueryStats:
     quantum_expected_classical_queries: Optional[float] = None
     quantum_expected_quantum_queries: Optional[float] = None
 
+    @property
+    def quantum_expected_queries(self) -> float:
+        return (
+            self.quantum_expected_classical_queries
+            + self.quantum_expected_quantum_queries
+        )
+
     def _record_query(self, *, n: int, only_actual: bool):
         """Record an actual classical query.
 
