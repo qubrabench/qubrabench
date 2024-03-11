@@ -12,9 +12,7 @@ import pandas as pd
 # from numpy.typing import NDArray
 from numpy import ndarray
 
-import qubrabench.algorithms.search as qb
-from qubrabench.benchmark import track_queries
-from qubrabench.datastructures.qndarray import Qndarray
+import qubrabench as qb
 from qubrabench.utils.plotting import BasicPlottingStrategy
 
 E = TypeVar("E")
@@ -31,7 +29,7 @@ def find_row_all_ones_classical(A: ndarray) -> int | None:
             return i
 
 
-def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | None:
+def find_row_all_ones_quantum(A: ndarray, *, fail_prob: float, rng=None) -> int | None:
     n, m = A.shape
 
     def check_row(i):
@@ -40,7 +38,7 @@ def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | N
                 range(m),
                 key=lambda j: A[i, j] == 0,
                 rng=rng,
-                max_fail_probability=error / (2 * n),
+                max_fail_probability=fail_prob / (2 * n),
             )
             is None
         )
@@ -49,20 +47,19 @@ def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | N
         range(n),
         key=check_row,
         rng=rng,
-        max_fail_probability=error / 2,
+        max_fail_probability=fail_prob / 2,
     )
 
 
 def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**-5):
     history = []
     for _ in range(n_runs):
-        matrix = Qndarray(rng.choice([0, 1], size=(n, n)))
+        matrix = qb.array(rng.choice([0, 1], size=(n, n)))
 
-        with track_queries() as tracker:
-            find_row_all_ones_quantum(matrix, error=error, rng=rng)
-            stats = tracker.get_stats(matrix)
+        with qb.track_queries():
+            find_row_all_ones_quantum(matrix, fail_prob=error, rng=rng)
 
-            data = asdict(stats)
+            data = asdict(matrix.stats)
             data["n"] = n
             data["m"] = m
             data["size"] = n * m

@@ -1,12 +1,12 @@
 import numpy as np
 import pytest
 from nesting import (
-    classical_algorithm,
     generate_random_matrix_of_condition_number,
-    quantum_algorithm,
+    has_solution_large_entry,
+    has_solution_large_entry_quantum,
 )
 
-from qubrabench.benchmark import QueryStats, track_queries
+from qubrabench.benchmark import QueryStats
 from qubrabench.datastructures.qndarray import Qndarray
 
 
@@ -18,8 +18,8 @@ def test_example_planted(rng, N: int):
         x /= np.linalg.norm(x)
         b = A @ x
 
-        expected = classical_algorithm(A, b)
-        actual = quantum_algorithm(A, b)
+        expected = has_solution_large_entry(A, b)
+        actual = has_solution_large_entry_quantum(A, b)
         assert expected == actual
 
 
@@ -32,17 +32,15 @@ def test_example_planted_stats(rng):
 
     assert np.linalg.cond(A) == 406.1253740708785
 
-    with track_queries() as tracker:
-        A = Qndarray(A)
-        _ = quantum_algorithm(A, b)
+    A = Qndarray(A)
+    _ = has_solution_large_entry_quantum(A, b)
 
-        stats = tracker.get_stats(A)
-        assert stats == QueryStats(
-            classical_actual_queries=0,
-            classical_expected_queries=0,
-            quantum_expected_classical_queries=0,
-            quantum_expected_quantum_queries=pytest.approx(1.2866482371334009e23),
-        )
+    assert A.stats == QueryStats(
+        classical_actual_queries=0,
+        classical_expected_queries=0,
+        quantum_expected_classical_queries=0,
+        quantum_expected_quantum_queries=pytest.approx(3.3339714328255264e26),
+    )
 
 
 @pytest.mark.parametrize("N", [4, 8, 16, 50, 100, 200])
