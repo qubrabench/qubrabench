@@ -9,7 +9,6 @@ from qubrabench.algorithms.search import (
     cade_et_al_expected_quantum_queries,
 )
 from qubrabench.benchmark import QueryStats
-from qubrabench.datastructures.qndarray import Qndarray
 
 
 def test_example_execution():
@@ -23,7 +22,7 @@ def test_find_row_all_ones_on_nearly_good_matrix(rng):
     N = 100
     eps = 10**-5
 
-    mat = Qndarray(1 - np.eye(N, dtype=int))
+    mat = qb.array(1 - np.eye(N, dtype=int))
     find_row_all_ones_quantum(mat, fail_prob=eps)
 
     qc_inner = cade_et_al_expected_classical_queries(N, 1, 130)
