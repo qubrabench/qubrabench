@@ -3,7 +3,16 @@ from abc import ABC
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
-from typing import Any, Callable, Generator, Hashable, Iterable, Optional
+from typing import (
+    Any,
+    Callable,
+    Generator,
+    Hashable,
+    Iterable,
+    Optional,
+    ParamSpec,
+    TypeVar,
+)
 
 import attrs
 import numpy as np
@@ -19,16 +28,16 @@ __all__ = [
     "BlockEncoding",
     "quantum_subroutine",
     "BenchmarkError",
+    "default_tracker",
 ]
+
+
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
 
 
 class BenchmarkError(Exception):
     """Base class for raising benchmarking errors"""
-
-
-class QObject(ABC, Hashable):
-    def __eq__(self, other):
-        return hash(self) == hash(other)
 
 
 @dataclass
@@ -103,6 +112,17 @@ class QueryStats:
                 + rhs.quantum_expected_quantum_queries
             ),
         )
+
+
+class QObject(ABC, Hashable):
+    """A quantum data-structure object whose queries are tracked."""
+
+    def __eq__(self, other):
+        return hash(self) == hash(other)
+
+    @property
+    def stats(self) -> QueryStats:
+        return default_tracker().get_stats(self)
 
 
 class BenchmarkFrame:
@@ -202,6 +222,12 @@ class _BenchmarkManager:
         assert False, f"should not create object of class {cls}"
 
     @staticmethod
+    def start_tracking():
+        """set up default tracking frame"""
+        if not _BenchmarkManager.is_tracking():
+            _BenchmarkManager._stack.append(BenchmarkFrame())
+
+    @staticmethod
     def is_tracking() -> bool:
         return len(_BenchmarkManager._stack) > 0
 
@@ -283,7 +309,7 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
         _BenchmarkManager._stack.pop()
 
 
-def oracle(func):
+def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     """Wrapper to track queries for functions.
 
     Usage:
@@ -333,6 +359,7 @@ def oracle(func):
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
+        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
             hashables: set[Hashable] = {wrapped_func}
             if is_bound_method:
@@ -348,6 +375,13 @@ def oracle(func):
 
         return func(*args, **kwargs)
 
+    if not is_bound_method:
+
+        def get_stats():
+            return default_tracker().get_stats(wrapped_func)
+
+        wrapped_func.get_stats = get_stats
+
     return wrapped_func
 
 
@@ -362,6 +396,21 @@ def _already_benchmarked():
     finally:
         if _BenchmarkManager.is_tracking():
             _BenchmarkManager.current_frame()._track_only_actual = prev_flag
+
+
+def _qubrabench_method(func: Callable[_P, _R]) -> Callable[_P, _R]:
+    @wraps(func)
+    def wrapped_func(*args, **kwargs):
+        _BenchmarkManager.start_tracking()
+        return func(*args, **kwargs)
+
+    return wrapped_func
+
+
+def default_tracker():
+    if not _BenchmarkManager.is_tracking():
+        raise BenchmarkError("not in query tracking mode!")
+    return _BenchmarkManager._stack[-1]
 
 
 @attrs.define
@@ -442,7 +491,9 @@ class BlockEncoding(QObject):
         return id(self)
 
 
-def quantum_subroutine(func: Callable[..., BlockEncoding]):
+def quantum_subroutine(
+    func: Callable[_P, BlockEncoding]
+) -> Callable[_P, BlockEncoding]:
     """Wrapper to mark a function as a quantum subroutine.
 
     A quantum subroutine must return a BlockEncoding as output.
@@ -454,6 +505,7 @@ def quantum_subroutine(func: Callable[..., BlockEncoding]):
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
+        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             tracker: BenchmarkFrame
             with track_queries() as tracker:
