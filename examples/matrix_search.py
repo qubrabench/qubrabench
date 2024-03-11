@@ -40,7 +40,7 @@ def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | N
                 range(m),
                 key=lambda j: A[i, j] == 0,
                 rng=rng,
-                max_failure_probability=error / (2 * n),
+                max_fail_probability=error / (2 * n),
             )
             is None
         )
@@ -49,7 +49,7 @@ def find_row_all_ones_quantum(A: Qndarray, *, error: float, rng=None) -> int | N
         range(n),
         key=check_row,
         rng=rng,
-        max_failure_probability=error / 2,
+        max_fail_probability=error / 2,
     )
 
 

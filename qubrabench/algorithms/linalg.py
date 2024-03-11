@@ -17,7 +17,7 @@ def solve(
     A: QNDArrayLike,
     b: QNDArrayLike,
     *,
-    max_failure_probability: float,
+    max_fail_probability: float,
     precision: float,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
@@ -28,7 +28,7 @@ def solve(
     Args:
         A: input matrix
         b: input vector
-        max_failure_probability: upper bound on probability of failure
+        max_fail_probability: upper bound on probability of failure
         precision: the l1 norm distance of the output unit vector to the actual solution (scaled to unit)
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
@@ -40,7 +40,7 @@ def solve(
     return qlsa(
         enc_A,
         enc_b,
-        max_failure_probability=max_failure_probability,
+        max_fail_probability=max_fail_probability,
         precision=precision,
         condition_number_A=condition_number_A,
     )
@@ -51,7 +51,7 @@ def qlsa(
     A: BlockEncoding,
     b: BlockEncoding,
     *,
-    max_failure_probability: float,
+    max_fail_probability: float,
     precision: float,
     condition_number_A: Optional[float] = None,
 ) -> BlockEncoding:
@@ -62,7 +62,7 @@ def qlsa(
     Args:
         A: block-encoded input matrix
         b: block-encoded input vector
-        max_failure_probability: probability of failure
+        max_fail_probability: probability of failure
         precision: the l1 norm distance of the output unit vector to the actual solution (scaled to unit)
         condition_number_A: An upper-bound on the condition number of A. Optional, will be calculated if not provided.
 
@@ -92,7 +92,7 @@ def qlsa(
         A.subnormalization_factor,
         condition_number_A,
         precision,
-        max_failure_probability,
+        max_fail_probability,
     )
 
     y = np.linalg.solve(A.matrix, b.matrix)
@@ -108,7 +108,7 @@ def qlsa_query_count_with_failure_probability(
     block_encoding_subnormalization_A: float,
     condition_number_A: float,
     l1_precision: float,
-    max_failure_probability: float,
+    max_fail_probability: float,
 ) -> float:
     """Query cost expression from https://doi.org/10.48550/arXiv.2305.11352, accounting for arbitrary success probability."""
     q_star = qlsa_query_count(
@@ -122,12 +122,12 @@ def qlsa_query_count_with_failure_probability(
 
     # repeat if neccessary
     n_repeat_expected: int
-    if 1 - max_failure_probability <= expected_success_probability:
+    if 1 - max_fail_probability <= expected_success_probability:
         n_repeat_expected = 1
     else:
         n_repeat_expected = np.emath.logn(
             1 - expected_success_probability,
-            max_failure_probability,
+            max_fail_probability,
         )
 
     return q_star * n_repeat_expected

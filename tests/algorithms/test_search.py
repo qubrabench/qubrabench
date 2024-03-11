@@ -17,7 +17,7 @@ def test_search_linear_scan():
         def check(it):
             return it == 50
 
-        result = search(domain, check, max_failure_probability=10**-5)
+        result = search(domain, check, max_fail_probability=10**-5)
         assert result == 50
 
         # test stats
@@ -39,7 +39,7 @@ def test_search_linear_scan_classical_queries(rng):
             return it == k
 
         with track_queries() as tracker:
-            result = search(range(N), check, max_failure_probability=10**-5)
+            result = search(range(N), check, max_fail_probability=10**-5)
             assert result == k
             stats: QueryStats = tracker.get_stats(check)
             assert (
@@ -62,7 +62,7 @@ def test_search_with_shuffle(rng):
         def check(it):
             return it == 50
 
-        result = search(domain, check, max_failure_probability=10**-5, rng=rng)
+        result = search(domain, check, max_fail_probability=10**-5, rng=rng)
         assert result == 50
 
         # test stats
@@ -103,7 +103,7 @@ def test_variable_time_key(rng):
             range(2, 10),
             key=lambda i: is_prime(i) and is_prime(i + 2),
             rng=rng,
-            max_failure_probability=10**-5,
+            max_fail_probability=10**-5,
         )
         assert twin_primes == 3  # (3, 5)
         stats = tracker.get_stats(is_prime)

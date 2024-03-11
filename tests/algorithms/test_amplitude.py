@@ -12,7 +12,7 @@ def test_estimate_amplitude(rng):
 
     with track_queries() as tracker:
         actual_a = estimate_amplitude(
-            enc_vector, 0, precision=1e-5, max_failure_probability=2 / 3
+            enc_vector, 0, precision=1e-5, max_fail_probability=2 / 3
         )
         expected_a = np.abs(vector[0] / np.linalg.norm(vector)) ** 2
 

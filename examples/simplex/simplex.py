@@ -28,7 +28,7 @@ Basis: TypeAlias = Sequence[int]
 def solve_linear_system(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
     enc_A = block_encode_matrix(A, eps=0)
     enc_b = state_preparation_unitary(b, eps=0)
-    return qba.linalg.solve(enc_A, enc_b, max_failure_probability=eps)
+    return qba.linalg.solve(enc_A, enc_b, max_fail_probability=eps)
 
 
 @quantum_subroutine
@@ -79,7 +79,7 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     V = state_preparation_unitary(one_shot_k, eps=0)
 
     a = qba.amplitude.estimate_amplitude(
-        Interfere(U, V), k, precision=epsilon, max_failure_probability=3 / 4
+        Interfere(U, V), k, precision=epsilon, max_fail_probability=3 / 4
     )
     return a >= 0.5
 
@@ -229,7 +229,7 @@ def RedCost(
         lhs_mat,
         rhs_vec,
         precision=epsilon / (10 * np.sqrt(2)),
-        max_failure_probability=(
+        max_fail_probability=(
             1 / 3
         ),  # TODO is this correct? it's missing in the paper.
     )
@@ -281,7 +281,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     return qba.search.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
-        max_failure_probability=1.0 / 3.0,
+        max_fail_probability=1.0 / 3.0,
     )
 
 
@@ -347,7 +347,7 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         row = qba.search.search(
             range(1, m + 1),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
-            max_failure_probability=delta_scaled,
+            max_fail_probability=delta_scaled,
         )
         return row
 
@@ -383,6 +383,6 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
     result = qba.search.search(
         range(1, m + 1),
         key=lambda el: not SignEstNFP(qlsa, el, epsilon=delta_scaled * 0.45),
-        max_failure_probability=1e-5,  # TODO check
+        max_fail_probability=1e-5,  # TODO check
     )
     return result is not None
