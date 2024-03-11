@@ -10,13 +10,13 @@ def test_qndarray_iterate(rng):
         mat = rng.random(size=(N, M))
         qmat = Qndarray(mat)
 
-        with track_queries() as tracker:
+        with track_queries():
             mat_sum = 0
             for i in range(N):
                 for j in range(M):
                     mat_sum += qmat[i, j]
             np.testing.assert_allclose(mat_sum, np.sum(mat))
-            assert tracker.get_stats(qmat) == QueryStats(classical_actual_queries=N * M)
+            assert qmat.stats == QueryStats(classical_actual_queries=N * M)
 
             mat_max = 0
             for i in range(N):
@@ -24,9 +24,7 @@ def test_qndarray_iterate(rng):
                     mat_max = max(mat_max, qmat[i, j])
 
             np.testing.assert_allclose(mat_max, np.max(mat))
-            assert tracker.get_stats(qmat) == QueryStats(
-                classical_actual_queries=2 * N * M
-            )
+            assert qmat.stats == QueryStats(classical_actual_queries=2 * N * M)
 
 
 def test_qndarray_constructor_idempotent():
@@ -38,11 +36,9 @@ def test_qndarray_constructor_idempotent():
 def test_qndarray_view():
     a = Qndarray(np.eye(3))
     row = a[0, :]
-
-    with track_queries() as tracker:
-        _ = row[0]
-        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
-        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
+    _ = row[0]
+    assert row.stats == QueryStats(classical_actual_queries=1)
+    assert a.stats == QueryStats(classical_actual_queries=1)
 
 
 def test_qndarray_nested_views():
@@ -50,9 +46,8 @@ def test_qndarray_nested_views():
     b = a[:, :]
     row = b[0, :]
 
-    with track_queries() as tracker:
-        _ = row[0]
+    _ = row[0]
 
-        assert tracker.get_stats(row) == QueryStats(classical_actual_queries=1)
-        assert tracker.get_stats(a) == QueryStats(classical_actual_queries=1)
-        assert tracker.get_stats(b) == QueryStats(classical_actual_queries=1)
+    assert row.stats == QueryStats(classical_actual_queries=1)
+    assert a.stats == QueryStats(classical_actual_queries=1)
+    assert b.stats == QueryStats(classical_actual_queries=1)

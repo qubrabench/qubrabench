@@ -107,7 +107,11 @@ def test_oracle(rng):
         with track_queries() as tracker:
             for _ in range(N):
                 some_oracle()
-            assert tracker.get_stats(some_oracle).classical_actual_queries == N
+            assert (
+                tracker.get_stats(some_oracle).classical_actual_queries
+                == some_oracle.get_stats().classical_actual_queries
+                == N
+            )
 
 
 class ClassWithOracles:
@@ -162,41 +166,50 @@ def test_oracle_class_methods(rng):
                 ChildClassWithOracles.some_classmethod()
                 ChildClassWithOracles.some_staticmethod()
 
-        def get(f):
-            return tracker.get_stats(f).classical_actual_queries
+            def get(f):
+                return tracker.get_stats(f).classical_actual_queries
 
-        # some_method
-        assert get(a.some_method) == N_a
-        assert get(b.some_method) == N_b
-        assert get(c.some_method) == N_c
-        assert (
-            get(ClassWithOracles.some_method)
-            == get(ChildClassWithOracles.some_method)
-            == N_a + N_b + N_c
-        )
+            # some_method
+            assert get(a.some_method) == N_a
+            assert get(b.some_method) == N_b
+            assert get(c.some_method) == N_c
+            assert (
+                get(ClassWithOracles.some_method)
+                == get(ChildClassWithOracles.some_method)
+                == N_a + N_b + N_c
+            )
 
-        # some_classmethod
-        assert (
-            get(a.some_classmethod)
-            == get(b.some_classmethod)
-            == get(ClassWithOracles.some_classmethod)
-            == N_a + N_b + N_class
-        )
-        assert (
-            get(c.some_classmethod)
-            == get(ChildClassWithOracles.some_classmethod)
-            == N_c + N_child
-        )
+            # some_classmethod
+            assert (
+                get(a.some_classmethod)
+                == get(b.some_classmethod)
+                == get(ClassWithOracles.some_classmethod)
+                == N_a + N_b + N_class
+            )
+            assert (
+                get(c.some_classmethod)
+                == get(ChildClassWithOracles.some_classmethod)
+                == N_c + N_child
+            )
 
-        # some_staticmethod
-        assert (
-            get(a.some_staticmethod)
-            == get(b.some_staticmethod)
-            == get(c.some_staticmethod)
-            == get(ClassWithOracles.some_staticmethod)
-            == get(ClassWithOracles.some_staticmethod)
-            == N_a + N_b + N_c + N_class + N_child
-        )
+            # some_staticmethod
+
+            def getp(f):
+                return f.get_stats().classical_actual_queries
+
+            assert (
+                getp(a.some_staticmethod)
+                == getp(a.some_staticmethod)
+                == get(b.some_staticmethod)
+                == getp(b.some_staticmethod)
+                == get(c.some_staticmethod)
+                == getp(c.some_staticmethod)
+                == get(ClassWithOracles.some_staticmethod)
+                == getp(ClassWithOracles.some_staticmethod)
+                == get(ClassWithOracles.some_staticmethod)
+                == getp(ClassWithOracles.some_staticmethod)
+                == N_a + N_b + N_c + N_class + N_child
+            )
 
 
 @dataclass
@@ -213,8 +226,7 @@ def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
         TypeError, match=re.escape("unhashable type: 'ClassWithUnhashableMember'")
     ):
         obj = ClassWithUnhashableMember(np.zeros(5))
-        with track_queries():
-            obj.some_oracle()
+        obj.some_oracle()
 
 
 def test_block_encoding_nested_access():
@@ -222,7 +234,6 @@ def test_block_encoding_nested_access():
     U = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0)
     V = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(U, n)])
 
-    with track_queries() as tracker:
-        V.access(n_times=m)
-        assert tracker.get_stats(U).quantum_expected_quantum_queries == n * m
-        assert tracker.get_stats(V).quantum_expected_quantum_queries == m
+    V.access(n_times=m)
+    assert U.stats.quantum_expected_quantum_queries == n * m
+    assert V.stats.quantum_expected_quantum_queries == m
