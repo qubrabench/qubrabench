@@ -9,6 +9,8 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
+from ._internals import merge_into_with_sum_inplace
+
 __all__ = [
     "QObject",
     "QueryStats",
@@ -94,15 +96,6 @@ class QueryStats:
                 + rhs.quantum_expected_quantum_queries
             ),
         )
-
-
-def merge_into_with_sum_inplace(a: dict, b: dict):
-    """Union of two dictionaries, by adding the values for existing keys"""
-    for k, v in b.items():
-        if k not in a:
-            a[k] = v
-        else:
-            a[k] += v
 
 
 class BenchmarkFrame:

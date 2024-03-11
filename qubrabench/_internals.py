@@ -19,3 +19,12 @@ OptionalParameter: TypeAlias = Union[T, AbsentParameter]
 
     x: OptionalParameter[int] = _absent
 """
+
+
+def merge_into_with_sum_inplace(a: dict, b: dict):
+    """Union of two dictionaries, by adding the values for existing keys"""
+    for k, v in b.items():
+        if k not in a:
+            a[k] = v
+        else:
+            a[k] += v
