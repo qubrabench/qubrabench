@@ -1,3 +1,9 @@
+"""An example using nested subroutine calls, inspired by Simplex's pivot finding method.
+
+Problem: Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$
+"""
+
+import numpy
 import numpy as np
 import pandas as pd
 import scipy
@@ -5,45 +11,46 @@ import scipy
 # from numpy.typing import NDArray
 from numpy import ndarray
 
-import qubrabench.algorithms as qba
-from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.qndarray import Qndarray
+import qubrabench as qb
 
 
-def classical_algorithm(A: ndarray, b: ndarray) -> bool:
+def has_solution_large_entry(A: ndarray, b: ndarray) -> bool:
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
     n = A.shape[0]
-    x = np.linalg.solve(A, b)
-    return any(np.abs(x[i]) >= 0.5 for i in range(n))
+    x = numpy.linalg.solve(A, b)
+    norm_x = numpy.linalg.norm(x)
+    for i in range(n):
+        if np.abs(x[i]) >= 0.5 * norm_x:
+            return True
+    return False
 
 
-def quantum_algorithm(
-    A: ndarray, b: ndarray, *, max_fail_probability: float = 1e-5
+def has_solution_large_entry_quantum(
+    A: ndarray, b: ndarray, *, max_fail_prob: float = 1e-5
 ) -> bool:
-    r"""Find x s.t. Ax = b, and check if x has an entry x_i s.t. $x_i >= 0.5$"""
     assert A.ndim == 2 and A.shape[0] == A.shape[1]
     n = A.shape[0]
 
-    x = qba.linalg.solve(
+    x = qb.linalg.solve(
         A,
         b,
-        precision=1e-5 / 2,
-        max_fail_probability=max_fail_probability / (4 * n * n),
+        precision=1e-9,
+        max_fail_probability=max_fail_prob / (4 * n * n),
     )
 
     return (
-        qba.search.search(
+        qb.search(
             range(n),
             key=(
-                lambda i: qba.amplitude.estimate_amplitude(
+                lambda i: qb.estimate_amplitude(
                     x,
                     i,
-                    precision=1e-5,
-                    max_fail_probability=max_fail_probability / (4 * n),
+                    precision=2e-9,
+                    max_fail_probability=max_fail_prob / (4 * n),
                 )
                 >= 0.25
             ),
-            max_fail_probability=max_fail_probability / 2,
+            max_fail_probability=max_fail_prob / 2,
             max_classical_queries=0,
         )
         is not None
@@ -94,20 +101,17 @@ def run(
         A = generate_random_matrix_of_condition_number(N, condition_number, rng=rng)
         b = rng.random(N)
 
-        with track_queries() as tracker:
-            A = Qndarray(A)
-            b = Qndarray(b)
-            _ = quantum_algorithm(A, b, max_fail_probability=1 / 3)
-
-            stats_A: QueryStats = tracker.get_stats(A)
-            stats_b: QueryStats = tracker.get_stats(b)
+        with qb.track_queries():
+            A = qb.array(A)
+            b = qb.array(b)
+            _ = has_solution_large_entry_quantum(A, b, max_fail_prob=error)
 
             history.append(
                 {
                     "N": N,
                     "k_A": condition_number,
-                    "queries_A": stats_A.quantum_expected_quantum_queries,
-                    "queries_b": stats_b.quantum_expected_quantum_queries,
+                    "queries_A": A.stats.quantum_expected_quantum_queries,
+                    "queries_b": b.stats.quantum_expected_quantum_queries,
                 }
             )
 
