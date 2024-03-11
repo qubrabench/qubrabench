@@ -7,6 +7,7 @@ from ..benchmark import BlockEncoding, QObject, oracle
 
 __all__ = [
     "Qndarray",
+    "array",
     "QNDArrayLike",
     "block_encode_matrix",
     "state_preparation_unitary",
@@ -101,6 +102,10 @@ class Qndarray(QObject, Generic[T]):
 
 
 QNDArrayLike: TypeAlias = npt.NDArray | Qndarray
+
+
+def array(data) -> Qndarray:
+    return Qndarray(data)
 
 
 def block_encode_matrix(matrix: QNDArrayLike, *, eps: float) -> BlockEncoding:
