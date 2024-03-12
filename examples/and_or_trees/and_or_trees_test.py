@@ -32,7 +32,7 @@ def test_random_balanced_read_once_formula(rng):
     xs = Qndarray(rng.choice([True, False], size=n * m))
 
     with track_queries() as tracker:
-        f.evaluate(xs, max_failure_probability=1e-5)
+        f.evaluate(xs, max_fail_probability=1e-5)
         stats: QueryStats = tracker.get_stats(xs)
 
         assert stats == QueryStats(
