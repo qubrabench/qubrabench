@@ -2,8 +2,8 @@ import numpy as np
 from and_or_trees import AndNode, AndOrTree, LeafNode, OrNode
 from numpy.typing import NDArray
 
-from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.qndarray import Qndarray
+import qubrabench as qb
+from qubrabench.benchmark import QueryStats
 
 
 def random_balanced_read_once_formula(
@@ -29,15 +29,13 @@ def random_balanced_read_once_formula(
 def test_random_balanced_read_once_formula(rng):
     n, m = 10, 10
     f = random_balanced_read_once_formula((n, m), rng=rng)
-    xs = Qndarray(rng.choice([True, False], size=n * m))
+    xs = qb.array(rng.choice([True, False], size=n * m))
 
-    with track_queries() as tracker:
-        f.evaluate(xs, max_fail_probability=1e-5)
-        stats: QueryStats = tracker.get_stats(xs)
+    f.evaluate(xs, max_fail_probability=1e-5)
 
-        assert stats == QueryStats(
-            classical_actual_queries=n * m,
-            classical_expected_queries=n * m,
-            quantum_expected_classical_queries=130,
-            quantum_expected_quantum_queries=1104,
-        )
+    assert xs.stats == QueryStats(
+        classical_actual_queries=n * m,
+        classical_expected_queries=n * m,
+        quantum_expected_classical_queries=130,
+        quantum_expected_quantum_queries=1104,
+    )

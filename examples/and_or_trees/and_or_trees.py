@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Sequence
 
-from qubrabench.algorithms.search import search
+import qubrabench as qb
 
 
 class AndOrTree(ABC):
@@ -17,7 +17,7 @@ class AndNode(AndOrTree):
 
     def evaluate(self, xs: Sequence[bool], *, max_fail_probability: float) -> bool:
         return (
-            search(
+            qb.search(
                 self.subtrees,
                 key=lambda tree: tree.evaluate(
                     xs,
@@ -38,7 +38,7 @@ class OrNode(AndOrTree):
 
     def evaluate(self, xs: Sequence[bool], *, max_fail_probability: float) -> bool:
         return (
-            search(
+            qb.search(
                 self.subtrees,
                 key=lambda tree: tree.evaluate(
                     xs,
