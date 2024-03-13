@@ -25,8 +25,6 @@ class QuantumLouvainBase(Louvain):
     error: float
     simple: bool
 
-    __graph_hashes: set[int]
-
     def __init__(
         self,
         G: nx.Graph,
@@ -49,8 +47,6 @@ class QuantumLouvainBase(Louvain):
         self.rng = rng
         self.error = error
         self.simple = simple
-
-        self.__graph_hashes = set()
 
     def run_with_tracking(self) -> QueryStats:
         tracker: BenchmarkFrame
