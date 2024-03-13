@@ -22,7 +22,7 @@ class QuantumLouvainBase(Louvain):
     """
 
     rng: np.random.Generator
-    error: float
+    max_fail_probability: float
     simple: bool
 
     def __init__(
@@ -45,7 +45,7 @@ class QuantumLouvainBase(Louvain):
         """
         Louvain.__init__(self, G, keep_history=keep_history)
         self.rng = rng
-        self.error = error
+        self.max_fail_probability = error
         self.simple = simple
 
     def run_with_tracking(self) -> QueryStats:
@@ -111,9 +111,13 @@ class QLouvain(QuantumLouvainBase):
         G = self.G
         while True:
             if not self.simple:
-                u = self.find_first(self.error)  # TODO check `error`
+                u = self.find_first(
+                    self.max_fail_probability
+                )  # TODO check `max_fail_probability`
             else:
-                u = self.vertex_find(G.nodes, self.error)  # TODO check `error`
+                u = self.vertex_find(
+                    G.nodes, self.max_fail_probability
+                )  # TODO check `max_fail_probability`
 
             if u is None:
                 break
@@ -121,7 +125,7 @@ class QLouvain(QuantumLouvainBase):
             target_alpha = qmax(
                 G.neighbouring_communities(u),
                 key=lambda alpha: G.delta_modularity(u, alpha),
-                max_fail_probability=self.error,  # TODO check
+                max_fail_probability=self.max_fail_probability,  # TODO check `max_fail_probability`
             )
 
             assert G.delta_modularity(u, target_alpha) > 0
@@ -152,7 +156,7 @@ class EdgeQLouvain(QuantumLouvainBase):
             node, target_community = qmax(
                 [(u, G.get_label(v)) for u, v in self.G.edges],
                 key=lambda it: G.delta_modularity(*it),
-                max_fail_probability=self.error,
+                max_fail_probability=self.max_fail_probability,
             )
 
             if G.delta_modularity(node, target_community) > 0:
