@@ -24,7 +24,8 @@ def test_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=False)
     sanity_check_input(solver.G)
 
-    stats = solver.run_with_tracking()
+    solver.run()
+    stats = solver.get_stats()
 
     # TODO sanity check these numbers
     assert stats == QueryStats(
@@ -39,7 +40,8 @@ def test_simple_qlouvain_sg(graph_b, rng):
     solver = qlouvain.QLouvainSG(graph_b, rng=rng, simple=True)
     sanity_check_input(solver.G)
 
-    stats = solver.run_with_tracking()
+    solver.run()
+    stats = solver.get_stats()
 
     # TODO sanity check these numbers
     assert stats == QueryStats(
@@ -54,7 +56,8 @@ def test_edge_qlouvain(graph_b, rng):
     solver = qlouvain.EdgeQLouvain(graph_b, rng=rng)
     sanity_check_input(solver.G)
 
-    stats = solver.run_with_tracking()
+    solver.run()
+    stats = solver.get_stats()
 
     # TODO sanity check these numbers
     assert stats == QueryStats(

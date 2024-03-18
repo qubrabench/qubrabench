@@ -139,7 +139,9 @@ class BenchmarkFrame:
         self.stats = dict()
         self._track_only_actual = False
 
-    def get_stats(self, obj: Any) -> QueryStats:
+    def get_stats(
+        self, obj: Any, *, default: Optional[QueryStats] = None
+    ) -> QueryStats:
         """Get the statistics of a quantum oracle/data structure"""
 
         key: Hashable
@@ -149,6 +151,8 @@ class BenchmarkFrame:
             key = obj
 
         if key not in self.stats:
+            if default is not None:
+                return default
             raise ValueError(f"object {obj} has not been benchmarked!")
         return self.stats[key]
 

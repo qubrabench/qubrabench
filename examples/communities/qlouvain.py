@@ -8,12 +8,12 @@ from typing import Iterable, Optional
 
 import networkx as nx
 import numpy as np
-from louvain import Louvain, LouvainGraph
+from louvain import Louvain
 from methodtools import lru_cache
 
 from qubrabench.algorithms.max import max as qmax
 from qubrabench.algorithms.search import search as qsearch
-from qubrabench.benchmark import BenchmarkFrame, QueryStats, track_queries
+from qubrabench.benchmark import QueryStats, default_tracker
 
 
 class QuantumLouvainBase(Louvain):
@@ -30,7 +30,6 @@ class QuantumLouvainBase(Louvain):
         G: nx.Graph,
         *,
         rng: np.random.Generator,
-        keep_history: bool = False,
         error: float = 1e-5,
         simple: bool = False,
     ) -> None:
@@ -38,21 +37,21 @@ class QuantumLouvainBase(Louvain):
 
         Args:
             G: The initial graph where communities should be detected.
-            keep_history: Keep maintaining a list of adjacency matrices and community mappings. Defaults to False.
             rng: Source of randomness
             error: upper bound on the failure probability of the quantum algorithm.
             simple: whether to run the simple variant of quantum Louvain (when applicable). Defaults to False.
         """
-        Louvain.__init__(self, G, keep_history=keep_history)
+        Louvain.__init__(self, G, keep_history=True)
         self.rng = rng
         self.max_fail_probability = error
         self.simple = simple
 
-    def run_with_tracking(self) -> QueryStats:
-        tracker: BenchmarkFrame
-        with track_queries() as tracker:
-            self.run()
-            return tracker.get_stats(LouvainGraph.delta_modularity)
+    def get_stats(self) -> QueryStats:
+        tracker = default_tracker()
+        stats = QueryStats()
+        for g in self.graph_objects:
+            stats += tracker.get_stats(g.delta_modularity, default=QueryStats())
+        return stats
 
 
 class QLouvain(QuantumLouvainBase):
