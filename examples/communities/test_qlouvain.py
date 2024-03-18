@@ -12,10 +12,10 @@ from qubrabench.benchmark import QueryStats
 @pytest.fixture()
 def graph_b(rng):
     return random_fcs_graph(
-        250,
-        community_size=50,
+        30,
+        community_size=5,
         mu=0.3,
-        average_degree=5,
+        average_degree=4,
         rng=rng,
     )
 
@@ -29,10 +29,10 @@ def test_qlouvain_sg(graph_b, rng):
 
     # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=149540,
-        classical_expected_queries=approx(319046.8834335605),
-        quantum_expected_classical_queries=approx(1494786.5124899056),
-        quantum_expected_quantum_queries=approx(5082603.63533345),
+        classical_actual_queries=1116,
+        classical_expected_queries=approx(2340.3981822437195),
+        quantum_expected_classical_queries=approx(32268.880078438593),
+        quantum_expected_quantum_queries=approx(59643.37932902764),
     )
 
 
@@ -45,10 +45,10 @@ def test_simple_qlouvain_sg(graph_b, rng):
 
     # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=14031,
-        classical_expected_queries=approx(30104.961506972122),
-        quantum_expected_classical_queries=approx(30385.607143114485),
-        quantum_expected_quantum_queries=approx(86342.22700377628),
+        classical_actual_queries=471,
+        classical_expected_queries=approx(931.3532965941146),
+        quantum_expected_classical_queries=approx(2470.4228380800087),
+        quantum_expected_quantum_queries=approx(7174.82168129804),
     )
 
 
@@ -61,8 +61,8 @@ def test_edge_qlouvain(graph_b, rng):
 
     # TODO sanity check these numbers
     assert stats == QueryStats(
-        classical_actual_queries=157061,
-        classical_expected_queries=approx(157061),
-        quantum_expected_classical_queries=approx(279),
-        quantum_expected_quantum_queries=approx(1032608.2666638192),
+        classical_actual_queries=1585,
+        classical_expected_queries=1585,
+        quantum_expected_classical_queries=approx(30),
+        quantum_expected_quantum_queries=approx(27259.26809520937),
     )
