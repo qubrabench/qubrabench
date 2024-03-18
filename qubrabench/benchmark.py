@@ -422,7 +422,7 @@ def default_tracker():
     return _BenchmarkManager._stack[-1]
 
 
-@attrs.define(init=True)
+@attrs.define
 class BlockEncoding(QObject):
     r"""Unitary that block-encodes an approximation of a (subnormalized version of a) matrix.
 
