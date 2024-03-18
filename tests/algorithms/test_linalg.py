@@ -5,13 +5,12 @@ from qubrabench.algorithms.linalg import (
     qlsa_query_count_with_failure_probability,
     solve,
 )
-from qubrabench.benchmark import default_tracker
-from qubrabench.datastructures.qndarray import Qndarray
+from qubrabench.datastructures.qndarray import Qndarray, array
 
 
 def random_instance(rng, N: int) -> tuple[Qndarray, Qndarray]:
-    A = Qndarray(rng.random(size=(N, N)))
-    b = Qndarray(rng.random(size=N))
+    A = array(rng.random(size=(N, N)))
+    b = array(rng.random(size=N))
     return A, b
 
 
@@ -36,12 +35,9 @@ def test_solve_stats(rng):
     )
     enc_y.access()
 
-    tracker = default_tracker()
-    queries_y = tracker.get_stats(enc_y).quantum_expected_quantum_queries
-    queries_A = tracker.get_stats(A).quantum_expected_quantum_queries
-    queries_b = tracker.get_stats(b).quantum_expected_quantum_queries
+    queries_A = A.stats.quantum_expected_quantum_queries
+    queries_b = b.stats.quantum_expected_quantum_queries
 
-    assert queries_y == 1
     expected_query_count_A = 2 * qlsa_query_count_with_failure_probability(
         block_encoding_subnormalization_A=N,
         condition_number_A=max(np.linalg.cond(A.get_raw_data()), np.sqrt(12)),

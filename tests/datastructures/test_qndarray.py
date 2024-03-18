@@ -1,7 +1,7 @@
 import numpy as np
 
 from qubrabench.benchmark import QueryStats, track_queries
-from qubrabench.datastructures.qndarray import Qndarray
+from qubrabench.datastructures.qndarray import Qndarray, array
 
 
 def test_qndarray_iterate(rng):
@@ -27,9 +27,9 @@ def test_qndarray_iterate(rng):
             assert qmat.stats == QueryStats(classical_actual_queries=2 * N * M)
 
 
-def test_qndarray_constructor_idempotent():
-    a = Qndarray(np.eye(3))
-    b = Qndarray(a)
+def test_array_constructor_idempotent():
+    a = array(np.eye(3))
+    b = array(a)
     assert a == b
 
 
