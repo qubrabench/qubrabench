@@ -197,6 +197,8 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
     if rank not in [1, 2]:
         raise ValueError("direct sum only works for 1D or 2D matrices")
 
+    uses = [(obj, rank) for obj in (a, b) if isinstance(obj, Qndarray)]
+
     a = array(a)
     b = array(b)
 
@@ -214,9 +216,7 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
         res = np.block([a.get_raw_data(), b.get_raw_data()])
         alpha = np.linalg.norm(res)
 
-    return BlockEncoding(
-        res, subnormalization_factor=alpha, precision=0, uses=[(a, rank), (b, rank)]
-    )
+    return BlockEncoding(res, subnormalization_factor=alpha, precision=0, uses=uses)
 
 
 @quantum_subroutine
@@ -235,13 +235,11 @@ def RedCost(
         ),  # TODO is this correct? it's missing in the paper.
     )
 
-    c = array(c)
-
     return BlockEncoding(
-        np.array([np.inner(np.block([-c.get_raw_data()[B], 1]), sol.matrix)]),
+        np.array([np.inner(np.block([-c[B], 1]), sol.matrix)]),
         subnormalization_factor=sol.subnormalization_factor * np.sqrt(2),
         precision=sol.precision,
-        uses=[(sol, 1), (c, 1)],
+        uses=[(sol, 1)],
     )
 
 

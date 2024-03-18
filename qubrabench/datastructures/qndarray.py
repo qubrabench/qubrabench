@@ -91,9 +91,12 @@ class Qndarray(QObject, Generic[T]):
             self if self.__view_of is None else self.__view_of,
         )
 
-    def __hash__(self):
+    def _view_of(self):
         if self.__view_of is not None:
-            return hash(self.__view_of)
+            return self.__view_of._view_of()
+        return self
+
+    def __hash__(self):
         return id(self)
 
 
