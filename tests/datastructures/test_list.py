@@ -9,8 +9,8 @@ def test_qlist_iterate(rng):
         N = rng.integers(100, 1000)
         xs = QList(rng.random(size=N))
 
-        with track_queries() as tracker:
+        with track_queries():
             _ = np.sum(xs)
-            assert tracker.get_stats(xs) == QueryStats(classical_actual_queries=N)
+            assert xs.stats == QueryStats(classical_actual_queries=N)
             _ = np.max(xs)
-            assert tracker.get_stats(xs) == QueryStats(classical_actual_queries=2 * N)
+            assert xs.stats == QueryStats(classical_actual_queries=2 * N)

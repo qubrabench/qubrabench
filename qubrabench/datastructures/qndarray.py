@@ -47,16 +47,9 @@ class Qndarray(QObject, Generic[T]):
     __data: npt.NDArray[T]
     __view_of: Optional["Qndarray[T]"]
 
-    def __new__(cls, *args, **kwargs):
-        if len(args) == 1 and isinstance(args[0], Qndarray):
-            return args[0]
-        inst = super().__new__(cls)
-        Qndarray.__initialize(inst, *args, **kwargs)
-        return inst
-
-    def __initialize(self, d, v=None):
-        self.__data = d
-        self.__view_of = v
+    def __init__(self, data, view_of=None):
+        self.__data = data
+        self.__view_of = view_of
 
     def get_raw_data(self):
         return self.__data
@@ -79,6 +72,9 @@ class Qndarray(QObject, Generic[T]):
     @oracle
     def __get_elem(self, ix: int | tuple[int, ...]) -> T:
         return self.__data[ix]
+
+    def _get_query_oracle(self):
+        return self.__get_elem
 
     def __getitem__(self, item):
         if (isinstance(item, int) and self.ndim == 1) or (
@@ -105,6 +101,8 @@ QNDArrayLike: TypeAlias = npt.NDArray | Qndarray
 
 
 def array(data) -> Qndarray:
+    if isinstance(data, Qndarray):
+        return data
     return Qndarray(data)
 
 

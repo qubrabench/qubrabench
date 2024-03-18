@@ -155,10 +155,12 @@ class Louvain(ABC):
         self.single_partition(self.G)
 
         self.history = [] if keep_history else None
+        self.graph_objects = set() if keep_history else None
 
     def record_history(self):
         if self.history is not None:
             self.history.append((self.G.copy(), self.labels.copy()))
+            self.graph_objects.add(self.G)
 
     def run(self):
         """
