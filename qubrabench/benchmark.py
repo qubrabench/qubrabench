@@ -121,12 +121,12 @@ class QObject(ABC, Hashable):
         return hash(self) == hash(other)
 
     @abstractmethod
-    def __get_query_oracle(self):
+    def _get_query_oracle(self):
         """returns the member function whose calls are treated as accesses to the object."""
 
     @property
     def stats(self) -> QueryStats:
-        return default_tracker().get_stats(self.__get_query_oracle)
+        return default_tracker().get_stats(self._get_query_oracle())
 
 
 class BenchmarkFrame:
@@ -368,14 +368,11 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             hashables: set[Hashable] = set()
             if is_bound_method:
                 self = args[0]
-                if isinstance(self, QObject):
-                    hashables.add(self)
-                else:
-                    hashables.add((wrapped_func, self))
+                hashables.add((wrapped_func, self))
             else:
                 hashables.add(wrapped_func)
-
             assert len(hashables) == 1, "oracle should not be tracked multiple times!"
+
             frame = _BenchmarkManager.current_frame()
             for key in hashables:
                 stats = frame._get_or_init_stats(key)
@@ -421,7 +418,7 @@ def default_tracker():
     return _BenchmarkManager._stack[-1]
 
 
-@attrs.define
+@attrs.define(init=True)
 class BlockEncoding(QObject):
     r"""Unitary that block-encodes an approximation of a (subnormalized version of a) matrix.
 
@@ -456,9 +453,7 @@ class BlockEncoding(QObject):
 
     @cached_property
     def costs(self) -> dict[Hashable, QueryStats]:
-        cost_table: dict[Hashable, QueryStats] = {
-            self: QueryStats(quantum_expected_quantum_queries=1)
-        }
+        cost_table: dict[Hashable, QueryStats] = {}
 
         for obj, q_queries in self.uses:
             if isinstance(obj, BlockEncoding):
@@ -478,15 +473,25 @@ class BlockEncoding(QObject):
                         },
                     )
             else:
+                obj_oracle = (
+                    (obj._get_query_oracle().__func__, obj)
+                    if isinstance(obj, QObject)
+                    else obj
+                )
                 merge_into_with_sum_inplace(
                     cost_table,
-                    {obj: QueryStats(quantum_expected_quantum_queries=q_queries)},
+                    {
+                        obj_oracle: QueryStats(
+                            quantum_expected_quantum_queries=q_queries
+                        )
+                    },
                 )
 
         return cost_table
 
     def access(self, *, n_times: int = 1):
         """Access the block-encoded matrix via the implementing unitary"""
+        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
                 _BenchmarkManager.current_frame()._add_quantum_expected_queries(
@@ -497,6 +502,9 @@ class BlockEncoding(QObject):
 
     def __hash__(self):
         return id(self)
+
+    def _get_query_oracle(self):
+        return self
 
 
 def quantum_subroutine(

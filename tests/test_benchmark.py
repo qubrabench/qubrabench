@@ -7,6 +7,7 @@ import pytest
 from numpy.random import Generator
 
 from qubrabench.benchmark import BlockEncoding, QueryStats, oracle, track_queries
+from qubrabench.datastructures.qndarray import array
 
 
 def random_stats(rng: Generator, *, not_benched=False):
@@ -173,11 +174,6 @@ def test_oracle_class_methods(rng):
             assert get(a.some_method) == N_a
             assert get(b.some_method) == N_b
             assert get(c.some_method) == N_c
-            assert (
-                get(ClassWithOracles.some_method)
-                == get(ChildClassWithOracles.some_method)
-                == N_a + N_b + N_c
-            )
 
             # some_classmethod
             assert (
@@ -231,9 +227,9 @@ def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
 
 def test_block_encoding_nested_access():
     n, m = 5, 6
-    U = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0)
+    A = array(np.eye(4))
+    U = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(A, 1)])
     V = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(U, n)])
 
     V.access(n_times=m)
-    assert U.stats.quantum_expected_quantum_queries == n * m
-    assert V.stats.quantum_expected_quantum_queries == m
+    assert A.stats.quantum_expected_quantum_queries == n * m

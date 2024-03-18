@@ -17,7 +17,7 @@ class QList(QObject, Generic[T]):
     def __get_item(self, i):
         return self.__data[i]
 
-    def __get_query_oracle(self):
+    def _get_query_oracle(self):
         return self.__get_item
 
     def __getitem__(self, item):
