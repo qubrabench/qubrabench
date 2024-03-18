@@ -365,8 +365,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             obj = MyClass()
             ...
             print(tracker.get_stats(obj.some_method))
-            assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
-            assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
+            print(tracker.get_stats(obj.some_class_method))
+            print(tracker.get_stats(obj.some_static_method))
     """
 
     is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
