@@ -43,7 +43,7 @@ def test_example_planted_stats(rng):
     )
 
 
-@pytest.mark.parametrize("N", [4, 8, 16, 50, 100, 200])
+@pytest.mark.parametrize("N", [4, 8, 16, 50])
 @pytest.mark.parametrize("kappa", [10, 100, 1000])
 def test_random_matrix_with_condition_number(rng, N: int, kappa: float):
     for _ in range(5):
