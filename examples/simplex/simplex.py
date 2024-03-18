@@ -10,6 +10,7 @@ import qubrabench.algorithms as qba
 from qubrabench.benchmark import BlockEncoding, quantum_subroutine
 from qubrabench.datastructures.qndarray import (
     Qndarray,
+    array,
     block_encode_matrix,
     state_preparation_unitary,
 )
@@ -196,8 +197,8 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
     if rank not in [1, 2]:
         raise ValueError("direct sum only works for 1D or 2D matrices")
 
-    a = Qndarray(a)
-    b = Qndarray(b)
+    a = array(a)
+    b = array(b)
 
     res: npt.NDArray
     alpha: float
@@ -234,7 +235,7 @@ def RedCost(
         ),  # TODO is this correct? it's missing in the paper.
     )
 
-    c = Qndarray(c)
+    c = array(c)
 
     return BlockEncoding(
         np.array([np.inner(np.block([-c.get_raw_data()[B], 1]), sol.matrix)]),
