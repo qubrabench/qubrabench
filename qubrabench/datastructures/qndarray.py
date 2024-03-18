@@ -74,7 +74,7 @@ class Qndarray(QObject, Generic[T]):
         return self.__data[ix]
 
     def _get_query_oracle(self):
-        return self.__get_elem
+        return self._view_of().__get_elem
 
     def __getitem__(self, item):
         if (isinstance(item, int) and self.ndim == 1) or (
