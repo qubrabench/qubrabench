@@ -1,5 +1,5 @@
 import inspect
-from abc import ABC
+from abc import ABC, abstractmethod
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
@@ -120,9 +120,13 @@ class QObject(ABC, Hashable):
     def __eq__(self, other):
         return hash(self) == hash(other)
 
+    @abstractmethod
+    def __get_query_oracle(self):
+        """returns the member function whose calls are treated as accesses to the object."""
+
     @property
     def stats(self) -> QueryStats:
-        return default_tracker().get_stats(self)
+        return default_tracker().get_stats(self.__get_query_oracle)
 
 
 class BenchmarkFrame:
@@ -361,13 +365,17 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     def wrapped_func(*args, **kwargs):
         _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
-            hashables: set[Hashable] = {wrapped_func}
+            hashables: set[Hashable] = set()
             if is_bound_method:
                 self = args[0]
-                hashables.add((wrapped_func, self))
                 if isinstance(self, QObject):
                     hashables.add(self)
+                else:
+                    hashables.add((wrapped_func, self))
+            else:
+                hashables.add(wrapped_func)
 
+            assert len(hashables) == 1, "oracle should not be tracked multiple times!"
             frame = _BenchmarkManager.current_frame()
             for key in hashables:
                 stats = frame._get_or_init_stats(key)

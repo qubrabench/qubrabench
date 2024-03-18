@@ -80,6 +80,9 @@ class Qndarray(QObject, Generic[T]):
     def __get_elem(self, ix: int | tuple[int, ...]) -> T:
         return self.__data[ix]
 
+    def __get_query_oracle(self):
+        return self.__get_elem
+
     def __getitem__(self, item):
         if (isinstance(item, int) and self.ndim == 1) or (
             isinstance(item, tuple)
