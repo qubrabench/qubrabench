@@ -225,6 +225,7 @@ class BenchmarkFrame:
 
 class _BenchmarkManager:
     _stack: list[BenchmarkFrame] = []
+    disable = False
 
     def __new__(cls):
         assert False, f"should not create object of class {cls}"
@@ -232,7 +233,7 @@ class _BenchmarkManager:
     @staticmethod
     def start_tracking():
         """set up default tracking frame"""
-        if not _BenchmarkManager.is_tracking():
+        if not _BenchmarkManager.is_tracking() and not _BenchmarkManager.disable:
             _BenchmarkManager._stack.append(BenchmarkFrame())
 
     @staticmethod
@@ -308,13 +309,17 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
             print(tracker.get_stats(some_object_with_a_quantum_oracle_method))
     """
     try:
-        frame = BenchmarkFrame()
-        _BenchmarkManager._stack.append(frame)
-        yield frame
+        if not _BenchmarkManager.disable:
+            frame = BenchmarkFrame()
+            _BenchmarkManager._stack.append(frame)
+            yield frame
+        else:
+            yield None
     except Exception as e:
         raise e
     finally:
-        _BenchmarkManager._stack.pop()
+        if not _BenchmarkManager.disable:
+            _BenchmarkManager._stack.pop()
 
 
 def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
@@ -359,6 +364,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
             assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
+    return func
 
     is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
         "self",
@@ -369,18 +375,16 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     def wrapped_func(*args, **kwargs):
         _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
-            hashables: set[Hashable] = set()
+            hashable = None
             if is_bound_method:
                 self = args[0]
-                hashables.add((wrapped_func, self))
+                hashable = (wrapped_func, self)
             else:
-                hashables.add(wrapped_func)
-            assert len(hashables) == 1, "oracle should not be tracked multiple times!"
+                hashable = wrapped_func
 
             frame = _BenchmarkManager.current_frame()
-            for key in hashables:
-                stats = frame._get_or_init_stats(key)
-                stats._record_query(n=1, only_actual=frame._track_only_actual)
+            stats = frame._get_or_init_stats(hashable)
+            stats._record_query(n=1, only_actual=frame._track_only_actual)
 
         return func(*args, **kwargs)
 
