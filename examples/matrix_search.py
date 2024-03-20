@@ -53,27 +53,28 @@ def find_row_all_ones_quantum(A: ndarray, *, fail_prob: float, rng=None) -> int 
 
 
 def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**-5):
+    benchmarking = not _BenchmarkManager.disable
+
     history = []
     for _ in range(n_runs):
-        matrix = qb.array(rng.choice([0, 1], size=(n, n)))
+        matrix = rng.choice([0, 1], size=(n, n))
+        if benchmarking:
+            matrix = qb.array(matrix)
 
         with qb.track_queries():
             find_row_all_ones_quantum(matrix, fail_prob=error, rng=rng)
-            continue
 
-            if _BenchmarkManager.disable:
-                continue
-            data = asdict(matrix.stats)
-            data["n"] = n
-            data["m"] = m
-            data["size"] = n * m
-            history.append(data)
+            if benchmarking:
+                data = asdict(matrix.stats)
+                data["n"] = n
+                data["m"] = m
+                data["size"] = n * m
+                history.append(data)
 
-    if len(history):
+    if benchmarking:
         return pd.DataFrame(
             [list(row.values()) for row in history], columns=list(history[0].keys())
         )
-
 
 
 @click.group()

@@ -308,8 +308,9 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
             print(tracker.get_stats(some_quantum_oracle))
             print(tracker.get_stats(some_object_with_a_quantum_oracle_method))
     """
+    benchmarking = not _BenchmarkManager.disable
     try:
-        if not _BenchmarkManager.disable:
+        if benchmarking:
             frame = BenchmarkFrame()
             _BenchmarkManager._stack.append(frame)
             yield frame
@@ -318,7 +319,7 @@ def track_queries() -> Generator[BenchmarkFrame, None, None]:
     except Exception as e:
         raise e
     finally:
-        if not _BenchmarkManager.disable:
+        if benchmarking:
             _BenchmarkManager._stack.pop()
 
 
@@ -364,8 +365,6 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
             assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
     """
-    return func
-
     is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
         "self",
         "cls",

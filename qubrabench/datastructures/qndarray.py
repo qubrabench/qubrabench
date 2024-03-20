@@ -77,13 +77,13 @@ class Qndarray(QObject, Generic[T]):
         return self.__get_elem
 
     def __getitem__(self, item):
-        # if (isinstance(item, int) and self.ndim == 1) or (
-        #     isinstance(item, tuple)
-        #     and all(isinstance(i, int) for i in item)
-        #     and self.ndim == len(item)
-        # ):
-        # access the element
-        return self.__get_elem(item)
+        if (isinstance(item, int) and self.ndim == 1) or (
+            isinstance(item, tuple)
+            and all(isinstance(i, int) for i in item)
+            and self.ndim == len(item)
+        ):
+            # access the element
+            return self.__get_elem(item)
 
         # return a view of a sub-array
         return Qndarray(
