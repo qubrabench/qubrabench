@@ -13,6 +13,7 @@ import pandas as pd
 from numpy import ndarray
 
 import qubrabench as qb
+from qubrabench.benchmark import _BenchmarkManager
 from qubrabench.utils.plotting import BasicPlottingStrategy
 
 E = TypeVar("E")
@@ -58,16 +59,21 @@ def run(n: int, m: int, *, rng: np.random.Generator, n_runs: int = 5, error=10**
 
         with qb.track_queries():
             find_row_all_ones_quantum(matrix, fail_prob=error, rng=rng)
+            continue
 
+            if _BenchmarkManager.disable:
+                continue
             data = asdict(matrix.stats)
             data["n"] = n
             data["m"] = m
             data["size"] = n * m
             history.append(data)
 
-    return pd.DataFrame(
-        [list(row.values()) for row in history], columns=list(history[0].keys())
-    )
+    if len(history):
+        return pd.DataFrame(
+            [list(row.values()) for row in history], columns=list(history[0].keys())
+        )
+
 
 
 @click.group()
