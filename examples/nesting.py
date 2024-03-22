@@ -102,7 +102,6 @@ def run(
         A = generate_random_matrix_of_condition_number(N, condition_number, rng=rng)
         b = rng.random(N)
 
-
         A = qb.array(A)
         b = qb.array(b)
         _ = has_solution_large_entry_quantum(A, b, max_fail_prob=error)
@@ -121,4 +120,3 @@ def run(
         return pd.DataFrame(
             [list(row.values()) for row in history], columns=list(history[0].keys())
         )
-
