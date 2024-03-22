@@ -68,7 +68,10 @@ def search(
         it = iter(iterable)
         iterable_copy = []
         while True:
-            with track_queries() as sub_frame_access:
+            try:
+                frame = BenchmarkFrame()
+                _BenchmarkManager._stack.append(frame)
+                sub_frame_access = frame
                 try:
                     x = next(it)
                 except StopIteration:
@@ -78,8 +81,13 @@ def search(
                 sub_frames_access.append(sub_frame_access)
                 if not linear_scan_solution_found:
                     sub_frames_linear_scan.append(sub_frame_access)
+            finally:
+                _BenchmarkManager._stack.pop()
 
-            with track_queries() as sub_frame_eval:
+            try:
+                frame = BenchmarkFrame()
+                _BenchmarkManager._stack.append(frame)
+                sub_frame_eval = frame
                 solution_found = False
                 if key(x):
                     T += 1
@@ -89,6 +97,8 @@ def search(
                 if not linear_scan_solution_found:
                     sub_frames_linear_scan.append(sub_frame_eval)
                 linear_scan_solution_found |= solution_found
+            finally:
+                _BenchmarkManager._stack.pop()
 
         frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
