@@ -228,8 +228,11 @@ def test_class_with_unhashable_member_raises_on_tracking_stats(rng):
 def test_block_encoding_nested_access():
     n, m = 5, 6
     A = array(np.eye(4))
-    U = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(A, 1)])
-    V = BlockEncoding(np.eye(4), subnormalization_factor=1, precision=0, uses=[(U, n)])
 
+    U = BlockEncoding(
+        A.get_raw_data(), subnormalization_factor=1, precision=0, uses=[(A, 1)]
+    )
+    V = BlockEncoding(U.matrix, subnormalization_factor=1, precision=0, uses=[(U, n)])
     V.access(n_times=m)
+
     assert A.stats.quantum_expected_quantum_queries == n * m

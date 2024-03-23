@@ -124,6 +124,10 @@ class QObject(ABC, Hashable):
     def _get_query_oracle(self):
         """returns the member function whose calls are treated as accesses to the object."""
 
+    def _view_of(self):
+        """Return the underlying object that this object is a view of"""
+        return self
+
     @property
     def stats(self) -> QueryStats:
         return default_tracker().get_stats(self._get_query_oracle())
@@ -256,6 +260,11 @@ class _BenchmarkManager:
         for sub_frame in frames:
             benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
 
+        if len(benchmark_objects) > 1:
+            raise NotImplementedError(
+                "cannot combine subroutines that use multiple oracles"
+            )
+
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
             sub_frame_stats = [
@@ -356,8 +365,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             obj = MyClass()
             ...
             print(tracker.get_stats(obj.some_method))
-            assert tracker.get_stats(obj.some_class_method) == tracker.get_stats(MyClass.some_class_method)
-            assert tracker.get_stats(obj.some_static_method) == tracker.get_stats(MyClass.some_static_method)
+            print(tracker.get_stats(obj.some_class_method))
+            print(tracker.get_stats(obj.some_static_method))
     """
 
     is_bound_method: bool = next(iter(inspect.signature(func).parameters), None) in [
@@ -372,6 +381,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             hashables: set[Hashable] = set()
             if is_bound_method:
                 self = args[0]
+                if isinstance(self, QObject):
+                    self = self._view_of()
                 hashables.add((wrapped_func, self))
             else:
                 hashables.add(wrapped_func)
@@ -478,7 +489,7 @@ class BlockEncoding(QObject):
                     )
             else:
                 obj_oracle = (
-                    (obj._get_query_oracle().__func__, obj)
+                    (obj._get_query_oracle().__func__, obj._view_of())
                     if isinstance(obj, QObject)
                     else obj
                 )

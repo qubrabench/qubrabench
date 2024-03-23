@@ -14,7 +14,6 @@ def test_find_column(rng):
     assert np.linalg.norm(A[:, B], ord=2) <= 1
 
     A = array(A)
-    c = array(c)
 
     k = FindColumn(A, B, c, epsilon=1e-3)
     assert k == 2

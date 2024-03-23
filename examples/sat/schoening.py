@@ -8,7 +8,6 @@ import numpy.typing as npt
 from sat import Assignment, SatInstance
 
 from qubrabench.algorithms.search import SamplingDomain, search_by_sampling
-from qubrabench.benchmark import oracle
 
 __all__ = [
     "schoening_solve",
@@ -19,7 +18,6 @@ __all__ = [
 WalkSteps: TypeAlias = npt.NDArray[np.int_]
 
 
-@oracle
 def schoening_random_walk(
     inst: SatInstance, initial_assignment: Assignment, walk_steps: WalkSteps
 ) -> Optional[Assignment]:
