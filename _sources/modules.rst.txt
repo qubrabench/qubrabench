@@ -1,0 +1,7 @@
+qubrabench
+==========
+
+.. toctree::
+   :maxdepth: 4
+
+   qubrabench

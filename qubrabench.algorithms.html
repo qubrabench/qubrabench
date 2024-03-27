@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>qubrabench.algorithms package &#8212; qubrabench 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="qubrabench.datastructures package" href="qubrabench.datastructures.html" />
+    <link rel="prev" title="qubrabench package" href="qubrabench.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="qubrabench-algorithms-package">
+<h1>qubrabench.algorithms package<a class="headerlink" href="#qubrabench-algorithms-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-qubrabench.algorithms.amplitude">
+<span id="qubrabench-algorithms-amplitude-module"></span><h2>qubrabench.algorithms.amplitude module<a class="headerlink" href="#module-qubrabench.algorithms.amplitude" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.amplitude.estimate_amplitude">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.amplitude.</span></span><span class="sig-name descname"><span class="pre">estimate_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">complex</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">complex</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#qubrabench.algorithms.amplitude.estimate_amplitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a block-encoding of a state $ketpsi$ and a good index or sequence of good indices,
+estimate the probability of measuring (in the standard basis) one of the good indices.</p>
+<p>Algorithm analysis is described in Ref. [1], Theorem 12 (Amplitude Estimation).</p>
+<p>When $ket{x} = sum_i alpha_i ket{i}$, then this method produces an estimate of $a$ s.t.</p>
+<div class="math notranslate nohighlight">
+\[a = \sum_{i \in \text{good}} \abs{alpha_i}^2\]</div>
+<p>If the input block-encoding does not perfectly prepare the state, but with some probability,
+this is factored into the subroutine in the quantum part (i.e. “under-the-square-root”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – block-encoded access to vector x, such as a unitary that prepares $ket{x}$ with some success probability</p></li>
+<li><p><strong>good_indices</strong> – index or sequence of indices for which to estimate the total squared amplitude</p></li>
+<li><p><strong>precision</strong> – upper bound on the difference between the estimate and true value</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the probability of failure of the quantum algorithm</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] <em>Quantum Amplitude Amplification and Estimation</em></dt><dd><p>Brassard, Hoyer, Mosca, Tapp. 2000.
+<a class="reference external" href="https://doi.org/10.48550/arXiv.quant-ph/0005055">https://doi.org/10.48550/arXiv.quant-ph/0005055</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-qubrabench.algorithms.linalg">
+<span id="qubrabench-algorithms-linalg-module"></span><h2>qubrabench.algorithms.linalg module<a class="headerlink" href="#module-qubrabench.algorithms.linalg" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.linalg.qlsa">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.linalg.</span></span><span class="sig-name descname"><span class="pre">qlsa</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_number_A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></span><a class="headerlink" href="#qubrabench.algorithms.linalg.qlsa" title="Permalink to this definition">¶</a></dt>
+<dd><p>Quantum Linear Solver as described in <a class="reference external" href="https://doi.org/10.48550/arXiv.2305.11352">https://doi.org/10.48550/arXiv.2305.11352</a></p>
+<p>Given block-encodings for $A$ and $b$, find an approximation of $y$ satisfying $Ay = b$.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> – block-encoded input matrix</p></li>
+<li><p><strong>b</strong> – block-encoded input vector</p></li>
+<li><p><strong>max_fail_probability</strong> – probability of failure</p></li>
+<li><p><strong>precision</strong> – the l1 norm distance of the output unit vector to the actual solution (scaled to unit)</p></li>
+<li><p><strong>condition_number_A</strong> – An upper-bound on the condition number of A. Optional, will be calculated if not provided.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if input block-encodings do not have zero precision.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Block-encoded solution vector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.linalg.solve">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.linalg.</span></span><span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray" title="qubrabench.datastructures.qndarray.Qndarray"><span class="pre">Qndarray</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">_ScalarType_co</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray" title="qubrabench.datastructures.qndarray.Qndarray"><span class="pre">Qndarray</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_number_A</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></span><a class="headerlink" href="#qubrabench.algorithms.linalg.solve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Solve the linear system Ax = b, producing a quantum state encoding x.</p>
+<p>See <cite>qlsa</cite> for query costs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>A</strong> – input matrix</p></li>
+<li><p><strong>b</strong> – input vector</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on probability of failure</p></li>
+<li><p><strong>precision</strong> – the l1 norm distance of the output unit vector to the actual solution (scaled to unit)</p></li>
+<li><p><strong>condition_number_A</strong> – An upper-bound on the condition number of A. Optional, will be calculated if not provided.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Block-encoded solution vector.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-qubrabench.algorithms.max">
+<span id="qubrabench-algorithms-max-module"></span><h2>qubrabench.algorithms.max module<a class="headerlink" href="#module-qubrabench.algorithms.max" title="Permalink to this heading">¶</a></h2>
+<p>This module provides a generic maximum finding interface that executes classically
+and calculates the expected quantum query costs to a predicate function.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.max.max">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.max.</span></span><span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">iterable:</span> <span class="pre">~typing.Iterable[~qubrabench.algorithms.max.E],</span> <span class="pre">*,</span> <span class="pre">max_fail_probability:</span> <span class="pre">float,</span> <span class="pre">default:</span> <span class="pre">~qubrabench.algorithms.max.E</span> <span class="pre">|</span> <span class="pre">~qubrabench._internals.AbsentParameter</span> <span class="pre">=</span> <span class="pre">&lt;qubrabench._internals.AbsentParameter</span> <span class="pre">object&gt;,</span> <span class="pre">key:</span> <span class="pre">~typing.Callable[[~qubrabench.algorithms.max.E],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span></span></span><a class="headerlink" href="#qubrabench.algorithms.max.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the largest element in a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – iterable to find the maximum in</p></li>
+<li><p><strong>default</strong> – default value to return if iterable is empty.</p></li>
+<li><p><strong>key</strong> – function that maps iterable elements to values that are comparable. By default, use the iterable elements.</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the failure probability of the quantum algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raised when iterable is an empty sequence and no default is provided.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the desired maximum element</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-qubrabench.algorithms.search">
+<span id="qubrabench-algorithms-search-module"></span><h2>qubrabench.algorithms.search module<a class="headerlink" href="#module-qubrabench.algorithms.search" title="Permalink to this heading">¶</a></h2>
+<p>This module provides a generic search interface that executes classically
+and calculates the expected quantum query costs to a predicate function</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.SamplingDomain">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.search.</span></span><span class="sig-name descname"><span class="pre">SamplingDomain</span></span><a class="headerlink" href="#qubrabench.algorithms.search.SamplingDomain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Generic</span></code>[<code class="xref py py-obj docutils literal notranslate"><span class="pre">E</span></code>]</p>
+<p>Base class for domains supporting search by random sampling.</p>
+<p>Define a space that is too large to fully enumerate, but can be efficiently sampled from.
+This is used by the <cite>search_by_sampling</cite> method to repeatedly sample an element till a solution one is found.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.SamplingDomain.get_probability_of_sampling_solution">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_probability_of_sampling_solution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#qubrabench.algorithms.search.SamplingDomain.get_probability_of_sampling_solution" title="Permalink to this definition">¶</a></dt>
+<dd><p>A lower-bound on the probability that a single sample is a solution.</p>
+<p>Used to compute classical and quantum expected query counts.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.SamplingDomain.get_random_sample">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_random_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span></span></span><a class="headerlink" href="#qubrabench.algorithms.search.SamplingDomain.get_random_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Produce a single random sample from the space.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.SamplingDomain.get_size">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_size</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#qubrabench.algorithms.search.SamplingDomain.get_size" title="Permalink to this definition">¶</a></dt>
+<dd><p>Total size of the domain (number of elements).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.search">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.search.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_classical_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">130</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#qubrabench.algorithms.search.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search a list for an element satisfying the given predicate.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_fail_probability</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>By default performs a linear scan on the iterable and returns the first element satisfying the <cite>key</cite>.
+If the optional random generator <cite>rng</cite> is provided, instead shuffles the input iterable before scanning for a solution.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">),</span> <span class="n">max_fail_probability</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – iterable to be searched over</p></li>
+<li><p><strong>key</strong> – function to test if an element satisfies the predicate</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the failure probability of the quantum algorithm</p></li>
+<li><p><strong>rng</strong> – random generator - if provided shuffle the input before scanning</p></li>
+<li><p><strong>max_classical_queries</strong> – maximum number of classical queries before entering the quantum part of the algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An element that satisfies the predicate, or None if no such argument can be found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.algorithms.search.search_by_sampling">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.algorithms.search.</span></span><span class="sig-name descname"><span class="pre">search_by_sampling</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">domain</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#qubrabench.algorithms.search.SamplingDomain" title="qubrabench.algorithms.search.SamplingDomain"><span class="pre">SamplingDomain</span></a><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_classical_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">130</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#qubrabench.algorithms.search.search_by_sampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search a domain by repeated sampling for an element satisfying the given predicate.</p>
+<p>This method assumes that the solutions are distributed uniformly at random through the search domain.
+If the probability of a single sample being a solution is $f$,
+and we want a failure probability (error) at most $epsilon$,
+then we sample $3 * log_{1 - f}(epsilon)$ elements.</p>
+<p>The query counts are computed assuming that this is a representative sample of key evaluation cost.</p>
+<div class="admonition caution">
+<p class="admonition-title">Caution</p>
+<p>If there are anamolies in the space (solutions not evenly distributed, or a few elements have largely different key costs),
+then the stats computed here may not be accurate.</p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>domain</strong> – sampling domain to be searched over</p></li>
+<li><p><strong>key</strong> – function to test if an element satisfies the predicate</p></li>
+<li><p><strong>rng</strong> – np.random.Generator instance as source of randomness</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the failure probability of the quantum algorithm.</p></li>
+<li><p><strong>max_classical_queries</strong> – maximum number of classical queries before entering the quantum part of the algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An element that satisfies the predicate, or None if no such argument can be found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-qubrabench.algorithms">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-qubrabench.algorithms" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo" />
+    
+    <h1 class="logo logo-name">qubrabench</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A framework to benchmark the advantage of quantum algorithms.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=qubrabench&repo=qubrabench&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">qubrabench.algorithms package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-qubrabench.algorithms.amplitude">qubrabench.algorithms.amplitude module</a><ul>
+<li><a class="reference internal" href="#qubrabench.algorithms.amplitude.estimate_amplitude"><code class="docutils literal notranslate"><span class="pre">estimate_amplitude()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench.algorithms.linalg">qubrabench.algorithms.linalg module</a><ul>
+<li><a class="reference internal" href="#qubrabench.algorithms.linalg.qlsa"><code class="docutils literal notranslate"><span class="pre">qlsa()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.algorithms.linalg.solve"><code class="docutils literal notranslate"><span class="pre">solve()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench.algorithms.max">qubrabench.algorithms.max module</a><ul>
+<li><a class="reference internal" href="#qubrabench.algorithms.max.max"><code class="docutils literal notranslate"><span class="pre">max()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench.algorithms.search">qubrabench.algorithms.search module</a><ul>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.SamplingDomain"><code class="docutils literal notranslate"><span class="pre">SamplingDomain</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.SamplingDomain.get_probability_of_sampling_solution"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_probability_of_sampling_solution()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.SamplingDomain.get_random_sample"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_random_sample()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.SamplingDomain.get_size"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_size()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.algorithms.search.search_by_sampling"><code class="docutils literal notranslate"><span class="pre">search_by_sampling()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench.algorithms">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">qubrabench</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="qubrabench.html">qubrabench package</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/">GitHub</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/issues">Issue Tracker</a></li>
+    
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, QuBRA Benchmarking Project.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/qubrabench.algorithms.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/qubrabench/qubrabench" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

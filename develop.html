@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Development Guide &#8212; qubrabench 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="License" href="license.html" />
+    <link rel="prev" title="qubrabench.utils package" href="qubrabench.utils.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="development-guide">
+<h1>Development Guide<a class="headerlink" href="#development-guide" title="Permalink to this heading">¶</a></h1>
+<p>To contribute to qubrabench, create a new virtual environment (using <a class="reference external" href="https://docs.python.org/3/library/venv.html">venv</a>, a tool such as <a class="reference external" href="https://pypi.org/project/pew/">pew</a>, or your favorite IDE), check out this repository, and install it using <a class="reference external" href="https://setuptools.pypa.io/en/latest/userguide/development_mode.html">development (“editable”) mode</a>, as follows, to include the optional development dependencies:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span><span class="c1"># in a virtual environment</span>
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
+</pre></div>
+</div>
+<section id="repository-structure">
+<h2>Repository Structure<a class="headerlink" href="#repository-structure" title="Permalink to this heading">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>.
+├── .github         # github configuration
+├── data            # reference data and default log output directory
+├── docs            # documentation
+├── examples        # examples that showcase qubrabench library
+├── qubrabench      # qubrabench package (quantum subroutines with benchmarking support)
+├── tests           # unit tests
+├── conftest.py     # pytest configuration
+├── LICENSE
+├── Makefile
+├── pyproject.toml
+└── README.md
+</pre></div>
+</div>
+<p>Folder <code class="docutils literal notranslate"><span class="pre">examples</span></code> contains different problem sets (SAT, community detection, …), which may have multiple programmatic solvers, shared data structures, user interfaces and outputs.
+Tests for the example solvers should be placed in a new Python file next to the solver, instead of inside the project’s <code class="docutils literal notranslate"><span class="pre">tests</span></code> directory.</p>
+<p>Folder <code class="docutils literal notranslate"><span class="pre">qubrabench</span></code> contains the benchmarking related code.
+This includes statistics classes as well as <em>quantumizable</em> algorithms that execute classically, while estimating quantum cost (or bounds) theoretically during runtime.</p>
+</section>
+<section id="contributing">
+<h2>Contributing<a class="headerlink" href="#contributing" title="Permalink to this heading">¶</a></h2>
+<p>To contribute to the repository, <a class="reference external" href="https://docs.github.com/en/get-started/quickstart/fork-a-repo">fork</a> it and create a new branch for your changes in the fork.
+Make sure to format, lint and test your code.
+More details on the individual actions are below, but you can quickly evaluate the project the same way our GitHub actions are performed by simply running <code class="docutils literal notranslate"><span class="pre">make</span></code> in the root of this repository.</p>
+<p>After you finish testing your implementation, create a <a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/about-pull-requests">pull request</a> to start the integration of your changes into this repository.
+GitHub provides a <a class="reference external" href="https://docs.github.com/en/get-started/quickstart/contributing-to-projects">Quickstart Article</a> on how to contribute to projects, including step-by-step guides for everything mentioned above.</p>
+</section>
+<section id="testing">
+<h2>Testing<a class="headerlink" href="#testing" title="Permalink to this heading">¶</a></h2>
+<p>This library uses the <a class="reference external" href="https://docs.pytest.org/">pytest</a> library, which makes testing very simple.
+You can use the predefined <a class="reference external" href="https://github.com/qubrabench/qubrabench/tree/main/tests">tests</a>, or write your own tests.
+To execute all tests in the project, by simply executing the following command in the project root:</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>pytest<span class="w"> </span>--doctest-modules
+</pre></div>
+</div>
+<p>Pytest will search for all files starting with <code class="docutils literal notranslate"><span class="pre">test</span></code>, and will test all methods containing the word <code class="docutils literal notranslate"><span class="pre">test</span></code>.
+The option <code class="docutils literal notranslate"><span class="pre">--doctest-modules</span></code> <a class="reference external" href="https://docs.pytest.org/en/7.1.x/how-to/doctest.html">runs tests inside docstrings</a>.</p>
+<p>One useful feature of pytest is to use markers. You can mark a method with a test marker, as seen in this example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">slow</span>
+<span class="k">def</span> <span class="nf">test_that_runs_for_a_long_time</span><span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>You can then single out certain tests to run by a certain marker with the <code class="docutils literal notranslate"><span class="pre">-m</span></code> parameter, for example <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-m</span> <span class="pre">slow</span></code> to run only tests marked as <code class="docutils literal notranslate"><span class="pre">slow</span></code>, or <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">-m</span> <span class="pre">&quot;not</span> <span class="pre">slow&quot;</span></code> to run all but those tests.
+Run <code class="docutils literal notranslate"><span class="pre">pytest</span> <span class="pre">--markers</span></code> for a list of all available markers.</p>
+</section>
+<section id="best-practices">
+<h2>Best Practices<a class="headerlink" href="#best-practices" title="Permalink to this heading">¶</a></h2>
+<section id="logging">
+<h3>Logging<a class="headerlink" href="#logging" title="Permalink to this heading">¶</a></h3>
+<p>You can chose two options when running the qubrabench script:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">--verbose</span></code> (default): The script outputs information on <code class="docutils literal notranslate"><span class="pre">DEBUG</span></code> level and saves all log output in a log file.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">--no-verbose</span></code>: The script outputs all information on <code class="docutils literal notranslate"><span class="pre">INFO</span></code> but does not save the output to a log file.</p></li>
+</ul>
+<p>Annotation - logging levels: <code class="docutils literal notranslate"><span class="pre">ALL</span> <span class="pre">&lt;</span> <span class="pre">TRACE</span> <span class="pre">&lt;</span> <span class="pre">DEBUG</span> <span class="pre">&lt;</span> <span class="pre">INFO</span> <span class="pre">&lt;</span> <span class="pre">WARN</span> <span class="pre">&lt;</span> <span class="pre">ERROR</span> <span class="pre">&lt;</span> <span class="pre">FATAL</span> <span class="pre">&lt;</span> <span class="pre">OFF</span></code>.</p>
+<p>Please keep this functionality in mind when writing new code for QuBRA Bench, use <code class="docutils literal notranslate"><span class="pre">logging.info()</span></code> for relevant information outside of debug mode and use <code class="docutils literal notranslate"><span class="pre">logging.debug()</span></code> for messages with debug interest.
+Refrain from using the default <code class="docutils literal notranslate"><span class="pre">print</span></code> function.</p>
+</section>
+<section id="randomness">
+<h3>Randomness<a class="headerlink" href="#randomness" title="Permalink to this heading">¶</a></h3>
+<p>Some algorithms and examples operate on randomly generated instances.
+To avoid global random number generated state and the problems that arise with it, we often pass random number generator (RNG) instances as function parameters.
+RNG function parameters should never have default values.</p>
+<p>For testing purposes, there is a <a class="reference external" href="https://github.com/qubrabench/qubrabench/blob/main/conftest.py">fixture</a> in place that optionally provides an RNG instance to test methods that have an <code class="docutils literal notranslate"><span class="pre">rng</span></code> parameter.</p>
+</section>
+<section id="code-style">
+<h3>Code Style<a class="headerlink" href="#code-style" title="Permalink to this heading">¶</a></h3>
+<p>Public facing API functions should also contain <code class="docutils literal notranslate"><span class="pre">mypy</span></code> type hints.
+When type hints are present in the method declaration, they may be omitted from the docstring.
+For an extensive example see <a class="reference external" href="https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_google.html">here</a>.</p>
+<p>For formatting, make use of the <a class="reference external" href="https://black.readthedocs.io/en/stable/">black</a> autoformatter with default configuration and <a class="reference external" href="https://pycqa.github.io/isort/index.html">isort</a> to sort imports.</p>
+<p>Linting will be checked by GitHub actions.
+This projects uses the <a class="reference external" href="https://beta.ruff.rs/docs/">ruff</a> linter.</p>
+</section>
+<section id="documentation">
+<h3>Documentation<a class="headerlink" href="#documentation" title="Permalink to this heading">¶</a></h3>
+<p>Please provide docstrings in the <a class="reference external" href="https://google.github.io/styleguide/pyguide.html#s3.8-comments-and-docstrings">Google Python Style</a> for every module, class and method that you write.</p>
+<section id="latex-math">
+<h4>Latex Math<a class="headerlink" href="#latex-math" title="Permalink to this heading">¶</a></h4>
+<p>For latex math, use the following directives:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span>Inline math <span class="na">:math:</span><span class="nv">`O(\sqrt{N/T})`</span>.
+
+<span class="p">..</span> <span class="ow">math</span><span class="p">::</span>
+
+       \text{Grover} = O \left(\sqrt{\frac{N}{T}} \right)
+</pre></div>
+</div>
+<p>This will render as:</p>
+<p>Inline math <span class="math notranslate nohighlight">\(O(\sqrt{N/T})\)</span>.</p>
+<div class="math notranslate nohighlight">
+\[\text{Grover} = O \left(\sqrt{\frac{N}{T}} \right)\]</div>
+<p>Always leave a newline after the directive (like <code class="docutils literal notranslate"><span class="pre">..</span> <span class="pre">math::</span></code>) and indent the equation for it to render correctly.</p>
+</section>
+<section id="images">
+<h4>Images<a class="headerlink" href="#images" title="Permalink to this heading">¶</a></h4>
+<p>To include images:</p>
+<div class="highlight-rst notranslate"><div class="highlight"><pre><span></span><span class="p">..</span> <span class="ow">image</span><span class="p">::</span> path/to/image.png
+</pre></div>
+</div>
+<p>Place all images in <code class="docutils literal notranslate"><span class="pre">docs/img/</span></code>.</p>
+<p>Check <a class="reference external" href="https://sphinx-rtd-trial.readthedocs.io/en/latest/ext/math.html">Math support in Sphinx</a> and <a class="reference external" href="https://docutils.sourceforge.io/docs/ref/rst/directives.html">reStructuredText Derivatives</a> for more detailed examples.</p>
+</section>
+</section>
+</section>
+<section id="extending-qubrabench">
+<h2>Extending Qubrabench<a class="headerlink" href="#extending-qubrabench" title="Permalink to this heading">¶</a></h2>
+<p>This section is for QuBRA project members. Please follow the instructions below if you…</p>
+<ol class="arabic simple">
+<li><p>…have developed new subroutines that you want to add to qubrabench.</p></li>
+<li><p>…have improved analyses/formulas for bounds on existing subroutines in qubrabench.</p></li>
+<li><p>…want to add a new use-case to the qubrabench ecosystem.</p></li>
+</ol>
+<section id="usecases">
+<h3>Usecases<a class="headerlink" href="#usecases" title="Permalink to this heading">¶</a></h3>
+<p>Benchmarkes for new use-cases relevant to QuBRA that use qubrabench can be added to the <code class="docutils literal notranslate"><span class="pre">qubrabench</span></code> organization.
+Please look at repository <a class="reference external" href="https://github.com/qubrabench/usecase-template/">qubrabench/usecase-template</a> for a detailed example on how to organize the benchmark.</p>
+</section>
+<section id="workflow-add-new-subroutine-to-qubrabench">
+<h3>Workflow: Add new subroutine to qubrabench<a class="headerlink" href="#workflow-add-new-subroutine-to-qubrabench" title="Permalink to this heading">¶</a></h3>
+<section id="step-1-identify-the-subroutine">
+<h4>Step 1. Identify the subroutine<a class="headerlink" href="#step-1-identify-the-subroutine" title="Permalink to this heading">¶</a></h4>
+<p>To start, you will pick out the key subroutine(s) that you are interested in adding to qubrabench,
+and push the relevant code to a repository in the <a class="reference external" href="https://github.com/qubrabench">qubrabench organization</a>.
+To make things maximally easy for all parties, please make sure all relevant code, scripts, documentation etc. are made available in this repository.</p>
+</section>
+<section id="step-2-install-qubrabench">
+<h4>Step 2. Install qubrabench<a class="headerlink" href="#step-2-install-qubrabench" title="Permalink to this heading">¶</a></h4>
+<p>Install qubrabench as a dependency in the above repository.
+Take a look at the <a class="reference external" href="https://github.com/qubrabench/usecase-template/">example use-case</a> repository for a detailed explanation on how to do this.</p>
+</section>
+<section id="step-3-isolate-subroutine">
+<h4>Step 3. Isolate subroutine<a class="headerlink" href="#step-3-isolate-subroutine" title="Permalink to this heading">¶</a></h4>
+<p>We (both you and the Qubrabench dev. team) together will isolate the core subroutine(s) of interest.</p>
+<p>In this process, the Qubrabench team may request some minor changes to the subroutine to make it suitable for integration.</p>
+</section>
+<section id="step-4-integrate-subroutine">
+<h4>Step 4. Integrate subroutine<a class="headerlink" href="#step-4-integrate-subroutine" title="Permalink to this heading">¶</a></h4>
+<p>Once both parties are happy with the subroutine and design, the Qubrabench team will now extract the relevant subroutine code and add it to qubrabench via a pull-request.
+We (qubrabench team) will then clean up the code, set up unittests and make sure the CI passes.
+Once this is in order, the subroutine will be merged into qubrabench.</p>
+</section>
+<section id="step-5-use-qubrabench">
+<h4>Step 5. Use qubrabench<a class="headerlink" href="#step-5-use-qubrabench" title="Permalink to this heading">¶</a></h4>
+<p>Now you can delete the extracted subroutine code from your repository, and instead import the exact same method from <code class="docutils literal notranslate"><span class="pre">qubrabench.algorithms</span></code>, and use that in your benchmark.</p>
+<p>In case there are some issues, feel free to raise an issue in <a class="reference external" href="https://github.com/qubrabench/qubrabench/">qubrabench</a> with the relevant information, and we can work together to fix it.</p>
+</section>
+</section>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo" />
+    
+    <h1 class="logo logo-name">qubrabench</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A framework to benchmark the advantage of quantum algorithms.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=qubrabench&repo=qubrabench&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Development Guide</a><ul>
+<li><a class="reference internal" href="#repository-structure">Repository Structure</a></li>
+<li><a class="reference internal" href="#contributing">Contributing</a></li>
+<li><a class="reference internal" href="#testing">Testing</a></li>
+<li><a class="reference internal" href="#best-practices">Best Practices</a><ul>
+<li><a class="reference internal" href="#logging">Logging</a></li>
+<li><a class="reference internal" href="#randomness">Randomness</a></li>
+<li><a class="reference internal" href="#code-style">Code Style</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li><a class="reference internal" href="#latex-math">Latex Math</a></li>
+<li><a class="reference internal" href="#images">Images</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#extending-qubrabench">Extending Qubrabench</a><ul>
+<li><a class="reference internal" href="#usecases">Usecases</a></li>
+<li><a class="reference internal" href="#workflow-add-new-subroutine-to-qubrabench">Workflow: Add new subroutine to qubrabench</a><ul>
+<li><a class="reference internal" href="#step-1-identify-the-subroutine">Step 1. Identify the subroutine</a></li>
+<li><a class="reference internal" href="#step-2-install-qubrabench">Step 2. Install qubrabench</a></li>
+<li><a class="reference internal" href="#step-3-isolate-subroutine">Step 3. Isolate subroutine</a></li>
+<li><a class="reference internal" href="#step-4-integrate-subroutine">Step 4. Integrate subroutine</a></li>
+<li><a class="reference internal" href="#step-5-use-qubrabench">Step 5. Use qubrabench</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div><h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">qubrabench</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/">GitHub</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/issues">Issue Tracker</a></li>
+    
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, QuBRA Benchmarking Project.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/develop.md.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/qubrabench/qubrabench" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

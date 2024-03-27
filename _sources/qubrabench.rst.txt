@@ -1,0 +1,31 @@
+qubrabench package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   qubrabench.algorithms
+   qubrabench.datastructures
+   qubrabench.utils
+
+Submodules
+----------
+
+qubrabench.benchmark module
+---------------------------
+
+.. automodule:: qubrabench.benchmark
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: qubrabench
+   :members:
+   :undoc-members:
+   :show-inheritance:
