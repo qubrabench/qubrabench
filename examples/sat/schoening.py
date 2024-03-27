@@ -51,8 +51,6 @@ def schoening_random_walk(
         if inst.evaluate(assignment):
             return assignment
 
-    return None
-
 
 @attrs.define
 class SchoeningDomain(SamplingDomain[tuple[Assignment, WalkSteps]]):
@@ -124,7 +122,6 @@ def schoening_solve(
     if randomness is not None:
         assignment, steps = randomness
         return schoening_random_walk(inst, assignment, steps)
-    return None
 
 
 def schoening_solve__bruteforce_over_starting_assigment(
@@ -158,7 +155,6 @@ def schoening_solve__bruteforce_over_starting_assigment(
             assignment = schoening_random_walk(inst, initial_assignment, steps)
             if assignment is not None:
                 return assignment
-        return None
 
     result = search_by_sampling(
         domain,
@@ -169,4 +165,3 @@ def schoening_solve__bruteforce_over_starting_assigment(
 
     if result is not None:
         return pred(result)
-    return None

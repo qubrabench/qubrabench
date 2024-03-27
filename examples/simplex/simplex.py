@@ -134,7 +134,7 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
         if result == ResultFlag.Optimal:
             break
         if result == ResultFlag.Unbounded:
-            return None
+            return
 
     qlsa = solve_linear_system(A[:, B], b, eps=1e-5)
     return qlsa.matrix

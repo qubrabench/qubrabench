@@ -89,7 +89,7 @@ class QLouvain(QuantumLouvainBase):
         u = self.vertex_find(range(lt, rt), eps / log_n)
 
         if u is None:
-            return None
+            return
 
         rt = u + 1
 

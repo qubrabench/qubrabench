@@ -148,8 +148,6 @@ def search(
             if key(elem):
                 return elem
 
-    return None
-
 
 class SamplingDomain(ABC, Generic[E]):
     """Base class for domains supporting search by random sampling.

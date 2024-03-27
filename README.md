@@ -39,7 +39,6 @@ def find_shor(users: list[User]):
     for user in users:
         if user.name == "Peter Shor":
             return user
-    return None
 ```
 
 We can equivalently write this using the [search](https://github.com/qubrabench/qubrabench/blob/main/qubrabench/algorithms/search.py) function in qubrabench:
