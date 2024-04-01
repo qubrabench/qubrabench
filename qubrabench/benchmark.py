@@ -418,15 +418,6 @@ def _already_benchmarked():
             _BenchmarkManager.current_frame()._track_only_actual = prev_flag
 
 
-def _qubrabench_method(func: Callable[_P, _R]) -> Callable[_P, _R]:
-    @wraps(func)
-    def wrapped_func(*args, **kwargs):
-        _BenchmarkManager.start_tracking()
-        return func(*args, **kwargs)
-
-    return wrapped_func
-
-
 def default_tracker():
     if not _BenchmarkManager.is_tracking():
         raise BenchmarkError("not in query tracking mode!")

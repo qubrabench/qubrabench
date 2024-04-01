@@ -11,7 +11,6 @@ from ..benchmark import (
     BenchmarkFrame,
     _already_benchmarked,
     _BenchmarkManager,
-    _qubrabench_method,
     track_queries,
 )
 
@@ -20,7 +19,6 @@ __all__ = ["search", "search_by_sampling", "SamplingDomain"]
 E = TypeVar("E")
 
 
-@_qubrabench_method
 def search(
     iterable: Iterable[E],
     key: Callable[[E], bool],
@@ -172,7 +170,6 @@ class SamplingDomain(ABC, Generic[E]):
         """Produce a single random sample from the space."""
 
 
-@_qubrabench_method
 def search_by_sampling(
     domain: SamplingDomain[E],
     key: Callable[[E], bool],

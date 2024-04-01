@@ -12,7 +12,6 @@ from ..benchmark import (
     BenchmarkFrame,
     _already_benchmarked,
     _BenchmarkManager,
-    _qubrabench_method,
     track_queries,
 )
 from .search import cade_et_al_F
@@ -22,7 +21,6 @@ __all__ = ["max"]
 E = TypeVar("E")
 
 
-@_qubrabench_method
 def max(
     iterable: Iterable[E],
     *,
