@@ -283,18 +283,10 @@ class _BenchmarkManager:
 
     @staticmethod
     def combine_sequence_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
-        benchmark_objects: set[int] = set()
-        for sub_frame in frames:
-            benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
-
         frame = BenchmarkFrame()
-        frame.stats = {
-            obj: reduce(
-                QueryStats.__add__,
-                [sub_frame.stats[obj] for sub_frame in frames],
-            )
-            for obj in benchmark_objects
-        }
+        for sub_frame in frames:
+            for obj, stats in sub_frame.stats.items():
+                frame.stats[obj] += stats
         return frame
 
 
