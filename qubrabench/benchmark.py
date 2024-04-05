@@ -1,5 +1,6 @@
 import inspect
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from functools import cached_property, reduce, wraps
@@ -140,7 +141,7 @@ class BenchmarkFrame:
     _track_only_actual: bool
 
     def __init__(self):
-        self.stats = dict()
+        self.stats = defaultdict(QueryStats)
         self._track_only_actual = False
 
     def get_stats(
@@ -154,11 +155,10 @@ class BenchmarkFrame:
         else:
             key = obj
 
-        if key not in self.stats:
-            if default is not None:
-                return default
+        result = self.stats.get(key, default)
+        if result is None:
             raise ValueError(f"object {obj} has not been benchmarked!")
-        return self.stats[key]
+        return result
 
     def get_stats_by_filter(self, filter_key: Callable[[Hashable], bool]) -> QueryStats:
         result = QueryStats()
