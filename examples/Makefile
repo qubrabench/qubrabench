@@ -17,3 +17,15 @@ bench-matrix-search:
 	$(eval FNAME = $(DATA_DIR)/matrix-search-data-$(shell date +%Y-%m-%d-%H-%M-%S).json)
 	$(MATRIX_SEARCH) benchmark 100 1000 --step=100 --save $(FNAME)
 
+N ?= 1000
+PERF_FILE ?= $(DATA_DIR)/profile/matrix-search-$(shell date +%Y-%m-%d-%H-%M-%S).json
+
+perf:
+	python matrix_search.py run-worst-case $(N) --level 0 --save $(PERF_FILE)
+	python matrix_search.py run-worst-case $(N) --level 1 --save $(PERF_FILE)
+	python matrix_search.py run-worst-case $(N) --level 2 --save $(PERF_FILE)
+	python matrix_search.py run-worst-case $(N) --level 3 --save $(PERF_FILE)
+	python matrix_search.py run-worst-case $(N) --level 4 --save $(PERF_FILE)
+	python matrix_search.py run-worst-case $(N) --level 5 --save $(PERF_FILE)
+	python matrix_search.py compare-variants $(PERF_FILE)
+
