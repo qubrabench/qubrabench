@@ -169,7 +169,7 @@ class PlottingStrategy(ABC):
                 for col, (col_name, marker) in self.get_column_names_to_plot().items():
                     text = f"{col_name}"
                     if impl_name:
-                        text += " ({impl_name})"
+                        text += f" ({impl_name})"
                     if text in seen_labels:
                         text = "__nolabel__"
                     else:

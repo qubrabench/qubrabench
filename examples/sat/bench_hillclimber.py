@@ -9,6 +9,7 @@ from pathlib import Path
 
 import click
 import hillclimber
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -178,7 +179,8 @@ class HillClimberPlottingStrategy(PlottingStrategy):
     type=click.Path(dir_okay=False, readable=True, path_type=Path),
     required=True,
 )
-def plot(qubra_data_file, ref_data_file):
+@click.option("--save", help="save plot as PDF", is_flag=True)
+def plot(qubra_data_file, ref_data_file, save: bool):
     # load data
     history = []
     for data_file in [qubra_data_file, ref_data_file]:
@@ -188,7 +190,10 @@ def plot(qubra_data_file, ref_data_file):
 
     # could switch strategy here based on src input
     plotter = HillClimberPlottingStrategy()
-    plotter.plot(data, quantum_factor=2, y_lower_lim=300)
+    plotter.plot(data, quantum_factor=2, y_lower_lim=300, display=not save)
+    if save:
+        plt.tight_layout()
+        plt.savefig(qubra_data_file.with_suffix(".pdf"), format="pdf")
 
 
 if __name__ == "__main__":
