@@ -99,9 +99,10 @@ def max(
         if is_benchmarking:
             for sub_frame in sub_frames_access:
                 for obj, stats in sub_frame.stats.items():
-                    _BenchmarkManager.current_frame()._get_or_init_stats(
+                    benchmark_frame = _BenchmarkManager.current_frame()
+                    benchmark_frame.stats[
                         obj
-                    ).classical_actual_queries += stats.classical_actual_queries
+                    ].classical_actual_queries += stats.classical_actual_queries
 
         key_of_max_elem = None
         for elem in iterable:

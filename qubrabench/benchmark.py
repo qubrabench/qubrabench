@@ -177,11 +177,6 @@ class BenchmarkFrame:
             lambda obj: (getattr(obj, "__qualname__", None) == qualname)
         )
 
-    def _get_or_init_stats(self, obj: Hashable) -> QueryStats:
-        if obj not in self.stats:
-            self.stats[obj] = QueryStats()
-        return self.stats[obj]
-
     def _add_classical_expected_queries(
         self,
         obj: Hashable,
@@ -189,7 +184,7 @@ class BenchmarkFrame:
         base_stats: QueryStats,
         queries: float,
     ):
-        stats = self._get_or_init_stats(obj)
+        stats = self.stats[obj]
         base_stats = base_stats._as_benchmarked()
 
         if stats.classical_expected_queries is None:
@@ -206,7 +201,7 @@ class BenchmarkFrame:
         queries_classical: float = 0,
         queries_quantum: float = 0,
     ):
-        stats = self._get_or_init_stats(obj)
+        stats = self.stats[obj]
         base_stats = base_stats._as_benchmarked()
 
         if stats.quantum_expected_classical_queries is None:
@@ -268,8 +263,7 @@ class _BenchmarkManager:
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
             sub_frame_stats = [
-                sub_frame._get_or_init_stats(obj)._as_benchmarked()
-                for sub_frame in frames
+                sub_frame.stats[obj]._as_benchmarked() for sub_frame in frames
             ]
 
             frame.stats[obj] = QueryStats(
@@ -297,7 +291,7 @@ class _BenchmarkManager:
         frame.stats = {
             obj: reduce(
                 QueryStats.__add__,
-                [sub_frame._get_or_init_stats(obj) for sub_frame in frames],
+                [sub_frame.stats[obj] for sub_frame in frames],
             )
             for obj in benchmark_objects
         }
@@ -390,7 +384,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
             frame = _BenchmarkManager.current_frame()
             for key in hashables:
-                stats = frame._get_or_init_stats(key)
+                stats = frame.stats[key]
                 stats._record_query(n=1, only_actual=frame._track_only_actual)
 
         return func(*args, **kwargs)
