@@ -372,20 +372,18 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     def wrapped_func(*args, **kwargs):
         _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
-            hashables: set[Hashable] = set()
+            hashable: Hashable
             if is_bound_method:
                 self = args[0]
                 if isinstance(self, QObject):
                     self = self._view_of()
-                hashables.add((wrapped_func, self))
+                hashable = (wrapped_func, self)
             else:
-                hashables.add(wrapped_func)
-            assert len(hashables) == 1, "oracle should not be tracked multiple times!"
+                hashable = wrapped_func
 
             frame = _BenchmarkManager.current_frame()
-            for key in hashables:
-                stats = frame.stats[key]
-                stats._record_query(n=1, only_actual=frame._track_only_actual)
+            stats = frame.stats[hashable]
+            stats._record_query(n=1, only_actual=frame._track_only_actual)
 
         return func(*args, **kwargs)
 
