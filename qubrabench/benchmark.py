@@ -60,19 +60,6 @@ class QueryStats:
             + self.quantum_expected_quantum_queries
         )
 
-    def _record_query(self, *, n: int, only_actual: bool):
-        """Record an actual classical query.
-
-        Propagates it to the expected stats if they are already computed.
-        """
-
-        self.classical_actual_queries += n
-        if not only_actual:
-            if self.classical_expected_queries is not None:
-                self.classical_expected_queries += n
-            if self.quantum_expected_classical_queries is not None:
-                self.quantum_expected_classical_queries += n
-
     def _as_benchmarked(self):
         """Propagate the recorded true queries (modifies `self`)"""
 
@@ -360,7 +347,14 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
             frame = _BenchmarkManager.current_frame()
             stats = frame.stats[hashable]
-            stats._record_query(n=1, only_actual=frame._track_only_actual)
+
+            # record the query
+            stats.classical_actual_queries += 1
+            if not frame._track_only_actual:
+                if stats.classical_expected_queries is not None:
+                    stats.classical_expected_queries += 1
+                if stats.quantum_expected_classical_queries is not None:
+                    stats.quantum_expected_classical_queries += 1
 
         return func(*args, **kwargs)
 
