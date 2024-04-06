@@ -223,16 +223,10 @@ class BenchmarkFrame:
 
 
 class _BenchmarkManager:
-    _stack: list[BenchmarkFrame] = []
+    _stack: list[BenchmarkFrame] = [BenchmarkFrame()]
 
     def __new__(cls):
         assert False, f"should not create object of class {cls}"
-
-    @staticmethod
-    def start_tracking():
-        """set up default tracking frame"""
-        if not _BenchmarkManager.is_tracking():
-            _BenchmarkManager._stack.append(BenchmarkFrame())
 
     @staticmethod
     def is_tracking() -> bool:
@@ -362,7 +356,6 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
             hashable: Hashable
             if is_bound_method:
@@ -481,7 +474,6 @@ class BlockEncoding(QObject):
 
     def access(self, *, n_times: int = 1):
         """Access the block-encoded matrix via the implementing unitary"""
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
                 _BenchmarkManager.current_frame()._add_quantum_expected_queries(
@@ -511,7 +503,6 @@ def quantum_subroutine(
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             tracker: BenchmarkFrame
             with track_queries() as tracker:
