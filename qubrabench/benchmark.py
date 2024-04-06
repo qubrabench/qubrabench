@@ -74,26 +74,18 @@ class QueryStats:
                 self.quantum_expected_classical_queries += n
 
     def _as_benchmarked(self):
-        """Propagate the recorded true queries."""
+        """Propagate the recorded true queries (modifies `self`)"""
 
-        return QueryStats(
-            classical_actual_queries=self.classical_actual_queries,
-            classical_expected_queries=(
-                self.classical_expected_queries
-                if self.classical_expected_queries is not None
-                else self.classical_actual_queries
-            ),
-            quantum_expected_classical_queries=(
-                self.quantum_expected_classical_queries
-                if self.quantum_expected_classical_queries is not None
-                else self.classical_actual_queries
-            ),
-            quantum_expected_quantum_queries=(
-                self.quantum_expected_quantum_queries
-                if self.quantum_expected_quantum_queries is not None
-                else 0
-            ),
-        )
+        if self.classical_expected_queries is None:
+            self.classical_expected_queries = self.classical_actual_queries
+
+        if self.quantum_expected_classical_queries is None:
+            self.quantum_expected_classical_queries = self.classical_actual_queries
+
+        if self.quantum_expected_quantum_queries is None:
+            self.quantum_expected_quantum_queries = 0
+
+        return self
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
         lhs, rhs = self._as_benchmarked(), other._as_benchmarked()
