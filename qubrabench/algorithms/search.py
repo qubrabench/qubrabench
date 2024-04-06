@@ -138,9 +138,10 @@ def search(
                 elem, sub_frame = x
                 # account for iterable access stats
                 for obj, stats in sub_frame.stats.items():
-                    _BenchmarkManager.current_frame()._get_or_init_stats(
+                    benchmark_frame = _BenchmarkManager.current_frame()
+                    benchmark_frame.stats[
                         obj
-                    ).classical_actual_queries += stats.classical_actual_queries
+                    ].classical_actual_queries += stats.classical_actual_queries
             else:
                 elem = x
             if key(elem):

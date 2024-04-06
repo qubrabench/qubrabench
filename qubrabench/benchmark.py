@@ -1,8 +1,9 @@
 import inspect
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import cached_property, reduce, wraps
+from functools import cached_property, wraps
 from typing import (
     Any,
     Callable,
@@ -59,40 +60,19 @@ class QueryStats:
             + self.quantum_expected_quantum_queries
         )
 
-    def _record_query(self, *, n: int, only_actual: bool):
-        """Record an actual classical query.
-
-        Propagates it to the expected stats if they are already computed.
-        """
-
-        self.classical_actual_queries += n
-        if not only_actual:
-            if self.classical_expected_queries is not None:
-                self.classical_expected_queries += n
-            if self.quantum_expected_classical_queries is not None:
-                self.quantum_expected_classical_queries += n
-
     def _as_benchmarked(self):
-        """Propagate the recorded true queries."""
+        """Propagate the recorded true queries (modifies `self`)"""
 
-        return QueryStats(
-            classical_actual_queries=self.classical_actual_queries,
-            classical_expected_queries=(
-                self.classical_expected_queries
-                if self.classical_expected_queries is not None
-                else self.classical_actual_queries
-            ),
-            quantum_expected_classical_queries=(
-                self.quantum_expected_classical_queries
-                if self.quantum_expected_classical_queries is not None
-                else self.classical_actual_queries
-            ),
-            quantum_expected_quantum_queries=(
-                self.quantum_expected_quantum_queries
-                if self.quantum_expected_quantum_queries is not None
-                else 0
-            ),
-        )
+        if self.classical_expected_queries is None:
+            self.classical_expected_queries = self.classical_actual_queries
+
+        if self.quantum_expected_classical_queries is None:
+            self.quantum_expected_classical_queries = self.classical_actual_queries
+
+        if self.quantum_expected_quantum_queries is None:
+            self.quantum_expected_quantum_queries = 0
+
+        return self
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
         lhs, rhs = self._as_benchmarked(), other._as_benchmarked()
@@ -140,7 +120,7 @@ class BenchmarkFrame:
     _track_only_actual: bool
 
     def __init__(self):
-        self.stats = dict()
+        self.stats = defaultdict(QueryStats)
         self._track_only_actual = False
 
     def get_stats(
@@ -154,11 +134,10 @@ class BenchmarkFrame:
         else:
             key = obj
 
-        if key not in self.stats:
-            if default is not None:
-                return default
+        result = self.stats.get(key, default)
+        if result is None:
             raise ValueError(f"object {obj} has not been benchmarked!")
-        return self.stats[key]
+        return result
 
     def get_stats_by_filter(self, filter_key: Callable[[Hashable], bool]) -> QueryStats:
         result = QueryStats()
@@ -177,11 +156,6 @@ class BenchmarkFrame:
             lambda obj: (getattr(obj, "__qualname__", None) == qualname)
         )
 
-    def _get_or_init_stats(self, obj: Hashable) -> QueryStats:
-        if obj not in self.stats:
-            self.stats[obj] = QueryStats()
-        return self.stats[obj]
-
     def _add_classical_expected_queries(
         self,
         obj: Hashable,
@@ -189,7 +163,7 @@ class BenchmarkFrame:
         base_stats: QueryStats,
         queries: float,
     ):
-        stats = self._get_or_init_stats(obj)
+        stats = self.stats[obj]
         base_stats = base_stats._as_benchmarked()
 
         if stats.classical_expected_queries is None:
@@ -206,7 +180,7 @@ class BenchmarkFrame:
         queries_classical: float = 0,
         queries_quantum: float = 0,
     ):
-        stats = self._get_or_init_stats(obj)
+        stats = self.stats[obj]
         base_stats = base_stats._as_benchmarked()
 
         if stats.quantum_expected_classical_queries is None:
@@ -228,16 +202,10 @@ class BenchmarkFrame:
 
 
 class _BenchmarkManager:
-    _stack: list[BenchmarkFrame] = []
+    _stack: list[BenchmarkFrame] = [BenchmarkFrame()]
 
     def __new__(cls):
         assert False, f"should not create object of class {cls}"
-
-    @staticmethod
-    def start_tracking():
-        """set up default tracking frame"""
-        if not _BenchmarkManager.is_tracking():
-            _BenchmarkManager._stack.append(BenchmarkFrame())
 
     @staticmethod
     def is_tracking() -> bool:
@@ -268,8 +236,7 @@ class _BenchmarkManager:
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
             sub_frame_stats = [
-                sub_frame._get_or_init_stats(obj)._as_benchmarked()
-                for sub_frame in frames
+                sub_frame.stats[obj]._as_benchmarked() for sub_frame in frames
             ]
 
             frame.stats[obj] = QueryStats(
@@ -289,18 +256,10 @@ class _BenchmarkManager:
 
     @staticmethod
     def combine_sequence_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
-        benchmark_objects: set[int] = set()
-        for sub_frame in frames:
-            benchmark_objects = benchmark_objects.union(sub_frame.stats.keys())
-
         frame = BenchmarkFrame()
-        frame.stats = {
-            obj: reduce(
-                QueryStats.__add__,
-                [sub_frame._get_or_init_stats(obj) for sub_frame in frames],
-            )
-            for obj in benchmark_objects
-        }
+        for sub_frame in frames:
+            for obj, stats in sub_frame.stats.items():
+                frame.stats[obj] += stats
         return frame
 
 
@@ -376,22 +335,26 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_tracking():
-            hashables: set[Hashable] = set()
+            hashable: Hashable
             if is_bound_method:
                 self = args[0]
                 if isinstance(self, QObject):
                     self = self._view_of()
-                hashables.add((wrapped_func, self))
+                hashable = (wrapped_func, self)
             else:
-                hashables.add(wrapped_func)
-            assert len(hashables) == 1, "oracle should not be tracked multiple times!"
+                hashable = wrapped_func
 
             frame = _BenchmarkManager.current_frame()
-            for key in hashables:
-                stats = frame._get_or_init_stats(key)
-                stats._record_query(n=1, only_actual=frame._track_only_actual)
+            stats = frame.stats[hashable]
+
+            # record the query
+            stats.classical_actual_queries += 1
+            if not frame._track_only_actual:
+                if stats.classical_expected_queries is not None:
+                    stats.classical_expected_queries += 1
+                if stats.quantum_expected_classical_queries is not None:
+                    stats.quantum_expected_classical_queries += 1
 
         return func(*args, **kwargs)
 
@@ -497,7 +460,6 @@ class BlockEncoding(QObject):
 
     def access(self, *, n_times: int = 1):
         """Access the block-encoded matrix via the implementing unitary"""
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
                 _BenchmarkManager.current_frame()._add_quantum_expected_queries(
@@ -527,7 +489,6 @@ def quantum_subroutine(
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        _BenchmarkManager.start_tracking()
         if _BenchmarkManager.is_benchmarking():
             tracker: BenchmarkFrame
             with track_queries() as tracker:
