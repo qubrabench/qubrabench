@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
-from functools import cached_property, reduce, wraps
+from functools import cached_property, wraps
 from typing import (
     Any,
     Callable,
