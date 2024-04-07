@@ -92,23 +92,27 @@ def search(
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
+        classical_queries = (N + 1) / (T + 1)
+        quantum_classical_queries = cade_et_al_expected_classical_queries(
+            N, T, max_classical_queries
+        )
+        quantum_quantum_queries = cade_et_al_expected_quantum_queries(
+            N, T, max_fail_probability, max_classical_queries
+        )
+
         for obj, stats in frame.stats.items():
             if classical_is_random_search:
                 _BenchmarkManager.current_frame()._add_classical_expected_queries(
                     obj,
                     base_stats=stats,
-                    queries=(N + 1) / (T + 1),
+                    queries=classical_queries,
                 )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj,
                 base_stats=stats,
-                queries_classical=cade_et_al_expected_classical_queries(
-                    N, T, max_classical_queries
-                ),
-                queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, T, max_fail_probability, max_classical_queries
-                ),
+                queries_classical=quantum_classical_queries,
+                queries_quantum=quantum_quantum_queries,
             )
 
         # classical expected queries for a linear scan

@@ -78,6 +78,8 @@ def max(
         frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
         frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
 
+        quantum_queries = cade_et_al_expected_quantum_queries(N, max_fail_probability)
+
         for obj, stats in frame.stats.items():
             _BenchmarkManager.current_frame()._add_classical_expected_queries(
                 obj, queries=N, base_stats=stats
@@ -86,9 +88,7 @@ def max(
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj,
                 queries_classical=0,
-                queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, max_fail_probability
-                ),
+                queries_quantum=quantum_queries,
                 base_stats=stats,
             )
 
