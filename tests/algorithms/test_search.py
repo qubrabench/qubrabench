@@ -1,5 +1,7 @@
 """This module collects test functions for the qubrabench.search method."""
 
+from pytest import approx
+
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import QueryStats, default_tracker, oracle
 
@@ -81,4 +83,9 @@ def test_variable_time_key(rng):
     )
     assert twin_primes == 3  # (3, 5)
     stats = default_tracker().get_stats(is_prime)
-    print(stats)
+    assert stats == QueryStats(
+        classical_actual_queries=2,
+        classical_expected_queries=6,
+        quantum_expected_classical_queries=approx(8),
+        quantum_expected_quantum_queries=approx(0),
+    )
