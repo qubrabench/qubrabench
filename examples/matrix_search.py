@@ -200,6 +200,9 @@ def run_worst_case(n: int, level: int | None, n_runs: int, save_file: Path | Non
 
     max_fail_prob = 1e-5
 
+    # disable tracking by default
+    qb.benchmark._BenchmarkManager._stack = []
+
     start_time = timeit.default_timer()
 
     for _ in range(n_runs):
@@ -213,13 +216,13 @@ def run_worst_case(n: int, level: int | None, n_runs: int, save_file: Path | Non
         elif level == 2:  # classical + DS
             matrix = qb.array(matrix)
             find_row_all_ones_classical(matrix)
-        elif level == 3:  # quantum + track
-            with qb.track_queries():
-                find_row_all_ones_quantum(matrix, fail_prob=max_fail_prob)
-        elif level == 4:  # classical + DS + track
+        elif level == 3:  # classical + DS + track
             matrix = qb.array(matrix)
             with qb.track_queries():
                 find_row_all_ones_classical(matrix)
+        elif level == 4:  # quantum + track
+            with qb.track_queries():
+                find_row_all_ones_quantum(matrix, fail_prob=max_fail_prob)
         elif level == 5:  # quantum + DS + track
             matrix = qb.array(matrix)
             with qb.track_queries():
@@ -255,14 +258,17 @@ def compare_variants(stat_file: Path):
 
     data = pd.read_json(stat_file, orient="split")
     for N, group in data.groupby("N"):
-        group = group.reset_index()
-        base = group.loc[group["level"] == 0]["runtime"][0]
-        group["scale"] = (group["runtime"] / base).apply(format_number)
+        base = group.loc[group["level"] == 0].reset_index()["runtime"][0]
+        group["scale"] = group["runtime"] / base
+        group["log(scale)"] = group["scale"].apply(lambda x: np.log2(float(x)))
+
+        group["scale"] = group["scale"].apply(format_number)
+        group["log(scale)"] = group["log(scale)"].apply(format_number)
         group["runtime"] = group["runtime"].apply(format_timespan)
 
         print()
         print(f"{N=}")
-        print(group[["level", "runtime", "scale"]])
+        print(group[["level", "runtime", "scale", "log(scale)"]].to_string(index=False))
 
 
 if __name__ == "__main__":
