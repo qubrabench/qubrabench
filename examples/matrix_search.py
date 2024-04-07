@@ -232,9 +232,7 @@ def run_worst_case(n: int, level: int | None, n_runs: int, save_file: Path | Non
 
     end_time = timeit.default_timer()
     delta = end_time - start_time
-
-    runtime = format_timespan(delta)
-    print(f"{level=} {runtime}")
+    print(f"{level=} {format_timespan(delta)}")
 
     if save_file is not None:
         data = None
