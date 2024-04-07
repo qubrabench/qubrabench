@@ -193,15 +193,15 @@ class _BenchmarkManager:
         return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
+    def current_frame() -> BenchmarkFrame:
+        return _BenchmarkManager._stack[-1]
+
+    @staticmethod
     def is_benchmarking() -> bool:
         return (
             _BenchmarkManager.is_tracking()
             and not _BenchmarkManager.current_frame()._track_only_actual
         )
-
-    @staticmethod
-    def current_frame() -> BenchmarkFrame:
-        return _BenchmarkManager._stack[-1]
 
     @staticmethod
     def combine_subroutine_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
@@ -361,7 +361,7 @@ def _already_benchmarked():
 def default_tracker():
     if not _BenchmarkManager.is_tracking():
         raise BenchmarkError("not in query tracking mode!")
-    return _BenchmarkManager._stack[-1]
+    return _BenchmarkManager.current_frame()
 
 
 @attrs.define
