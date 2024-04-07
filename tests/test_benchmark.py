@@ -14,7 +14,7 @@ def random_stats(rng: Generator, *, not_benched=False):
     LIM = 10**9
 
     if not_benched:
-        return QueryStats(classical_actual_queries=rng.integers(LIM))
+        return QueryStats.from_true_queries(rng.integers(LIM))
 
     return QueryStats(
         classical_actual_queries=rng.integers(LIM),
@@ -28,8 +28,8 @@ def random_stats(rng: Generator, *, not_benched=False):
 def test_add_stats_identity(rng: Generator, not_benched: bool):
     for _ in range(100):
         a = random_stats(rng, not_benched=not_benched)
-        assert a + QueryStats() == a._as_benchmarked()
-        assert QueryStats() + a == a._as_benchmarked()
+        assert a + QueryStats() == a
+        assert QueryStats() + a == a
 
 
 @pytest.mark.parametrize("no_bench_1", [True, False])
@@ -45,15 +45,8 @@ def test_add_stats__not_benched(rng):
     for _ in range(100):
         a = random_stats(rng, not_benched=True)
         b = random_stats(rng, not_benched=True)
-
         queries = a.classical_actual_queries + b.classical_actual_queries
-
-        assert a + b == QueryStats(
-            classical_actual_queries=queries,
-            classical_expected_queries=queries,
-            quantum_expected_classical_queries=queries,
-            quantum_expected_quantum_queries=0,
-        )
+        assert a + b == QueryStats.from_true_queries(queries)
 
 
 def test_add_stats__one_benched(rng):

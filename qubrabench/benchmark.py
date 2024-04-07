@@ -7,9 +7,9 @@ from functools import cached_property, wraps
 from typing import (
     Any,
     Callable,
-    Generator,
     Hashable,
     Iterable,
+    Iterator,
     Optional,
     ParamSpec,
     TypeVar,
@@ -49,9 +49,9 @@ class QueryStats:
     """
 
     classical_actual_queries: int = 0
-    classical_expected_queries: Optional[float] = None
-    quantum_expected_classical_queries: Optional[float] = None
-    quantum_expected_quantum_queries: Optional[float] = None
+    classical_expected_queries: float = 0.0
+    quantum_expected_classical_queries: float = 0.0
+    quantum_expected_quantum_queries: float = 0.0
 
     @property
     def quantum_expected_queries(self) -> float:
@@ -60,37 +60,30 @@ class QueryStats:
             + self.quantum_expected_quantum_queries
         )
 
-    def _as_benchmarked(self):
-        """Propagate the recorded true queries (modifies `self`)"""
-
-        if self.classical_expected_queries is None:
-            self.classical_expected_queries = self.classical_actual_queries
-
-        if self.quantum_expected_classical_queries is None:
-            self.quantum_expected_classical_queries = self.classical_actual_queries
-
-        if self.quantum_expected_quantum_queries is None:
-            self.quantum_expected_quantum_queries = 0
-
-        return self
-
     def __add__(self, other: "QueryStats") -> "QueryStats":
-        lhs, rhs = self._as_benchmarked(), other._as_benchmarked()
         return QueryStats(
             classical_actual_queries=(
-                lhs.classical_actual_queries + rhs.classical_actual_queries
+                self.classical_actual_queries + other.classical_actual_queries
             ),
             classical_expected_queries=(
-                lhs.classical_expected_queries + rhs.classical_expected_queries
+                self.classical_expected_queries + other.classical_expected_queries
             ),
             quantum_expected_classical_queries=(
-                lhs.quantum_expected_classical_queries
-                + rhs.quantum_expected_classical_queries
+                self.quantum_expected_classical_queries
+                + other.quantum_expected_classical_queries
             ),
             quantum_expected_quantum_queries=(
-                lhs.quantum_expected_quantum_queries
-                + rhs.quantum_expected_quantum_queries
+                self.quantum_expected_quantum_queries
+                + other.quantum_expected_quantum_queries
             ),
+        )
+
+    @staticmethod
+    def from_true_queries(n: int, /) -> "QueryStats":
+        return QueryStats(
+            classical_actual_queries=n,
+            classical_expected_queries=n,
+            quantum_expected_classical_queries=n,
         )
 
 
@@ -140,20 +133,19 @@ class BenchmarkFrame:
         return result
 
     def get_stats_by_filter(self, filter_key: Callable[[Hashable], bool]) -> QueryStats:
-        result = QueryStats()
-        for obj, stats in self.stats.items():
-            if filter_key(obj):
-                result += stats
-        return result
+        return sum(
+            (stats for obj, stats in self.stats.items() if filter_key(obj)),
+            QueryStats(),
+        )
 
     def get_function_stats_by_name(self, name: str) -> QueryStats:
         return self.get_stats_by_filter(
-            lambda obj: (getattr(obj, "__name__", None) == name)
+            lambda obj: getattr(obj, "__name__", None) == name
         )
 
     def get_function_stats_by_qualname(self, qualname: str) -> QueryStats:
         return self.get_stats_by_filter(
-            lambda obj: (getattr(obj, "__qualname__", None) == qualname)
+            lambda obj: getattr(obj, "__qualname__", None) == qualname
         )
 
     def _add_classical_expected_queries(
@@ -164,10 +156,6 @@ class BenchmarkFrame:
         queries: float,
     ):
         stats = self.stats[obj]
-        base_stats = base_stats._as_benchmarked()
-
-        if stats.classical_expected_queries is None:
-            stats.classical_expected_queries = 0
         stats.classical_expected_queries += (
             queries * base_stats.classical_expected_queries
         )
@@ -181,16 +169,9 @@ class BenchmarkFrame:
         queries_quantum: float = 0,
     ):
         stats = self.stats[obj]
-        base_stats = base_stats._as_benchmarked()
-
-        if stats.quantum_expected_classical_queries is None:
-            stats.quantum_expected_classical_queries = 0
         stats.quantum_expected_classical_queries += (
             queries_classical * base_stats.quantum_expected_classical_queries
         )
-
-        if stats.quantum_expected_quantum_queries is None:
-            stats.quantum_expected_quantum_queries = 0
         stats.quantum_expected_quantum_queries += (
             queries_classical * base_stats.quantum_expected_quantum_queries
             + queries_quantum
@@ -212,15 +193,15 @@ class _BenchmarkManager:
         return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
+    def current_frame() -> BenchmarkFrame:
+        return _BenchmarkManager._stack[-1]
+
+    @staticmethod
     def is_benchmarking() -> bool:
         return (
             _BenchmarkManager.is_tracking()
-            and not _BenchmarkManager._stack[-1]._track_only_actual
+            and not _BenchmarkManager.current_frame()._track_only_actual
         )
-
-    @staticmethod
-    def current_frame() -> BenchmarkFrame:
-        return _BenchmarkManager._stack[-1]
 
     @staticmethod
     def combine_subroutine_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
@@ -235,9 +216,7 @@ class _BenchmarkManager:
 
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
-            sub_frame_stats = [
-                sub_frame.stats[obj]._as_benchmarked() for sub_frame in frames
-            ]
+            sub_frame_stats = [sub_frame.stats[obj] for sub_frame in frames]
 
             frame.stats[obj] = QueryStats(
                 classical_expected_queries=max(
@@ -264,7 +243,7 @@ class _BenchmarkManager:
 
 
 @contextmanager
-def track_queries() -> Generator[BenchmarkFrame, None, None]:
+def track_queries() -> Iterator[BenchmarkFrame]:
     """Track queries counts through the execution.
 
     Usage:
@@ -351,10 +330,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
             # record the query
             stats.classical_actual_queries += 1
             if not frame._track_only_actual:
-                if stats.classical_expected_queries is not None:
-                    stats.classical_expected_queries += 1
-                if stats.quantum_expected_classical_queries is not None:
-                    stats.quantum_expected_classical_queries += 1
+                stats.classical_expected_queries += 1
+                stats.quantum_expected_classical_queries += 1
 
         return func(*args, **kwargs)
 
@@ -384,7 +361,7 @@ def _already_benchmarked():
 def default_tracker():
     if not _BenchmarkManager.is_tracking():
         raise BenchmarkError("not in query tracking mode!")
-    return _BenchmarkManager._stack[-1]
+    return _BenchmarkManager.current_frame()
 
 
 @attrs.define
@@ -427,7 +404,6 @@ class BlockEncoding(QObject):
         for obj, q_queries in self.uses:
             if isinstance(obj, BlockEncoding):
                 for sub_obj, stats in obj.costs.items():
-                    stats = stats._as_benchmarked()
                     sub_q = (
                         stats.quantum_expected_quantum_queries
                         + stats.quantum_expected_classical_queries
