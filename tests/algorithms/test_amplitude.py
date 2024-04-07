@@ -21,7 +21,7 @@ def test_estimate_amplitude(rng):
     np.testing.assert_allclose(actual_a, expected_a)
     assert vector.stats == QueryStats(
         classical_actual_queries=0,
-        classical_expected_queries=None,
+        classical_expected_queries=0,
         quantum_expected_classical_queries=0,
         quantum_expected_quantum_queries=138232,
     )
