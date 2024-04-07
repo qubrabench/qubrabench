@@ -13,23 +13,33 @@ def rng():
 
 @dataclass
 class Timer:
+    """Wrapper class to store execution time"""
+
     delta: float | None = None
     """seconds"""
 
 
-@contextmanager
-def ctx():
-    timer = Timer()
-    start = time.time_ns()
-    try:
-        yield timer
-    except Exception as e:
-        raise e
-    finally:
-        end = time.time_ns()
-        timer.delta = (end - start) / 1e9
-
-
 @pytest.fixture()
 def time_execution():
+    """Context to time execution of the wrapped code
+
+    .. code:: python
+
+        with time_execution() as timer:
+            ...
+        print(timer.delta)
+    """
+
+    @contextmanager
+    def ctx():
+        timer = Timer()
+        start = time.time_ns()
+        try:
+            yield timer
+        except Exception as e:
+            raise e
+        finally:
+            end = time.time_ns()
+            timer.delta = (end - start) / 1e9
+
     return ctx
