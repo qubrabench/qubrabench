@@ -1,21 +1,17 @@
 """Given an n x m matrix A of 0s and 1s, find a row of all 1s if it exists, otherwise report none exist."""
 
+import timeit
 from dataclasses import asdict
 from pathlib import Path
-from typing import TypeVar
 
 import click
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-
-# from numpy.typing import NDArray
 from numpy import ndarray
 
 import qubrabench as qb
 from qubrabench.utils.plotting import BasicPlottingStrategy
-
-E = TypeVar("E")
 
 
 def find_row_all_ones_classical(A: ndarray) -> int | None:
@@ -174,6 +170,103 @@ def plot(data_file, display, save):
     if save:
         plt.tight_layout()
         plt.savefig(data_file.with_suffix(".pdf"), format="pdf")
+
+
+@cli.command()
+@click.argument(
+    "n",
+    type=int,
+)
+@click.option("--level", type=int, required=False, default=None)
+@click.option(
+    "--n-runs",
+    help="number of runs (defaults to 1)",
+    type=int,
+    required=False,
+    default=1,
+)
+@click.option(
+    "--save",
+    "save_file",
+    type=click.Path(dir_okay=False, writable=True, path_type=Path),
+    required=False,
+    default=None,
+)
+def run_worst_case(n: int, level: int | None, n_runs: int, save_file: Path | None):
+    from humanfriendly import format_timespan
+
+    if level is None:
+        level = click.prompt("level", type=int)
+
+    max_fail_prob = 1e-5
+
+    # disable tracking by default
+    qb.benchmark._BenchmarkManager._stack = []
+
+    start_time = timeit.default_timer()
+
+    for _ in range(n_runs):
+        matrix = np.ones((n, n), dtype=int)
+        matrix[:, -1] = 0
+
+        if level == 0:  # classical
+            find_row_all_ones_classical(matrix)
+        elif level == 1:  # quantum
+            find_row_all_ones_quantum(matrix, fail_prob=max_fail_prob)
+        elif level == 2:  # classical + DS
+            matrix = qb.array(matrix)
+            find_row_all_ones_classical(matrix)
+        elif level == 3:  # classical + DS + track
+            matrix = qb.array(matrix)
+            with qb.track_queries():
+                find_row_all_ones_classical(matrix)
+        elif level == 4:  # quantum + track
+            with qb.track_queries():
+                find_row_all_ones_quantum(matrix, fail_prob=max_fail_prob)
+        elif level == 5:  # quantum + DS + track
+            matrix = qb.array(matrix)
+            with qb.track_queries():
+                find_row_all_ones_quantum(matrix, fail_prob=max_fail_prob)
+        else:
+            raise click.exceptions.BadParameter(f"{level=}")
+
+    end_time = timeit.default_timer()
+    delta = end_time - start_time
+    print(f"{level=} {format_timespan(delta)}")
+
+    if save_file is not None:
+        data = None
+        if save_file.exists():
+            data = pd.read_json(save_file, orient="split")
+
+        current = pd.DataFrame([(n, level, delta)], columns=("N", "level", "runtime"))
+        data = pd.concat([data, current], ignore_index=True)
+
+        with save_file.open("w+") as f:
+            f.write(data.to_json(orient="split"))
+
+
+@cli.command()
+@click.argument(
+    "stat-file",
+    type=click.Path(exists=True, dir_okay=False, path_type=Path),
+)
+def compare_variants(stat_file: Path):
+    from humanfriendly import format_number, format_timespan
+
+    data = pd.read_json(stat_file, orient="split")
+    for N, group in data.groupby("N"):
+        base = group.loc[group["level"] == 0].reset_index()["runtime"][0]
+        group["scale"] = group["runtime"] / base
+        group["log(scale)"] = group["scale"].apply(lambda x: np.log2(float(x)))
+
+        group["scale"] = group["scale"].apply(format_number)
+        group["log(scale)"] = group["log(scale)"].apply(format_number)
+        group["runtime"] = group["runtime"].apply(format_timespan)
+
+        print()
+        print(f"{N=}")
+        print(group[["level", "runtime", "scale", "log(scale)"]].to_string(index=False))
 
 
 if __name__ == "__main__":
