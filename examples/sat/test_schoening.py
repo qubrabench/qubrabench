@@ -11,23 +11,21 @@ from schoening import (
 from qubrabench.benchmark import QueryStats, track_queries
 
 
-def test_solve(rng) -> None:
-    """Test Schoening's algorithm and quantum statistic generation
-
-    Args:
-        rng (np.rng): Source of randomness provided by test fixtures
-    """
-    # solve a simple SAT instance
-    inst = SatInstance(
+@pytest.fixture
+def sample_sat_instance() -> SatInstance:
+    return SatInstance(
         k=3,
         clauses=np.array([[1, 1, -1], [1, -1, 1], [-1, 1, 1], [1, -1, -1]], dtype=int),
     )
 
+
+def test_solve(rng, sample_sat_instance) -> None:
+    """Schoening's algorithm - simple variant"""
     with track_queries() as tracker:
-        x = schoening_solve(inst, rng=rng, error=10**-5)
+        x = schoening_solve(sample_sat_instance, rng=rng, error=10**-5)
 
         # check stats
-        assert tracker.get_stats(inst.evaluate) == QueryStats(
+        assert tracker.get_stats(sample_sat_instance.evaluate) == QueryStats(
             classical_actual_queries=2,
             classical_expected_queries=7,
             quantum_expected_classical_queries=pytest.approx(15.22222222222222),
@@ -35,28 +33,18 @@ def test_solve(rng) -> None:
         )
 
         # validate solution
-        assert x is not None and inst.evaluate(x)
+        assert x is not None and sample_sat_instance.evaluate(x)
 
 
-def test_bruteforce_steps(rng) -> None:
-    """Test Schöning's algorithm and quantum statistic generation
-
-    Args:
-        rng (np.rng): Source of randomness provided by test fixtures
-    """
-    # solve a simple SAT instance
-    inst = SatInstance(
-        k=3,
-        clauses=np.array([[1, 1, -1], [1, -1, 1], [-1, 1, 1], [1, -1, -1]], dtype=int),
-    )
-
+def test_bruteforce_steps(rng, sample_sat_instance) -> None:
+    """Schöning's algorithm - variant: classical search over starting assignment"""
     with track_queries() as tracker:
         x = schoening_solve__bruteforce_over_starting_assigment(
-            inst, rng=rng, error=10**-5
+            sample_sat_instance, rng=rng, error=10**-5
         )
 
         # check stats
-        assert tracker.get_stats(inst.evaluate) == QueryStats(
+        assert tracker.get_stats(sample_sat_instance.evaluate) == QueryStats(
             classical_actual_queries=2,
             classical_expected_queries=pytest.approx(11),
             quantum_expected_classical_queries=pytest.approx(24.703703703703702),
@@ -64,4 +52,4 @@ def test_bruteforce_steps(rng) -> None:
         )
 
         # validate solution
-        assert x is not None and inst.evaluate(x)
+        assert x is not None and sample_sat_instance.evaluate(x)
