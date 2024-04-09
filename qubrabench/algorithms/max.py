@@ -8,12 +8,7 @@ from typing import Any, Callable, Iterable, Optional, TypeVar
 import numpy as np
 
 from .._internals import OptionalParameter, _absent
-from ..benchmark import (
-    BenchmarkFrame,
-    _already_benchmarked,
-    _BenchmarkManager,
-    track_queries,
-)
+from ..benchmark import BenchmarkFrame, _BenchmarkManager, track_queries
 from .search import cade_et_al_F
 
 __all__ = ["max"]
@@ -49,74 +44,65 @@ def max(
 
         key = default_key
 
-    is_benchmarking = _BenchmarkManager.is_benchmarking()
+    max_elem: Optional[E] = None
+    key_of_max_elem = None
 
-    # collect stats
-    if is_benchmarking:
+    if _BenchmarkManager.is_benchmarking():
+        # collect stats
         N = 0
-
-        sub_frames_access: list[BenchmarkFrame] = []
-        sub_frames_eval: list[BenchmarkFrame] = []
+        sub_frames: list[BenchmarkFrame] = []
 
         it = iter(iterable)
-        iterable_copy = []
         while True:
-            with track_queries() as sub_frame_access:
+            with track_queries() as sub_frame:
                 try:
-                    x = next(it)
+                    elem = next(it)
                 except StopIteration:
                     break
                 N += 1
-                iterable_copy.append(x)
-                sub_frames_access.append(sub_frame_access)
 
-            with track_queries() as sub_frame_eval:
-                key(x)
-                sub_frames_eval.append(sub_frame_eval)
+                key_of_elem = key(elem)
+                if max_elem is None or key_of_elem > key_of_max_elem:
+                    max_elem = elem
+                    key_of_max_elem = key_of_elem
 
-        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
-        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
-        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
+                sub_frames.append(sub_frame)
+
+        frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
 
         quantum_queries = cade_et_al_expected_quantum_queries(N, max_fail_probability)
 
+        current_frame = _BenchmarkManager.current_frame()
         for obj, stats in frame.stats.items():
-            _BenchmarkManager.current_frame()._add_classical_expected_queries(
+            current_frame._add_classical_expected_queries(
                 obj, queries=N, base_stats=stats
             )
 
-            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+            current_frame._add_quantum_expected_queries(
                 obj,
                 queries_classical=0,
                 queries_quantum=quantum_queries,
                 base_stats=stats,
             )
 
-        iterable = iterable_copy
-
-    max_elem: OptionalParameter[E] = None
-    with _already_benchmarked():
-        if is_benchmarking:
-            for sub_frame in sub_frames_access:
-                for obj, stats in sub_frame.stats.items():
-                    benchmark_frame = _BenchmarkManager.current_frame()
-                    benchmark_frame.stats[
-                        obj
-                    ].classical_actual_queries += stats.classical_actual_queries
-
-        key_of_max_elem = None
+        for sub_frame in sub_frames:
+            for obj, stats in sub_frame.stats.items():
+                current_frame.stats[
+                    obj
+                ].classical_actual_queries += stats.classical_actual_queries
+    else:
         for elem in iterable:
             key_of_elem = key(elem)
             if max_elem is None or key_of_elem > key_of_max_elem:
                 max_elem = elem
                 key_of_max_elem = key_of_elem
 
-        if max_elem is None:
-            if default is _absent:
-                raise ValueError(
-                    "max() arg is an empty sequence, and no default value provided"
-                )
-            max_elem = default
+    if max_elem is None:
+        if default is _absent:
+            raise ValueError(
+                "max() arg is an empty sequence, and no default value provided"
+            )
+        max_elem = default
 
     return max_elem
 
