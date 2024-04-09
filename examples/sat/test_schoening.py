@@ -28,9 +28,9 @@ def test_solve(rng) -> None:
 
         # check stats
         assert tracker.get_stats(inst.evaluate) == QueryStats(
-            classical_actual_queries=4,
-            classical_expected_queries=380,
-            quantum_expected_classical_queries=pytest.approx(16.22222222222222),
+            classical_actual_queries=2,
+            classical_expected_queries=7,
+            quantum_expected_classical_queries=pytest.approx(15.22222222222222),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
 
@@ -57,9 +57,9 @@ def test_bruteforce_steps(rng) -> None:
 
         # check stats
         assert tracker.get_stats(inst.evaluate) == QueryStats(
-            classical_actual_queries=7,
-            classical_expected_queries=pytest.approx(636),
-            quantum_expected_classical_queries=pytest.approx(29.703703703703702),
+            classical_actual_queries=2,
+            classical_expected_queries=pytest.approx(11),
+            quantum_expected_classical_queries=pytest.approx(24.703703703703702),
             quantum_expected_quantum_queries=pytest.approx(0),
         )
 
