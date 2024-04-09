@@ -1,7 +1,7 @@
 """This module collects test functions for the qubrabench.search method."""
 
-from pytest import approx
 import numpy as np
+from pytest import approx
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import QueryStats, default_tracker, oracle

@@ -1,3 +1,4 @@
+from numbers import Number
 from typing import Generic, Optional, TypeAlias, TypeVar
 
 import numpy as np
@@ -77,9 +78,9 @@ class Qndarray(QObject, Generic[T]):
         return self._view_of().__get_elem
 
     def __getitem__(self, item):
-        if (isinstance(item, int) and self.ndim == 1) or (
+        if (isinstance(item, Number) and self.ndim == 1) or (
             isinstance(item, tuple)
-            and all(isinstance(i, int) for i in item)
+            and all(isinstance(i, Number) for i in item)
             and self.ndim == len(item)
         ):
             # access the element
