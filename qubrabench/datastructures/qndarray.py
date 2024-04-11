@@ -1,3 +1,4 @@
+from numbers import Number
 from typing import Generic, Optional, TypeAlias, TypeVar
 
 import numpy as np
@@ -49,6 +50,8 @@ class Qndarray(QObject, Generic[T]):
 
     def __init__(self, data, view_of=None):
         self.__data = data
+        if view_of is not None:
+            view_of = view_of._view_of()
         self.__view_of = view_of
 
     def get_raw_data(self):
@@ -70,20 +73,20 @@ class Qndarray(QObject, Generic[T]):
         return self.__data.size
 
     @oracle
-    def __get_elem(self, ix: int | tuple[int, ...]) -> T:
-        return self.__data[ix]
+    def item(self, ix: int | tuple[int, ...]) -> T:
+        return self.__data.item(ix)
 
     def _get_query_oracle(self):
-        return self._view_of().__get_elem
+        return self._view_of().item
 
     def __getitem__(self, item):
-        if (isinstance(item, int) and self.ndim == 1) or (
+        if (isinstance(item, Number) and self.ndim == 1) or (
             isinstance(item, tuple)
-            and all(isinstance(i, int) for i in item)
             and self.ndim == len(item)
+            and all(isinstance(i, Number) for i in item)
         ):
             # access the element
-            return self.__get_elem(item)
+            return self.item(item)
 
         # return a view of a sub-array
         return Qndarray(
@@ -92,9 +95,7 @@ class Qndarray(QObject, Generic[T]):
         )
 
     def _view_of(self):
-        if self.__view_of is not None:
-            return self.__view_of._view_of()
-        return self
+        return self.__view_of or self
 
     def __hash__(self):
         return id(self)

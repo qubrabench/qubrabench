@@ -3,16 +3,11 @@
 """
 
 from abc import ABC, abstractmethod
-from typing import Callable, Generic, Iterable, Optional, TypeVar
+from typing import Callable, Generic, Iterable, Iterator, Optional, TypeVar
 
 import numpy as np
 
-from ..benchmark import (
-    BenchmarkFrame,
-    _already_benchmarked,
-    _BenchmarkManager,
-    track_queries,
-)
+from ..benchmark import BenchmarkFrame, _BenchmarkManager, track_queries
 
 __all__ = ["search", "search_by_sampling", "SamplingDomain"]
 
@@ -57,75 +52,71 @@ def search(
         N = 0
         T = 0
 
-        sub_frames_access: list[BenchmarkFrame] = []
-        sub_frames_eval: list[BenchmarkFrame] = []
+        sub_frames: list[BenchmarkFrame] = []
+        is_solution: list[bool] = []
 
-        sub_frames_linear_scan: list[BenchmarkFrame] = []
-        linear_scan_solution_found = False
-
-        it = iter(iterable)
-        iterable_copy = []
+        it: Iterator[E] = iter(iterable)
+        iterable_copy: list[E] = []
         while True:
-            with track_queries() as sub_frame_access:
+            with track_queries() as sub_frame:
                 try:
                     x = next(it)
                 except StopIteration:
                     break
                 N += 1
-                iterable_copy.append((x, sub_frame_access))
-                sub_frames_access.append(sub_frame_access)
-                if not linear_scan_solution_found:
-                    sub_frames_linear_scan.append(sub_frame_access)
 
-            with track_queries() as sub_frame_eval:
                 solution_found = False
                 if key(x):
                     T += 1
                     solution_found = True
-                sub_frames_eval.append(sub_frame_eval)
 
-                if not linear_scan_solution_found:
-                    sub_frames_linear_scan.append(sub_frame_eval)
-                linear_scan_solution_found |= solution_found
+                iterable_copy.append(x)
+                sub_frames.append(sub_frame)
+                is_solution.append(solution_found)
 
-        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
-        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
-        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
+        frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
+
+        classical_queries = (N + 1) / (T + 1)
+        quantum_classical_queries = cade_et_al_expected_classical_queries(
+            N, T, max_classical_queries
+        )
+        quantum_quantum_queries = cade_et_al_expected_quantum_queries(
+            N, T, max_fail_probability, max_classical_queries
+        )
 
         for obj, stats in frame.stats.items():
             if classical_is_random_search:
                 _BenchmarkManager.current_frame()._add_classical_expected_queries(
                     obj,
                     base_stats=stats,
-                    queries=(N + 1) / (T + 1),
+                    queries=classical_queries,
                 )
 
             _BenchmarkManager.current_frame()._add_quantum_expected_queries(
                 obj,
                 base_stats=stats,
-                queries_classical=cade_et_al_expected_classical_queries(
-                    N, T, max_classical_queries
-                ),
-                queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, T, max_fail_probability, max_classical_queries
-                ),
+                queries_classical=quantum_classical_queries,
+                queries_quantum=quantum_quantum_queries,
             )
 
-        # classical expected queries for a linear scan
-        if not classical_is_random_search:
-            frame_linear_scan = _BenchmarkManager.combine_sequence_frames(
-                sub_frames_linear_scan
-            )
-            for obj, stats in frame_linear_scan.stats.items():
-                _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                    obj,
-                    base_stats=stats,
-                    queries=1,
-                )
+        indices = np.arange(N)
+        if classical_is_random_search:
+            rng.shuffle(indices)
 
-        iterable = iterable_copy
+        for i in indices:
+            for obj, stats in sub_frames[i].stats.items():
+                if not classical_is_random_search:
+                    _BenchmarkManager.current_frame()._add_classical_expected_queries(
+                        obj, base_stats=stats, queries=1
+                    )
+                _BenchmarkManager.current_frame().stats[
+                    obj
+                ].classical_actual_queries += stats.classical_actual_queries
 
-    with _already_benchmarked():
+            if is_solution[i]:
+                return iterable_copy[i]
+        return None
+    else:
         # run the classical sampling-without-replacement algorithm
         if classical_is_random_search:
             try:
@@ -134,18 +125,8 @@ def search(
                 pass
 
         for x in iterable:
-            if is_benchmarking:
-                elem, sub_frame = x
-                # account for iterable access stats
-                for obj, stats in sub_frame.stats.items():
-                    benchmark_frame = _BenchmarkManager.current_frame()
-                    benchmark_frame.stats[
-                        obj
-                    ].classical_actual_queries += stats.classical_actual_queries
-            else:
-                elem = x
-            if key(elem):
-                return elem
+            if key(x):
+                return x
 
 
 class SamplingDomain(ABC, Generic[E]):
@@ -206,46 +187,61 @@ def search_by_sampling(
     f = domain.get_probability_of_sampling_solution(key)
     max_iterations = int(3 * np.log(max_fail_probability) / np.log(1.0 - f))
 
-    is_benchmarking = _BenchmarkManager.is_benchmarking()
+    if _BenchmarkManager.is_benchmarking():
+        # collect stats
+        sub_frames: list[BenchmarkFrame] = []
+        sub_frames_till_solution: list[BenchmarkFrame] = []
+        solution = None
 
-    # collect stats
-    if is_benchmarking:
-        sub_frames_access: list[BenchmarkFrame] = []
-        sub_frames_eval: list[BenchmarkFrame] = []
+        T = 0
 
         # TODO: Is this a valid approximation?
         for _ in range(max_iterations):
-            with track_queries() as sub_frame_access:
+            with track_queries() as sub_frame:
+                if solution is None:
+                    sub_frames_till_solution.append(sub_frame)
+
                 x = domain.get_random_sample(rng)
-                sub_frames_access.append(sub_frame_access)
+                if key(x):
+                    if solution is None:
+                        solution = x
+                    T += 1
 
-            with track_queries() as sub_frame_eval:
-                key(x)
-                sub_frames_eval.append(sub_frame_eval)
+                sub_frames.append(sub_frame)
 
-        frame_access = _BenchmarkManager.combine_subroutine_frames(sub_frames_access)
-        frame_eval = _BenchmarkManager.combine_subroutine_frames(sub_frames_eval)
-        frame = _BenchmarkManager.combine_sequence_frames([frame_access, frame_eval])
+        frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
+        current_frame = _BenchmarkManager.current_frame()
+
+        classical_queries = (max_iterations + 1) / (T + 1)
+        quantum_classical_queries = cade_et_al_expected_classical_queries(
+            N, f * N, max_classical_queries
+        )
+        quantum_quantum_queries = cade_et_al_expected_quantum_queries(
+            N, f * N, max_fail_probability, max_classical_queries
+        )
 
         for obj, stats in frame.stats.items():
-            _BenchmarkManager.current_frame()._add_classical_expected_queries(
+            current_frame._add_classical_expected_queries(
                 obj,
                 base_stats=stats,
-                queries=max_iterations,
+                queries=classical_queries,
             )
 
-            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+            current_frame._add_quantum_expected_queries(
                 obj,
                 base_stats=stats,
-                queries_classical=cade_et_al_expected_classical_queries(
-                    N, f * N, max_classical_queries
-                ),
-                queries_quantum=cade_et_al_expected_quantum_queries(
-                    N, f * N, max_fail_probability, max_classical_queries
-                ),
+                queries_classical=quantum_classical_queries,
+                queries_quantum=quantum_quantum_queries,
             )
 
-    with _already_benchmarked():
+        for sub_frame in sub_frames_till_solution:
+            for obj, stats in sub_frame.stats.items():
+                current_frame.stats[
+                    obj
+                ].classical_actual_queries += stats.classical_actual_queries
+
+        return solution
+    else:
         for _ in range(max_iterations):
             x = domain.get_random_sample(rng)
             if key(x):
