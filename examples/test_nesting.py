@@ -30,7 +30,7 @@ def test_example_planted_stats(rng):
     x /= np.linalg.norm(x)
     b = A @ x
 
-    assert np.linalg.cond(A) == 406.1253740708785
+    assert np.linalg.cond(A) == pytest.approx(406.1253740708785)
 
     A = Qndarray(A)
     _ = has_solution_large_entry_quantum(A, b)
