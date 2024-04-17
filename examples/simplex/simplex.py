@@ -1,19 +1,62 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
 
+import copy
 from enum import Enum
-from typing import Optional, Sequence, TypeAlias
+from typing import Callable, Optional, Sequence, TypeAlias
+from warnings import warn
 
 import numpy as np
 import numpy.typing as npt
 
+import qubrabench as qb
 import qubrabench.algorithms as qba
 from qubrabench.benchmark import BlockEncoding, quantum_subroutine
 from qubrabench.datastructures.qndarray import (
     Qndarray,
     array,
-    block_encode_matrix,
     state_preparation_unitary,
 )
+
+
+class MissingInPaperWarning(Warning):
+    pass
+
+
+def warn_about_missing_value_and_use_default(
+    func: Callable,
+    message: str,
+    *,
+    default,
+    line_num: Optional[int] = None,
+    arg_name: Optional[str] = None,
+):
+    """Example:
+
+    .. code::
+
+        max_fail_prob = warn_about_missing_value_and_use_default(
+            IsFeasible,
+            "missing success probability for amplitude amplification",
+            line_num=4,
+            default=3/4
+        )
+    """
+    if arg_name:
+        default_choice = f"{arg_name} = {default}"
+    else:
+        default_choice = default
+
+    if line_num is not None:
+        line_num_info = f" line {line_num}"
+    else:
+        line_num_info = ""
+
+    warn(
+        f"{func.__name__}{line_num_info}: {message}. Choosing {default_choice} instead.",
+        MissingInPaperWarning,
+    )
+    return default
+
 
 Matrix: TypeAlias = npt.NDArray[np.float_] | Qndarray
 """n x m real matrix"""
@@ -23,13 +66,6 @@ Vector: TypeAlias = npt.NDArray[np.float_] | Qndarray
 
 Basis: TypeAlias = Sequence[int]
 """array of column indices"""
-
-
-@quantum_subroutine
-def solve_linear_system(A: Matrix, b: Vector, *, eps: float) -> BlockEncoding:
-    enc_A = block_encode_matrix(A, eps=0)
-    enc_b = state_preparation_unitary(b, eps=0)
-    return qba.linalg.solve(enc_A, enc_b, max_fail_probability=eps)
 
 
 @quantum_subroutine
@@ -79,10 +115,22 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     one_shot_k[k] = 1
     V = state_preparation_unitary(one_shot_k, eps=0)
 
+    n_bits = np.ceil(np.log(np.sqrt(3) * np.pi / epsilon)) + 2
+
     a = qba.amplitude.estimate_amplitude(
-        Interfere(U, V), k, precision=epsilon, max_fail_probability=3 / 4
+        Interfere(U, V),
+        k,
+        precision=np.exp(n_bits),
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            SignEstNFN,
+            "amplitude estimation doesn't have success/failure probability",
+            line_num=4,
+            default=3 / 4,
+            arg_name="max fail probability",
+        ),
     )
-    return a >= 0.5
+
+    return min(a, 1 - a) >= 1 / 6 - (2 * epsilon) / (np.sqrt(3) * np.pi)
 
 
 def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
@@ -130,19 +178,22 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
     B: Basis = np.arange(A.shape[0])
 
     while True:
-        result = SimplexIter(A, B, b, c, epsilon=1e-5, delta=1e-5)
-        if result == ResultFlag.Optimal:
+        flag, B = SimplexIter(A, B, b, c, epsilon=1e-5, delta=1e-5)
+        if flag == ResultFlag.Optimal:
+            # found optimal basis, stop here
             break
-        if result == ResultFlag.Unbounded:
-            return
+        if flag == ResultFlag.Unbounded:
+            # cannot find a solution as the LP is unbounded
+            return None
 
-    qlsa = solve_linear_system(A[:, B], b, eps=1e-5)
-    return qlsa.matrix
+    # compute the final solution using a classical solver
+    # this step is NOT explicit in the paper, as the paper only analyzes the SimplexIter costs.
+    return np.linalg.solve(A[:, B], b)
 
 
 def SimplexIter(
     A: Matrix, B: Basis, b: Vector, c: Vector, epsilon: float, delta: float
-) -> ResultFlag:
+) -> tuple[ResultFlag, Basis]:
     """Algorithm 1 [C->C]: Run one iteration of the simplex method
 
     Args:
@@ -158,10 +209,15 @@ def SimplexIter(
         Unbounded - no bounded solution exists
         Updated - pivot was performed, and more iterations may be neccessary.
     """
-    raise NotImplementedError(
-        "this method is only provided as an example usecase,"
-        "but is not numerically stable enough to solve a linear program."
+    warn(
+        "SimplexIter parameter `epsilon` - not defined how to pick/use",
+        MissingInPaperWarning,
     )
+    warn(
+        "SimplexIter parameter `delta` - not defined how to pick/use",
+        MissingInPaperWarning,
+    )
+
     # Normalize c so that \norm{c_B} = 1
     c /= np.linalg.norm(c[B])
 
@@ -175,16 +231,29 @@ def SimplexIter(
 
     k = FindColumn(A, B, c, epsilon)
     if k is None:
-        return ResultFlag.Optimal
+        return ResultFlag.Optimal, B
 
     if IsUnbounded(A[:, B], A[:, k], delta):
-        return ResultFlag.Unbounded
+        return ResultFlag.Unbounded, B
 
-    el = FindRow(A[:, B], A[:, k], b, delta)
+    warn_about_missing_value_and_use_default(
+        SimplexIter,
+        "missing definition for param `b` of FindRow",
+        line_num=7,
+        default="b from the input simplex instance",
+    )
+    el = FindRow(
+        A[:, B],
+        A[:, k],
+        b,
+        delta,
+    )
 
-    B[el] = k
+    B_new = list(copy.copy(B))
+    B_new[el] = k
+    B_new.sort()
 
-    return ResultFlag.BasisUpdated
+    return ResultFlag.BasisUpdated, B_new
 
 
 @quantum_subroutine
@@ -230,9 +299,13 @@ def RedCost(
         lhs_mat,
         rhs_vec,
         precision=epsilon / (10 * np.sqrt(2)),
-        max_fail_probability=(
-            1 / 3
-        ),  # TODO is this correct? it's missing in the paper.
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            RedCost,
+            "missing success probability for linear solver",
+            line_num=3,
+            default=1 / 3,
+            arg_name="max-fail-prob",
+        ),
     )
 
     return BlockEncoding(
@@ -280,7 +353,13 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     return qba.search.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
-        max_fail_probability=1.0 / 3.0,
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            FindColumn,
+            "missing success/failure probability for quantum search",
+            line_num=4,
+            default=1.0 / 3.0,
+            arg_name="max-fail-prob",
+        ),
     )
 
 
@@ -314,12 +393,36 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
         True if $A_B^{-1} A_k < \delta \textbf{1}_m \norm{A_B^{-1} A_k}$
     """
     m = A_B.shape[0]
-    U_LS = solve_linear_system(A_B, A_k, eps=0.1 * delta)
+    U_LS = qb.linalg.solve(
+        A_B,
+        A_k,
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            IsUnbounded,
+            "missing success/failure probability for QLSA",
+            line_num=3,
+            default=1 / 3,
+            arg_name="max-fail-prob",
+        ),
+        precision=delta / 10,
+    )
+
+    def g(el):
+        warn(
+            "IsUnbounded Line 4: Unclear how to check success flag of QLSA used in subroutine SignEstNFN."
+            "- U_LS is used multiple times in the subroutine"
+        )
+        return SignEstNFN(U_LS, el, 9 * delta / 10)
+
     result = qba.search.search(
         range(m),
-        key=lambda el: SignEstNFN(
-            U_LS, el, 0.9 * delta
-        ),  # and success flag of QLSA = 1
+        key=g,
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            IsUnbounded,
+            "success probability for search (i.e. amplitude estimation) not defined",
+            line_num=5,
+            default=1 / 3,
+            arg_name="max-fail-prob",
+        ),
     )
     return result is None
 
@@ -342,9 +445,20 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
     m = A_B.shape[0]
 
     def U(r: float) -> Optional[int]:
-        qlsa = solve_linear_system(A_B, b - r * A_k, eps=delta_scaled)
+        qlsa = qb.linalg.solve(
+            A_B,
+            b - r * A_k,
+            precision=delta_scaled,
+            max_fail_probability=warn_about_missing_value_and_use_default(
+                FindRow,
+                "missing success/failure probability for QLSA",
+                line_num=3,
+                default=1 / 3,
+                arg_name="max-fail-prob",
+            ),
+        )
         row = qba.search.search(
-            range(1, m + 1),
+            range(m),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
             max_fail_probability=delta_scaled,
         )
@@ -376,12 +490,39 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
         Whether $A_B^{-1} b \ge  −\delta 1_m$, with bounded probability.
     """
     m = A_B.shape[0]
+
+    # delta / \norm{A_B^{-1} b}
     delta_scaled = delta / np.linalg.norm(np.linalg.solve(A_B, b))
 
-    qlsa = solve_linear_system(A_B, b, eps=delta_scaled * 0.1)
+    qlsa = qb.linalg.solve(
+        A_B,
+        b,
+        precision=delta_scaled / 10,
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            IsFeasible,
+            "missing success probability for QLSA",
+            line_num=3,
+            default=1 / 3,
+            arg_name="max-fail-prob",
+        ),
+    )
+
+    def g(el):
+        warn(
+            "IsFeasible Line 4: Unclear how to check success flag of QLSA used in subroutine SignEstNFP."
+            "- U_LS is used multiple times in the subroutine"
+        )
+        return not SignEstNFP(qlsa, el, epsilon=(9 / 20) * delta_scaled)
+
     result = qba.search.search(
-        range(1, m + 1),
-        key=lambda el: not SignEstNFP(qlsa, el, epsilon=delta_scaled * 0.45),
-        max_fail_probability=1e-5,  # TODO check
+        range(m),
+        key=g,
+        max_fail_probability=warn_about_missing_value_and_use_default(
+            IsFeasible,
+            "missing success probability for search (i.e. ampl. est.)",
+            line_num=5,
+            default=1 / 3,
+            arg_name="max-fail-prob",
+        ),
     )
     return result is not None
