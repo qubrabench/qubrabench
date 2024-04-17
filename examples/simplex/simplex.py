@@ -163,11 +163,6 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
     Returns:
         x: an $n$-dimensional column vector solution to the above optimization.
     """
-    raise NotImplementedError(
-        "this method is only provided as an example usecase,"
-        "but is not numerically stable enough to solve a linear program."
-    )
-
     # TODO compute valid initial basic solution
     B: Basis = np.arange(A.shape[0])
 
@@ -182,7 +177,9 @@ def Simplex(A: Matrix, b: Vector, c: Vector) -> Optional[Vector]:
 
     # compute the final solution using a classical solver
     # this step is NOT explicit in the paper, as the paper only analyzes the SimplexIter costs.
-    return np.linalg.solve(A[:, B], b)
+    x = np.zeros(A.shape[1])
+    x[B] = np.linalg.solve(A[:, B], b)
+    return x
 
 
 def SimplexIter(
@@ -199,9 +196,11 @@ def SimplexIter(
         delta: precision parameter
 
     Returns:
-        Optimal - solution is found
-        Unbounded - no bounded solution exists
-        Updated - pivot was performed, and more iterations may be neccessary.
+        A flag and the basis.
+
+        Optimal - solution is found.
+        Unbounded - no bounded solution exists.
+        Updated - pivot was performed, returned basis is updated.
     """
     warn(
         "SimplexIter parameter `epsilon` - not defined how to pick/use",
@@ -403,7 +402,8 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
     def g(el):
         warn(
             "IsUnbounded Line 4: Unclear how to check success flag of QLSA used in subroutine SignEstNFN."
-            "- U_LS is used multiple times in the subroutine"
+            "- U_LS is used multiple times in the subroutine",
+            MissingInPaperWarning,
         )
         return SignEstNFN(U_LS, el, 9 * delta / 10)
 
