@@ -62,6 +62,7 @@ include = ["qubrabench"]
 [tool.pytest.ini_options]
 markers = ["slow: marks tests as slow (deselect with '-m \"not slow\"')"]
 testpaths = "qubrabench tests examples"
+xfail_strict=true
 
 [tool.ruff]
 lint.ignore = ["E501"] # Never enforce `E501` (line length violations). Length = 88 auto-checked by black.

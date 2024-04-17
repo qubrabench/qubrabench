@@ -1,6 +1,5 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
 
-import copy
 from enum import Enum
 from typing import Callable, Optional, Sequence, TypeAlias
 from warnings import warn
@@ -249,11 +248,11 @@ def SimplexIter(
         delta,
     )
 
-    B_new = list(copy.copy(B))
+    B_new = np.copy(B)
     B_new[el] = k
     B_new.sort()
 
-    return ResultFlag.BasisUpdated, B_new
+    return ResultFlag.BasisUpdated, list(B_new)
 
 
 @quantum_subroutine
