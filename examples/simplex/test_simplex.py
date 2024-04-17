@@ -1,10 +1,11 @@
+import dataclasses
 from dataclasses import dataclass
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 from pytest import approx
-from simplex import FindColumn, ResultFlag, SimplexIter
+from simplex import FindColumn, ResultFlag, SimplexIter, FindRow
 
 import qubrabench as qb
 
@@ -18,8 +19,20 @@ class SimplexInstance:
     def as_tuple(self):
         return self.A, self.b, self.c
 
-    def cost_of_basis(self, basis: list[int]) -> float:
-        return np.inner(np.linalg.solve(self.A[:, basis], self.b), self.c[basis])
+    def cost_of_basis(self, B: list[int]) -> float:
+        return np.inner(np.linalg.solve(self.A[:, B], self.b), self.c[B])
+
+    def normalize_for_basis(self, B: list[int]) -> "SimplexInstance":
+        r"""For a basis $B$, rescale the problem such that $\norm{A_B} \le 1$ and $\norm{c_B} = 1$"""
+        scale_A = np.linalg.norm(self.A[:, B])
+        A = self.A / scale_A
+        b = self.b / scale_A
+        c = self.c / np.linalg.norm(self.c[B])
+
+        np.testing.assert_allclose(np.linalg.norm(c[B]), 1)
+        assert np.linalg.norm(A[:, B], ord=2) <= 1
+
+        return SimplexInstance(A, b, c)
 
     def solution(self) -> NDArray[np.floating]:
         from scipy.optimize import linprog
@@ -38,14 +51,8 @@ def example_instance() -> SimplexInstance:
 
 
 def test_find_column(example_instance):
-    A, _, c = example_instance.as_tuple()
     B = [0, 1]
-
-    c /= np.linalg.norm(c[B])
-    A /= np.linalg.norm(A[:, B])
-
-    np.testing.assert_allclose(np.linalg.norm(c[B]), 1)
-    assert np.linalg.norm(A[:, B], ord=2) <= 1
+    A, _, c = example_instance.normalize_for_basis(B).as_tuple()
 
     A = qb.array(A)
 
@@ -53,6 +60,16 @@ def test_find_column(example_instance):
     assert k == 2
 
     assert A.stats.quantum_expected_quantum_queries == approx(16737.07840558408)
+
+
+@pytest.mark.xfail(reason="FindRow implementation does not work")
+def test_find_row(example_instance):
+    B = [0, 1]
+    A, b, c = example_instance.normalize_for_basis(B).as_tuple()
+    k = 2
+
+    el = FindRow(A[:, B], A[:, k], b, delta=1e-3)
+    assert el == 1
 
 
 @pytest.mark.xfail(reason="simplex implementation does not work")

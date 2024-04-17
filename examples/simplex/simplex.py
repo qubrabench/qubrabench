@@ -212,12 +212,12 @@ def SimplexIter(
     )
 
     # Normalize c so that \norm{c_B} = 1
-    c /= np.linalg.norm(c[B])
+    c = c / np.linalg.norm(c[B])
 
     # Normalize A so that \norm{A_B} <= 1
     scale_A = np.linalg.norm(A[:, B])
-    A /= scale_A
-    b /= scale_A
+    A = A / scale_A
+    b = b / scale_A
 
     # if IsOptimal(A, B, c, epsilon):
     #     return ResultFlag.Optimal
@@ -442,7 +442,13 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         qlsa = qb.linalg.solve(
             A_B,
             b - r * A_k,
-            precision=delta_scaled,
+            precision=warn_about_missing_value_and_use_default(
+                FindRow,
+                "missing precision for QLSA",
+                line_num=3,
+                default=delta_scaled,
+                arg_name="precision",
+            ),
             max_fail_probability=warn_about_missing_value_and_use_default(
                 FindRow,
                 "missing success/failure probability for QLSA",
@@ -453,13 +459,23 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         )
         row = qb.search(
             range(m),
-            key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
-            max_fail_probability=delta_scaled,
+            key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta_scaled),
+            max_fail_probability=warn_about_missing_value_and_use_default(
+                FindRow,
+                "missing success probability for search (i.e. ampl. est.)",
+                line_num=4,
+                default=1 / 3,
+                arg_name="max-fail-prob",
+            ),
         )
         return row
 
     # binary search for `r`
-    r_low, r_high = 0.0, 100.0  # TODO compute proper starting upper-bound
+    r_high = 1.0
+    while U(r_high) is None:
+        r_high *= 2
+
+    r_low = 0.0
     while r_high - r_low > delta_scaled / 2:
         r = (r_low + r_high) / 2
         if U(r) is not None:
