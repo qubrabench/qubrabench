@@ -8,13 +8,8 @@ import numpy as np
 import numpy.typing as npt
 
 import qubrabench as qb
-import qubrabench.algorithms as qba
 from qubrabench.benchmark import BlockEncoding, quantum_subroutine
-from qubrabench.datastructures.qndarray import (
-    Qndarray,
-    array,
-    state_preparation_unitary,
-)
+from qubrabench.datastructures.qndarray import Qndarray, state_preparation_unitary
 
 
 class MissingInPaperWarning(Warning):
@@ -116,7 +111,7 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
 
     n_bits = np.ceil(np.log(np.sqrt(3) * np.pi / epsilon)) + 2
 
-    a = qba.amplitude.estimate_amplitude(
+    a = qb.estimate_amplitude(
         Interfere(U, V),
         k,
         precision=np.exp(n_bits),
@@ -267,8 +262,8 @@ def direct_sum_of_ndarrays(a: Matrix | Vector, b: Matrix | Vector) -> BlockEncod
 
     uses = [(obj, rank) for obj in (a, b) if isinstance(obj, Qndarray)]
 
-    a = array(a)
-    b = array(b)
+    a = qb.array(a)
+    b = qb.array(b)
 
     res: npt.NDArray
     alpha: float
@@ -294,7 +289,7 @@ def RedCost(
     """Algorithm 4 [C->Q]: Determining the reduced cost of a column"""
     lhs_mat = direct_sum_of_ndarrays(A_B, np.array([[1]]))
     rhs_vec = direct_sum_of_ndarrays(A_k, c[k : k + 1])
-    sol = qba.linalg.qlsa(
+    sol = qb.linalg.qlsa(
         lhs_mat,
         rhs_vec,
         precision=epsilon / (10 * np.sqrt(2)),
@@ -349,7 +344,7 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
         index of column $k$ with $\bar{c}_k < \epsilon \norm{(A_B^{-1} A_k, c_k)} if one exists, with bounded probability.
     """
     non_basic = set(range(A.shape[1])) - set(B)
-    return qba.search.search(
+    return qb.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
         max_fail_probability=warn_about_missing_value_and_use_default(
@@ -412,7 +407,7 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
         )
         return SignEstNFN(U_LS, el, 9 * delta / 10)
 
-    result = qba.search.search(
+    result = qb.search(
         range(m),
         key=g,
         max_fail_probability=warn_about_missing_value_and_use_default(
@@ -456,7 +451,7 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
                 arg_name="max-fail-prob",
             ),
         )
-        row = qba.search.search(
+        row = qb.search(
             range(m),
             key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta / 2),
             max_fail_probability=delta_scaled,
@@ -513,7 +508,7 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
         )
         return not SignEstNFP(qlsa, el, epsilon=(9 / 20) * delta_scaled)
 
-    result = qba.search.search(
+    result = qb.search(
         range(m),
         key=g,
         max_fail_probability=warn_about_missing_value_and_use_default(
