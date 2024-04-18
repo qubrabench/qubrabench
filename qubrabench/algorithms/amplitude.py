@@ -49,16 +49,8 @@ def estimate_amplitude(
         # TODO analyze cost for robust version
         warnings.warn(
             "estimate_amplitude: query costs for robust version is not yet implemented, results may be incorrect",
-            UserWarning,
+            RuntimeWarning,
         )
-
-        prec_sub = np.abs(x.precision / x.subnormalization_factor)
-        if precision < prec_sub:
-            raise RuntimeError(
-                f"estimate_amplitude: Input block-encoding is too imprecise to estimate correctly:"
-                f"required precision is {precision}, but block-encoding has (normalized)error of {prec_sub}"
-            )
-        precision -= prec_sub
 
     # actual value to estimate
     a = np.linalg.norm(x.matrix[good_indices] / x.subnormalization_factor) ** 2
