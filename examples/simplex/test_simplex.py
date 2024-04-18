@@ -10,14 +10,13 @@ import qubrabench as qb
 from qubrabench.benchmark import BlockEncoding
 
 
-@pytest.mark.parametrize("value", [-1, -0.5, 0.5, 1])
+@pytest.mark.parametrize("value", [-1, -0.5, -1e-5, 1e-5, 0.5, 1])
 def test_sign_est_nfn(value: float):
     vec = np.array([value, np.sqrt(1 - value**2)])
     np.testing.assert_allclose(np.linalg.norm(vec), 1)
 
     psi = BlockEncoding(vec, subnormalization_factor=1, precision=0)
-    result = SignEstNFN(psi, 0, epsilon=0)
-    assert result == (value > 0)
+    assert SignEstNFN(psi, 0, epsilon=0) == (np.sign(value) >= 0)
 
 
 @dataclass
