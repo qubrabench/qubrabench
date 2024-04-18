@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 from pytest import approx
-from simplex import FindColumn, FindRow, ResultFlag, SimplexIter, SignEstNFN, Simplex
+from simplex import FindColumn, FindRow, ResultFlag, SignEstNFN, Simplex, SimplexIter
 
 import qubrabench as qb
 from qubrabench.benchmark import BlockEncoding
