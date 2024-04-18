@@ -142,10 +142,11 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon: float) -> bool:
 
     result = min(a, 1 - a) >= 1 / 6 - (2 * epsilon) / (np.sqrt(3) * np.pi)
     expected = U.matrix[k] >= 0
-    warnings.warn(
-        f"result of SignEstNFN does not seem to match, {result=} vs {expected=}"
-    )
-    return expected
+    if result != expected:
+        warnings.warn(
+            f"result of SignEstNFN does not seem to match, {result=} vs {expected=}"
+        )
+    return result
 
 
 def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
