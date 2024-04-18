@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from numpy.typing import NDArray
 from pytest import approx
-from simplex import FindColumn, FindRow, ResultFlag, SimplexIter, SignEstNFN
+from simplex import FindColumn, FindRow, ResultFlag, SimplexIter, SignEstNFN, Simplex
 
 import qubrabench as qb
 from qubrabench.benchmark import BlockEncoding
@@ -24,6 +24,11 @@ class SimplexInstance:
     A: NDArray[np.floating]
     b: NDArray[np.floating]
     c: NDArray[np.floating]
+
+    def __post_init__(self):
+        self.A = np.asarray(self.A, dtype=float)
+        self.b = np.asarray(self.b, dtype=float)
+        self.c = np.asarray(self.c, dtype=float)
 
     def as_tuple(self):
         return self.A, self.b, self.c
@@ -53,9 +58,9 @@ class SimplexInstance:
 @pytest.fixture
 def example_instance() -> SimplexInstance:
     return SimplexInstance(
-        A=np.array([[3, 2, 1], [2, 5, 3]], dtype=float),
-        b=np.array([10, 15], dtype=float),
-        c=np.array([-2, -3, -4], dtype=float),
+        A=np.array([[3, 2, 1], [2, 5, 3]]),
+        b=np.array([10, 15]),
+        c=np.array([-2, -3, -4]),
     )
 
 
@@ -98,3 +103,28 @@ def test_simplex_iter(example_instance):
 
     assert result == ResultFlag.Optimal
     assert B1 == B2
+
+
+@pytest.fixture
+def example_instance_2():
+    return SimplexInstance(
+        A=np.array(
+            [
+                [2, 1, -3, 4, 1, -2, 3, -5],
+                [3, -2, 2, 5, -4, 2, -1, 3],
+                [1, 4, -1, -2, 3, -2, 5, -4],
+                [-2, 3, 2, -3, 4, -1, 2, -1],
+            ]
+        ),
+        b=np.array([10, 20, 15, 5]),
+        c=np.array([3, 4, 2, 5, 6, 2, 7, 3]),
+    )
+
+
+def test_larger_instance(example_instance_2):
+    expected = example_instance_2.solution()
+
+    A, b, c = example_instance_2.as_tuple()
+    actual = Simplex(A, b, c)
+
+    assert np.allclose(actual, expected)
