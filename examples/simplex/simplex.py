@@ -1,8 +1,8 @@
 """An end-to-end implementation of the simplex algorithm by described in the paper "Fast quantum subroutines for the simplex method" https://arxiv.org/pdf/1910.10649.pdf. """
 
+import warnings
 from enum import Enum
 from typing import Callable, Optional, Sequence, TypeAlias
-import warnings
 
 import numpy as np
 import numpy.typing as npt
@@ -106,7 +106,7 @@ def Interfere(U: BlockEncoding, V: BlockEncoding) -> BlockEncoding:
     )
 
 
-def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
+def SignEstNFN(U: BlockEncoding, k: int, epsilon: float) -> bool:
     r"""Algorithm 3 [Q->C]: Sign estimation routine with no false negatives
 
     Args:
@@ -142,7 +142,9 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
 
     result = min(a, 1 - a) >= 1 / 6 - (2 * epsilon) / (np.sqrt(3) * np.pi)
     expected = U.matrix[k] >= 0
-    # assert result == expected
+    warnings.warn(
+        f"result of SignEstNFN does not seem to match, {result=} vs {expected=}"
+    )
     return expected
 
 
@@ -158,9 +160,7 @@ def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
         False if $\alpha_k \le -\epsilon$, with probability at least 3/4.
     """
     # TODO quantum query costs
-    if U.matrix[k] <= -epsilon:
-        return False
-    return True
+    return U.matrix[k] <= 0
 
 
 class ResultFlag(Enum):

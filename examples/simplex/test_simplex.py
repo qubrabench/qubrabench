@@ -1,11 +1,10 @@
-import dataclasses
 from dataclasses import dataclass
 
 import numpy as np
 import pytest
 from numpy.typing import NDArray
 from pytest import approx
-from simplex import FindColumn, ResultFlag, SimplexIter, FindRow
+from simplex import FindColumn, FindRow, ResultFlag, SimplexIter
 
 import qubrabench as qb
 
