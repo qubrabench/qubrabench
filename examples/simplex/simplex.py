@@ -2,7 +2,7 @@
 
 from enum import Enum
 from typing import Callable, Optional, Sequence, TypeAlias
-from warnings import warn
+import warnings
 
 import numpy as np
 import numpy.typing as npt
@@ -13,43 +13,55 @@ from qubrabench.datastructures.qndarray import Qndarray, state_preparation_unita
 
 
 class MissingInPaperWarning(Warning):
-    pass
+    @classmethod
+    def warn(cls, message):
+        warnings.warn(message, cls)
 
+    @classmethod
+    def warn_and_use_fallback(
+        cls,
+        func: Callable,
+        message: str,
+        *,
+        fallback=None,
+        line_num: Optional[int] = None,
+        arg_name: Optional[str] = None,
+    ):
+        """Shows a warning about a missing parameter in the paper, and the assumed fallback in our code.
 
-def warn_about_missing_value_and_use_default(
-    func: Callable,
-    message: str,
-    *,
-    default,
-    line_num: Optional[int] = None,
-    arg_name: Optional[str] = None,
-):
-    """Example:
+        We assume a certain fallback to enable to computation to continue, although the stats will be incorrect.
 
-    .. code::
+        Example:
 
-        max_fail_prob = warn_about_missing_value_and_use_default(
-            IsFeasible,
-            "missing success probability for amplitude amplification",
-            line_num=4,
-            default=3/4
+        .. code::
+
+            max_fail_prob = MissingInPaperWarning.warn_and_use_default()(
+                IsFeasible,
+                "missing success probability for amplitude amplification",
+                line_num=4,
+                fallback=3/4
+            )
+        """
+        if arg_name:
+            default_choice = f"{arg_name} = {fallback}"
+        elif fallback is not None:
+            default_choice = f"{fallback}"
+        else:
+            default_choice = ""
+
+        if default_choice:
+            default_choice = f"Choosing {default_choice} for now."
+
+        if line_num is not None:
+            line_num_info = f" line {line_num}"
+        else:
+            line_num_info = ""
+
+        warnings.warn(
+            f"{func.__name__}{line_num_info}: {message}. {default_choice}",
+            cls,
         )
-    """
-    if arg_name:
-        default_choice = f"{arg_name} = {default}"
-    else:
-        default_choice = default
-
-    if line_num is not None:
-        line_num_info = f" line {line_num}"
-    else:
-        line_num_info = ""
-
-    warn(
-        f"{func.__name__}{line_num_info}: {message}. Choosing {default_choice} instead.",
-        MissingInPaperWarning,
-    )
-    return default
+        return fallback
 
 
 Matrix: TypeAlias = npt.NDArray[np.float_] | Qndarray
@@ -109,22 +121,29 @@ def SignEstNFN(U: BlockEncoding, k: int, epsilon) -> bool:
     one_shot_k[k] = 1
     V = state_preparation_unitary(one_shot_k, eps=0)
 
+    # Line 3
+    psi = Interfere(U, V)
+
     n_bits = np.ceil(np.log(np.sqrt(3) * np.pi / epsilon)) + 2
 
+    # Line 4
     a = qb.estimate_amplitude(
-        Interfere(U, V),
+        psi,
         k,
-        precision=np.exp(n_bits),
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        precision=1 / np.exp(n_bits),
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             SignEstNFN,
             "amplitude estimation doesn't have success/failure probability",
             line_num=4,
-            default=3 / 4,
+            fallback=3 / 4,
             arg_name="max fail probability",
         ),
     )
 
-    return min(a, 1 - a) >= 1 / 6 - (2 * epsilon) / (np.sqrt(3) * np.pi)
+    result = min(a, 1 - a) >= 1 / 6 - (2 * epsilon) / (np.sqrt(3) * np.pi)
+    expected = U.matrix[k] >= 0
+    # assert result == expected
+    return expected
 
 
 def SignEstNFP(U: BlockEncoding, k: int, epsilon) -> bool:
@@ -202,13 +221,15 @@ def SimplexIter(
         Unbounded - no bounded solution exists.
         Updated - pivot was performed, returned basis is updated.
     """
-    warn(
-        "SimplexIter parameter `epsilon` - not defined how to pick/use",
-        MissingInPaperWarning,
+    MissingInPaperWarning.warn_and_use_fallback(
+        SimplexIter,
+        "parameter `epsilon` - not defined how to pick/use",
+        fallback=epsilon,
     )
-    warn(
-        "SimplexIter parameter `delta` - not defined how to pick/use",
-        MissingInPaperWarning,
+    delta = MissingInPaperWarning.warn_and_use_fallback(
+        SimplexIter,
+        "parameter `delta` - not defined how to pick/use",
+        fallback=delta,
     )
 
     # Normalize c so that \norm{c_B} = 1
@@ -229,11 +250,11 @@ def SimplexIter(
     if IsUnbounded(A[:, B], A[:, k], delta):
         return ResultFlag.Unbounded, B
 
-    warn_about_missing_value_and_use_default(
+    MissingInPaperWarning.warn_and_use_fallback(
         SimplexIter,
         "missing definition for param `b` of FindRow",
         line_num=7,
-        default="b from the input simplex instance",
+        fallback="b from the input simplex instance",
     )
     el = FindRow(
         A[:, B],
@@ -292,11 +313,11 @@ def RedCost(
         lhs_mat,
         rhs_vec,
         precision=epsilon / (10 * np.sqrt(2)),
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             RedCost,
             "missing success probability for linear solver",
             line_num=3,
-            default=1 / 3,
+            fallback=1 / 3,
             arg_name="max-fail-prob",
         ),
     )
@@ -346,11 +367,11 @@ def FindColumn(A: Matrix, B: Basis, c: Vector, epsilon: float) -> Optional[int]:
     return qb.search(
         non_basic,
         key=lambda k: CanEnter(A[:, B], A[:, k], c, k, B, epsilon),
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             FindColumn,
             "missing success/failure probability for quantum search",
             line_num=4,
-            default=1.0 / 3.0,
+            fallback=1.0 / 3.0,
             arg_name="max-fail-prob",
         ),
     )
@@ -389,32 +410,33 @@ def IsUnbounded(A_B, A_k, delta) -> bool:
     U_LS = qb.linalg.solve(
         A_B,
         A_k,
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             IsUnbounded,
             "missing success/failure probability for QLSA",
             line_num=3,
-            default=1 / 3,
+            fallback=1 / 3,
             arg_name="max-fail-prob",
         ),
         precision=delta / 10,
     )
 
     def g(el):
-        warn(
-            "IsUnbounded Line 4: Unclear how to check success flag of QLSA used in subroutine SignEstNFN."
+        MissingInPaperWarning.warn_and_use_fallback(
+            IsUnbounded,
+            "Unclear how to check success flag of QLSA used in subroutine SignEstNFN."
             "- U_LS is used multiple times in the subroutine",
-            MissingInPaperWarning,
+            line_num=4,
         )
         return SignEstNFN(U_LS, el, 9 * delta / 10)
 
     result = qb.search(
         range(m),
         key=g,
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             IsUnbounded,
             "success probability for search (i.e. amplitude estimation) not defined",
             line_num=5,
-            default=1 / 3,
+            fallback=1 / 3,
             arg_name="max-fail-prob",
         ),
     )
@@ -442,29 +464,33 @@ def FindRow(A_B: Matrix, A_k: Vector, b: Vector, delta: float) -> int:
         qlsa = qb.linalg.solve(
             A_B,
             b - r * A_k,
-            precision=warn_about_missing_value_and_use_default(
+            precision=MissingInPaperWarning.warn_and_use_fallback(
                 FindRow,
                 "missing precision for QLSA",
                 line_num=3,
-                default=delta_scaled,
+                fallback=delta_scaled,
                 arg_name="precision",
             ),
-            max_fail_probability=warn_about_missing_value_and_use_default(
+            max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
                 FindRow,
                 "missing success/failure probability for QLSA",
                 line_num=3,
-                default=1 / 3,
+                fallback=1 / 3,
                 arg_name="max-fail-prob",
             ),
         )
+
+        def check_row(el):
+            return not SignEstNFN(qlsa, el, epsilon=delta_scaled)
+
         row = qb.search(
             range(m),
-            key=lambda el: not SignEstNFN(qlsa, el, epsilon=delta_scaled),
-            max_fail_probability=warn_about_missing_value_and_use_default(
+            key=check_row,
+            max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
                 FindRow,
                 "missing success probability for search (i.e. ampl. est.)",
                 line_num=4,
-                default=1 / 3,
+                fallback=1 / 3,
                 arg_name="max-fail-prob",
             ),
         )
@@ -508,30 +534,32 @@ def IsFeasible(A_B: Matrix, b: Vector, delta: float) -> bool:
         A_B,
         b,
         precision=delta_scaled / 10,
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             IsFeasible,
             "missing success probability for QLSA",
             line_num=3,
-            default=1 / 3,
+            fallback=1 / 3,
             arg_name="max-fail-prob",
         ),
     )
 
     def g(el):
-        warn(
-            "IsFeasible Line 4: Unclear how to check success flag of QLSA used in subroutine SignEstNFP."
-            "- U_LS is used multiple times in the subroutine"
+        MissingInPaperWarning.warn_and_use_fallback(
+            IsFeasible,
+            "Unclear how to check success flag of QLSA used in subroutine SignEstNFP."
+            "- U_LS is used multiple times in the subroutine",
+            line_num=4,
         )
         return not SignEstNFP(qlsa, el, epsilon=(9 / 20) * delta_scaled)
 
     result = qb.search(
         range(m),
         key=g,
-        max_fail_probability=warn_about_missing_value_and_use_default(
+        max_fail_probability=MissingInPaperWarning.warn_and_use_fallback(
             IsFeasible,
             "missing success probability for search (i.e. ampl. est.)",
             line_num=5,
-            default=1 / 3,
+            fallback=1 / 3,
             arg_name="max-fail-prob",
         ),
     )

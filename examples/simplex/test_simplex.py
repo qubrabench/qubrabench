@@ -62,7 +62,6 @@ def test_find_column(example_instance):
     assert A.stats.quantum_expected_quantum_queries == approx(16737.07840558408)
 
 
-@pytest.mark.xfail(reason="FindRow implementation does not work")
 def test_find_row(example_instance):
     B = [0, 1]
     A, b, c = example_instance.normalize_for_basis(B).as_tuple()
@@ -72,7 +71,6 @@ def test_find_row(example_instance):
     assert el == 1
 
 
-@pytest.mark.xfail(reason="simplex implementation does not work")
 def test_simplex_iter(example_instance):
     A, b, c = example_instance.as_tuple()
 
@@ -83,5 +81,11 @@ def test_simplex_iter(example_instance):
     result, B1 = SimplexIter(A, B0, b, c, epsilon=1e-5, delta=1e-5)
 
     assert result == ResultFlag.BasisUpdated
-    assert B1 == [1, 2]
+    assert B1 == [0, 2]
     assert example_instance.cost_of_basis(B1) < example_instance.cost_of_basis(B0)
+
+    # second iteration
+    result, B2 = SimplexIter(A, B1, b, c, epsilon=1e-5, delta=1e-5)
+
+    assert result == ResultFlag.Optimal
+    assert B1 == B2
