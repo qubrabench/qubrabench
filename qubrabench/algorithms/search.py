@@ -83,6 +83,9 @@ def search(
         quantum_quantum_queries = cade_et_al_expected_quantum_queries(
             N, T, max_fail_probability, max_classical_queries
         )
+        quantum_worst_case_queries = cade_et_al_worst_case_quantum_queries(  # noqa
+            N, max_fail_probability
+        )
 
         for obj, stats in frame.stats.items():
             if classical_is_random_search:
@@ -293,3 +296,17 @@ def cade_et_al_F(N: int, T: int) -> float:
         term: float = N / (2 * np.sqrt((N - T) * T))
         F = 9 / 2 * term + np.ceil(np.log(term) / np.log(6 / 5)) - 3
     return F
+
+
+def cade_et_al_worst_case_quantum_queries(N: int, eps: float) -> float:
+    """Lemma 8: worst case cost given by the QSearch_Zalka variant
+
+    Args:
+        N: size of the search space
+        eps: upper bound on failure probability
+
+    Returns:
+        Worst case query cost of quantum search
+    """
+    eps_term = np.ceil(np.log(1 / eps) / (2 * np.log(4 / 3)))
+    return 5 * eps_term + np.pi * np.sqrt(N * eps_term)
