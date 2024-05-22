@@ -2,7 +2,7 @@
 ci:
 	black --quiet --check .
 	isort --quiet --check .
-	ruff check .
+	ruff check --quiet .
 	pytest --doctest-modules -m "not slow"
 	cd docs && make clean && make html
 
