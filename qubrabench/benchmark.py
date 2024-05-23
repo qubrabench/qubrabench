@@ -19,7 +19,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
-from ._internals import merge_into_with_sum_inplace, first_non_none_value
+from ._internals import first_non_none_value, merge_into_with_sum_inplace
 
 __all__ = [
     "QObject",
