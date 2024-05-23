@@ -14,7 +14,7 @@ def random_stats(rng: Generator, *, not_benched=False):
     LIM = 10**9
 
     if not_benched:
-        return QueryStats.from_true_queries(rng.integers(LIM))
+        return QueryStats(classical_actual_queries=rng.integers(LIM))
 
     return QueryStats(
         classical_actual_queries=rng.integers(LIM),
@@ -46,7 +46,7 @@ def test_add_stats__not_benched(rng):
         a = random_stats(rng, not_benched=True)
         b = random_stats(rng, not_benched=True)
         queries = a.classical_actual_queries + b.classical_actual_queries
-        assert a + b == QueryStats.from_true_queries(queries)
+        assert a + b == QueryStats(queries)
 
 
 def test_add_stats__one_benched(rng):

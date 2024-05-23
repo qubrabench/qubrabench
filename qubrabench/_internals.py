@@ -1,4 +1,4 @@
-from typing import TypeAlias, TypeVar, Union
+from typing import TypeAlias, TypeVar, Union, Optional
 
 
 class AbsentParameter:
@@ -28,3 +28,11 @@ def merge_into_with_sum_inplace(a: dict, b: dict):
             a[k] = v
         else:
             a[k] += v
+
+
+def first_non_none_value(*args: Optional[T]) -> Optional[T]:
+    """Return the first value that is not `None` in a sequence of values"""
+    for arg in args:
+        if arg is not None:
+            return arg
+    return None
