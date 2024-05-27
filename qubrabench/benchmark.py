@@ -116,13 +116,12 @@ class QueryStats:
                 ),
             )
 
-    def record_query(self, n: int = 1, /, *, track_only_actual: bool = False):
+    def record_query(self, n: int = 1):
         self.classical_actual_queries += n
-        if not track_only_actual:
-            if self.classical_expected_queries is not None:
-                self.classical_expected_queries += n
-            if self.quantum_expected_classical_queries is not None:
-                self.quantum_expected_classical_queries += n
+        if self.classical_expected_queries is not None:
+            self.classical_expected_queries += n
+        if self.quantum_expected_classical_queries is not None:
+            self.quantum_expected_classical_queries += n
 
 
 class QObject(ABC, Hashable):
@@ -148,11 +147,9 @@ class BenchmarkFrame:
     """A benchmark stack frame, mapping oracle hashes to their computed stats"""
 
     stats: dict[Hashable, QueryStats]
-    _track_only_actual: bool
 
     def __init__(self):
         self.stats = defaultdict(QueryStats)
-        self._track_only_actual = False
 
     def get_stats(
         self, obj: Any, *, default: Optional[QueryStats] = None
@@ -235,19 +232,12 @@ class _BenchmarkManager:
         assert False, f"should not create object of class {cls}"
 
     @staticmethod
-    def is_tracking() -> bool:
-        return len(_BenchmarkManager._stack) > 0
-
-    @staticmethod
     def current_frame() -> BenchmarkFrame:
         return _BenchmarkManager._stack[-1]
 
     @staticmethod
     def is_benchmarking() -> bool:
-        return (
-            _BenchmarkManager.is_tracking()
-            and not _BenchmarkManager.current_frame()._track_only_actual
-        )
+        return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
     def combine_subroutine_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
@@ -362,7 +352,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        if _BenchmarkManager.is_tracking():
+        if _BenchmarkManager.is_benchmarking():
             hashable: Hashable
             if is_bound_method:
                 self = args[0]
@@ -374,7 +364,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
             frame = _BenchmarkManager.current_frame()
             stats = frame.stats[hashable]
-            stats.record_query(track_only_actual=frame._track_only_actual)
+            stats.record_query()
 
         return func(*args, **kwargs)
 
@@ -388,21 +378,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     return wrapped_func
 
 
-@contextmanager
-def _already_benchmarked():
-    prev_flag = False
-    try:
-        if _BenchmarkManager.is_tracking():
-            prev_flag = _BenchmarkManager.current_frame()._track_only_actual
-            _BenchmarkManager.current_frame()._track_only_actual = True
-        yield
-    finally:
-        if _BenchmarkManager.is_tracking():
-            _BenchmarkManager.current_frame()._track_only_actual = prev_flag
-
-
 def default_tracker():
-    if not _BenchmarkManager.is_tracking():
+    if not _BenchmarkManager.is_benchmarking():
         raise BenchmarkError("not in query tracking mode!")
     return _BenchmarkManager.current_frame()
 
