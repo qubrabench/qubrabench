@@ -2,6 +2,7 @@
 
 import numpy as np
 from pytest import approx
+import pytest
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import QueryStats, default_tracker, oracle

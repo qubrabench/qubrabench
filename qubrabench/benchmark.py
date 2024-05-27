@@ -19,7 +19,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
-from ._internals import first_non_none_value, merge_into_with_sum_inplace
+from ._internals import merge_into_with_sum_inplace
 
 __all__ = [
     "QObject",
@@ -49,79 +49,52 @@ class QueryStats:
     """
 
     classical_actual_queries: int = 0
-    classical_expected_queries: Optional[float] = None
-    quantum_expected_classical_queries: Optional[float] = None
-    quantum_expected_quantum_queries: Optional[float] = None
+    classical_expected_queries: float = 0.0
+    quantum_expected_classical_queries: float = 0.0
+    quantum_expected_quantum_queries: float = 0.0
 
     @property
     def quantum_expected_queries(self) -> Optional[float]:
-        if self.quantum_expected_classical_queries is None:
-            return None
-        if self.quantum_expected_quantum_queries is None:
-            return None
         return (
             self.quantum_expected_classical_queries
             + self.quantum_expected_quantum_queries
         )
 
-    def is_benchmarked(self) -> bool:
-        if self.classical_expected_queries is not None:
-            return True
-        if self.quantum_expected_classical_queries is not None:
-            return True
-        if self.quantum_expected_quantum_queries is not None:
-            return True
-        return False
-
     def as_benchmarked(self) -> "QueryStats":
-        return QueryStats(
-            classical_actual_queries=self.classical_actual_queries,
-            classical_expected_queries=first_non_none_value(
-                self.classical_expected_queries, self.classical_actual_queries
-            ),
-            quantum_expected_classical_queries=first_non_none_value(
-                self.quantum_expected_classical_queries, self.classical_actual_queries
-            ),
-            quantum_expected_quantum_queries=first_non_none_value(
-                self.quantum_expected_quantum_queries, 0
-            ),
-        )
+        return self
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
         lhs, rhs = self, other
 
-        if lhs.is_benchmarked() or rhs.is_benchmarked():
-            lhs = lhs.as_benchmarked()
-            rhs = rhs.as_benchmarked()
-            return QueryStats(
-                classical_actual_queries=(
-                    lhs.classical_actual_queries + rhs.classical_actual_queries
-                ),
-                classical_expected_queries=(
-                    lhs.classical_expected_queries + rhs.classical_expected_queries
-                ),
-                quantum_expected_classical_queries=(
-                    lhs.quantum_expected_classical_queries
-                    + rhs.quantum_expected_classical_queries
-                ),
-                quantum_expected_quantum_queries=(
-                    lhs.quantum_expected_quantum_queries
-                    + rhs.quantum_expected_quantum_queries
-                ),
-            )
-        else:
-            return QueryStats(
-                classical_actual_queries=(
-                    lhs.classical_actual_queries + rhs.classical_actual_queries
-                ),
-            )
+        return QueryStats(
+            classical_actual_queries=(
+                lhs.classical_actual_queries + rhs.classical_actual_queries
+            ),
+            classical_expected_queries=(
+                lhs.classical_expected_queries + rhs.classical_expected_queries
+            ),
+            quantum_expected_classical_queries=(
+                lhs.quantum_expected_classical_queries
+                + rhs.quantum_expected_classical_queries
+            ),
+            quantum_expected_quantum_queries=(
+                lhs.quantum_expected_quantum_queries
+                + rhs.quantum_expected_quantum_queries
+            ),
+        )
 
     def record_query(self, n: int = 1):
         self.classical_actual_queries += n
-        if self.classical_expected_queries is not None:
-            self.classical_expected_queries += n
-        if self.quantum_expected_classical_queries is not None:
-            self.quantum_expected_classical_queries += n
+        self.classical_expected_queries += n
+        self.quantum_expected_classical_queries += n
+
+    @classmethod
+    def from_true_queries(cls, n: int):
+        return cls(
+            classical_actual_queries=n,
+            classical_expected_queries=n,
+            quantum_expected_classical_queries=n,
+        )
 
 
 class QObject(ABC, Hashable):
