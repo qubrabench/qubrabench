@@ -95,7 +95,7 @@ def search(
                     queries=classical_queries,
                 )
 
-            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+            _BenchmarkManager.current_frame()._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
                 queries_classical=quantum_classical_queries,
@@ -230,7 +230,7 @@ def search_by_sampling(
                 queries=classical_queries,
             )
 
-            current_frame._add_quantum_expected_queries(
+            current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
                 queries_classical=quantum_classical_queries,

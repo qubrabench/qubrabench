@@ -78,7 +78,7 @@ def max(
                 obj, queries=N, base_stats=stats
             )
 
-            current_frame._add_quantum_expected_queries(
+            current_frame._add_queries_for_quantum(
                 obj,
                 queries_classical=0,
                 queries_quantum=quantum_queries,

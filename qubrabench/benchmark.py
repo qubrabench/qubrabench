@@ -176,7 +176,7 @@ class BenchmarkFrame:
             queries * base_stats.classical_expected_queries
         )
 
-    def _add_quantum_expected_queries(
+    def _add_queries_for_quantum(
         self,
         obj: Hashable,
         *,
@@ -427,7 +427,7 @@ class BlockEncoding(QObject):
         """Access the block-encoded matrix via the implementing unitary"""
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
-                _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                _BenchmarkManager.current_frame()._add_queries_for_quantum(
                     obj_hash,
                     base_stats=stats,
                     queries_quantum=n_times,
