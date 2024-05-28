@@ -74,8 +74,8 @@ def max(
 
         current_frame = _BenchmarkManager.current_frame()
         for obj, stats in frame.stats.items():
-            current_frame._add_classical_expected_queries(
-                obj, queries=N, base_stats=stats
+            current_frame.stats[obj].classical_expected_queries += (
+                N * stats.classical_expected_queries
             )
 
             current_frame._add_queries_for_quantum(

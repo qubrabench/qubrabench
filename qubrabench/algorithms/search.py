@@ -87,15 +87,15 @@ def search(
             N, max_fail_probability
         )
 
+        current_frame = _BenchmarkManager.current_frame()
+
         for obj, stats in frame.stats.items():
             if classical_is_random_search:
-                _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                    obj,
-                    base_stats=stats,
-                    queries=classical_queries,
+                current_frame.stats[obj].classical_expected_queries += (
+                    classical_queries * stats.classical_expected_queries
                 )
 
-            _BenchmarkManager.current_frame()._add_queries_for_quantum(
+            current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
                 queries_classical=quantum_classical_queries,
@@ -109,10 +109,11 @@ def search(
         for i in indices:
             for obj, stats in sub_frames[i].stats.items():
                 if not classical_is_random_search:
-                    _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                        obj, base_stats=stats, queries=1
+                    current_frame.stats[obj].classical_expected_queries += (
+                        1 * stats.classical_expected_queries
                     )
-                _BenchmarkManager.current_frame().stats[
+
+                current_frame.stats[
                     obj
                 ].classical_actual_queries += stats.classical_actual_queries
 
@@ -224,10 +225,8 @@ def search_by_sampling(
         )
 
         for obj, stats in frame.stats.items():
-            current_frame._add_classical_expected_queries(
-                obj,
-                base_stats=stats,
-                queries=classical_queries,
+            current_frame.stats[obj].classical_expected_queries += (
+                classical_queries * stats.classical_expected_queries
             )
 
             current_frame._add_queries_for_quantum(

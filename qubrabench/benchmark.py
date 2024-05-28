@@ -163,19 +163,6 @@ class BenchmarkFrame:
             lambda obj: getattr(obj, "__qualname__", None) == qualname
         )
 
-    def _add_classical_expected_queries(
-        self,
-        obj: Hashable,
-        *,
-        base_stats: QueryStats,
-        queries: float,
-    ):
-        stats = self.stats[obj]
-
-        stats.classical_expected_queries += (
-            queries * base_stats.classical_expected_queries
-        )
-
     def _add_queries_for_quantum(
         self,
         obj: Hashable,
