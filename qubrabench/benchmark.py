@@ -60,9 +60,6 @@ class QueryStats:
             + self.quantum_expected_quantum_queries
         )
 
-    def as_benchmarked(self) -> "QueryStats":
-        return self
-
     def __add__(self, other: "QueryStats") -> "QueryStats":
         lhs, rhs = self, other
 
@@ -163,9 +160,6 @@ class BenchmarkFrame:
         base_stats: QueryStats,
         queries: float,
     ):
-        base_stats = base_stats.as_benchmarked()
-
-        self.stats[obj] = self.stats[obj].as_benchmarked()
         stats = self.stats[obj]
 
         stats.classical_expected_queries += (
@@ -180,9 +174,6 @@ class BenchmarkFrame:
         queries_classical: float = 0,
         queries_quantum: float = 0,
     ):
-        base_stats = base_stats.as_benchmarked()
-
-        self.stats[obj] = self.stats[obj].as_benchmarked()
         stats = self.stats[obj]
 
         stats.quantum_expected_classical_queries += (
@@ -225,9 +216,7 @@ class _BenchmarkManager:
 
         frame = BenchmarkFrame()
         for obj in benchmark_objects:
-            sub_frame_stats = [
-                sub_frame.stats[obj].as_benchmarked() for sub_frame in frames
-            ]
+            sub_frame_stats = [sub_frame.stats[obj] for sub_frame in frames]
 
             frame.stats[obj] = QueryStats(
                 classical_expected_queries=max(
@@ -402,8 +391,7 @@ class BlockEncoding(QObject):
                         {
                             sub_obj: QueryStats(
                                 quantum_expected_quantum_queries=(
-                                    q_queries
-                                    * stats.as_benchmarked().quantum_expected_queries
+                                    q_queries * stats.quantum_expected_queries
                                 )
                             )
                         },
