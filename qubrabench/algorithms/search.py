@@ -75,31 +75,37 @@ def search(
                 is_solution.append(solution_found)
 
         frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
+        current_frame = _BenchmarkManager.current_frame()
 
-        classical_queries = (N + 1) / (T + 1)
+        # compute expected cost for the classical random sampling algorithm
+        if classical_is_random_search:
+            for sub_frame, is_sol in zip(sub_frames, is_solution):
+                for obj, stats in sub_frame.stats.items():
+                    current_frame.stats[
+                        obj
+                    ].classical_expected_queries += stats.classical_expected_queries / (
+                        T if is_sol else T + 1
+                    )
+
+        # compute costs for the quantum algorithm
         quantum_classical_queries = cade_et_al_expected_classical_queries(
             N, T, max_classical_queries
         )
         quantum_quantum_queries = cade_et_al_expected_quantum_queries(
             N, T, max_fail_probability, max_classical_queries
         )
-        quantum_worst_case_queries = cade_et_al_worst_case_quantum_queries(  # noqa
+        quantum_worst_case_queries = cade_et_al_worst_case_quantum_queries(
             N, max_fail_probability
         )
 
-        current_frame = _BenchmarkManager.current_frame()
-
         for obj, stats in frame.stats.items():
-            if classical_is_random_search:
-                current_frame.stats[obj].classical_expected_queries += (
-                    classical_queries * stats.classical_expected_queries
-                )
-
             current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
                 expected_classical_queries=quantum_classical_queries,
                 expected_quantum_queries=quantum_quantum_queries,
+                worst_case_classical_queries=0,
+                worst_case_quantum_queries=quantum_worst_case_queries,
             )
 
         indices = np.arange(N)
@@ -109,9 +115,9 @@ def search(
         for i in indices:
             for obj, stats in sub_frames[i].stats.items():
                 if not classical_is_random_search:
-                    current_frame.stats[obj].classical_expected_queries += (
-                        1 * stats.classical_expected_queries
-                    )
+                    current_frame.stats[
+                        obj
+                    ].classical_expected_queries += stats.classical_expected_queries
 
                 current_frame.stats[
                     obj
