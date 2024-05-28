@@ -21,7 +21,20 @@ def random_stats(rng: Generator, *, not_benched=False):
         classical_expected_queries=rng.random() * LIM,
         quantum_expected_classical_queries=rng.random() * LIM,
         quantum_expected_quantum_queries=rng.random() * LIM,
+        quantum_worst_case_classical_queries=rng.random() * LIM,
+        quantum_worst_case_quantum_queries=rng.random() * LIM,
     )
+
+
+def test_from_true_queries__equals__record():
+    n = 10
+
+    a = QueryStats.from_true_queries(n)
+
+    b = QueryStats()
+    b.record_query(n)
+
+    assert a == b
 
 
 @pytest.mark.parametrize("not_benched", [True, False])
@@ -65,6 +78,10 @@ def test_add_stats__one_benched(rng):
                 a.classical_actual_queries + b.quantum_expected_classical_queries
             ),
             quantum_expected_quantum_queries=b.quantum_expected_quantum_queries,
+            quantum_worst_case_classical_queries=(
+                a.classical_actual_queries + b.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=b.quantum_worst_case_quantum_queries,
         )
 
 
@@ -86,6 +103,14 @@ def test_add_stats__both_benched(rng):
             ),
             quantum_expected_quantum_queries=(
                 a.quantum_expected_quantum_queries + b.quantum_expected_quantum_queries
+            ),
+            quantum_worst_case_classical_queries=(
+                a.quantum_worst_case_classical_queries
+                + b.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=(
+                a.quantum_worst_case_quantum_queries
+                + b.quantum_worst_case_quantum_queries
             ),
         )
 

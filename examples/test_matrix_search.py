@@ -14,7 +14,8 @@ from qubrabench.benchmark import QueryStats
 def test_example_execution():
     A = qb.array(numpy.random.choice([0, 1], size=(10, 10)))
     result = find_row_all_ones_quantum(A, fail_prob=1e-5)
-    print(A.stats.quantum_expected_queries)
+    print(A.stats.quantum_expected_classical_queries)
+    print(A.stats.quantum_expected_quantum_queries)
     print(result)
 
 

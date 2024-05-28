@@ -52,12 +52,14 @@ class QueryStats:
     classical_expected_queries: float = 0.0
     quantum_expected_classical_queries: float = 0.0
     quantum_expected_quantum_queries: float = 0.0
+    quantum_worst_case_classical_queries: float = 0.0
+    quantum_worst_case_quantum_queries: float = 0.0
 
     @property
-    def quantum_expected_queries(self) -> float:
-        return (
-            self.quantum_expected_classical_queries
-            + self.quantum_expected_quantum_queries
+    def quantum_coherent_queries(self) -> float:
+        return 2 * (
+            self.quantum_worst_case_classical_queries
+            + self.quantum_worst_case_quantum_queries
         )
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
@@ -76,6 +78,14 @@ class QueryStats:
                 self.quantum_expected_quantum_queries
                 + other.quantum_expected_quantum_queries
             ),
+            quantum_worst_case_classical_queries=(
+                self.quantum_worst_case_classical_queries
+                + other.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=(
+                self.quantum_worst_case_quantum_queries
+                + other.quantum_worst_case_quantum_queries
+            ),
         )
 
     @classmethod
@@ -84,12 +94,14 @@ class QueryStats:
             classical_actual_queries=n,
             classical_expected_queries=n,
             quantum_expected_classical_queries=n,
+            quantum_worst_case_classical_queries=n,
         )
 
     def record_query(self, n: int = 1):
         self.classical_actual_queries += n
         self.classical_expected_queries += n
         self.quantum_expected_classical_queries += n
+        self.quantum_worst_case_classical_queries += n
 
 
 class QObject(ABC, Hashable):
@@ -389,7 +401,7 @@ class BlockEncoding(QObject):
                         {
                             sub_obj: QueryStats(
                                 quantum_expected_quantum_queries=(
-                                    q_queries * stats.quantum_expected_queries
+                                    q_queries * stats.quantum_coherent_queries
                                 )
                             )
                         },
