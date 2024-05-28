@@ -54,34 +54,32 @@ class QueryStats:
     quantum_expected_quantum_queries: float = 0.0
 
     @property
-    def quantum_expected_queries(self) -> Optional[float]:
+    def quantum_expected_queries(self) -> float:
         return (
             self.quantum_expected_classical_queries
             + self.quantum_expected_quantum_queries
         )
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
-        lhs, rhs = self, other
-
         return QueryStats(
             classical_actual_queries=(
-                lhs.classical_actual_queries + rhs.classical_actual_queries
+                self.classical_actual_queries + other.classical_actual_queries
             ),
             classical_expected_queries=(
-                lhs.classical_expected_queries + rhs.classical_expected_queries
+                self.classical_expected_queries + other.classical_expected_queries
             ),
             quantum_expected_classical_queries=(
-                lhs.quantum_expected_classical_queries
-                + rhs.quantum_expected_classical_queries
+                self.quantum_expected_classical_queries
+                + other.quantum_expected_classical_queries
             ),
             quantum_expected_quantum_queries=(
-                lhs.quantum_expected_quantum_queries
-                + rhs.quantum_expected_quantum_queries
+                self.quantum_expected_quantum_queries
+                + other.quantum_expected_quantum_queries
             ),
         )
 
     @classmethod
-    def from_true_queries(cls, n: int):
+    def from_true_queries(cls, n: int) -> "QueryStats":
         return cls(
             classical_actual_queries=n,
             classical_expected_queries=n,
