@@ -14,12 +14,7 @@ def random_stats(rng: Generator, *, not_benched=False):
     LIM = 10**9
 
     if not_benched:
-        n = rng.integers(LIM)
-        return QueryStats(
-            classical_actual_queries=n,
-            classical_expected_queries=n,
-            quantum_expected_classical_queries=n,
-        )
+        return QueryStats.from_true_queries(rng.integers(LIM))
 
     return QueryStats(
         classical_actual_queries=rng.integers(LIM),

@@ -83,11 +83,6 @@ class QueryStats:
             ),
         )
 
-    def record_query(self, n: int = 1):
-        self.classical_actual_queries += n
-        self.classical_expected_queries += n
-        self.quantum_expected_classical_queries += n
-
     @classmethod
     def from_true_queries(cls, n: int):
         return cls(
@@ -95,6 +90,11 @@ class QueryStats:
             classical_expected_queries=n,
             quantum_expected_classical_queries=n,
         )
+
+    def record_query(self, n: int = 1):
+        self.classical_actual_queries += n
+        self.classical_expected_queries += n
+        self.quantum_expected_classical_queries += n
 
 
 class QObject(ABC, Hashable):
