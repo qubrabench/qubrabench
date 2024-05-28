@@ -98,8 +98,8 @@ def search(
             current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
-                queries_classical=quantum_classical_queries,
-                queries_quantum=quantum_quantum_queries,
+                expected_classical_queries=quantum_classical_queries,
+                expected_quantum_queries=quantum_quantum_queries,
             )
 
         indices = np.arange(N)
@@ -232,8 +232,8 @@ def search_by_sampling(
             current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
-                queries_classical=quantum_classical_queries,
-                queries_quantum=quantum_quantum_queries,
+                expected_classical_queries=quantum_classical_queries,
+                expected_quantum_queries=quantum_quantum_queries,
             )
 
         for sub_frame in sub_frames_till_solution:

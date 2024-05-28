@@ -56,11 +56,17 @@ class QueryStats:
     quantum_worst_case_quantum_queries: float = 0.0
 
     @property
-    def quantum_coherent_queries(self) -> float:
-        return 2 * (
+    def quantum_incoherent_queries(self) -> float:
+        """number of queries in a unitary implementing the action, using possible workspace (garbage) registers"""
+        return (
             self.quantum_worst_case_classical_queries
             + self.quantum_worst_case_quantum_queries
         )
+
+    @property
+    def quantum_coherent_queries(self) -> float:
+        """number of queries in a unitary implementing the action, uncomputing all intermediate registers"""
+        return 2 * self.quantum_incoherent_queries
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
         return QueryStats(
@@ -168,21 +174,25 @@ class BenchmarkFrame:
         obj: Hashable,
         *,
         base_stats: QueryStats,
-        queries_classical: float = 0,
-        queries_quantum: float = 0,
+        expected_classical_queries: float = 0.0,
+        expected_quantum_queries: float = 0.0,
+        worst_case_classical_queries: float = 0.0,
+        worst_case_quantum_queries: float = 0.0,
     ):
         stats = self.stats[obj]
 
         stats.quantum_expected_classical_queries += (
-            queries_classical * base_stats.quantum_expected_classical_queries
+            expected_classical_queries * base_stats.quantum_expected_classical_queries
         )
         stats.quantum_expected_quantum_queries += (
-            queries_classical * base_stats.quantum_expected_quantum_queries
-            + queries_quantum
-            * (
-                base_stats.quantum_expected_classical_queries
-                + base_stats.quantum_expected_quantum_queries
-            )
+            expected_classical_queries * base_stats.quantum_expected_quantum_queries
+            + expected_quantum_queries * base_stats.quantum_coherent_queries
+        )
+        stats.quantum_worst_case_classical_queries += (
+            worst_case_classical_queries * base_stats.quantum_incoherent_queries
+        )
+        stats.quantum_worst_case_quantum_queries += (
+            worst_case_quantum_queries * base_stats.quantum_coherent_queries
         )
 
 
@@ -417,7 +427,8 @@ class BlockEncoding(QObject):
                 _BenchmarkManager.current_frame()._add_queries_for_quantum(
                     obj_hash,
                     base_stats=stats,
-                    queries_quantum=n_times,
+                    expected_quantum_queries=n_times,
+                    worst_case_quantum_queries=n_times,
                 )
 
     def __hash__(self):
