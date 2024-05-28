@@ -78,13 +78,18 @@ class QueryStats:
             ),
         )
 
-    @staticmethod
-    def from_true_queries(n: int, /) -> "QueryStats":
-        return QueryStats(
+    @classmethod
+    def from_true_queries(cls, n: int) -> "QueryStats":
+        return cls(
             classical_actual_queries=n,
             classical_expected_queries=n,
             quantum_expected_classical_queries=n,
         )
+
+    def record_query(self, n: int = 1):
+        self.classical_actual_queries += n
+        self.classical_expected_queries += n
+        self.quantum_expected_classical_queries += n
 
 
 class QObject(ABC, Hashable):
@@ -110,11 +115,9 @@ class BenchmarkFrame:
     """A benchmark stack frame, mapping oracle hashes to their computed stats"""
 
     stats: dict[Hashable, QueryStats]
-    _track_only_actual: bool
 
     def __init__(self):
         self.stats = defaultdict(QueryStats)
-        self._track_only_actual = False
 
     def get_stats(
         self, obj: Any, *, default: Optional[QueryStats] = None
@@ -156,6 +159,7 @@ class BenchmarkFrame:
         queries: float,
     ):
         stats = self.stats[obj]
+
         stats.classical_expected_queries += (
             queries * base_stats.classical_expected_queries
         )
@@ -169,6 +173,7 @@ class BenchmarkFrame:
         queries_quantum: float = 0,
     ):
         stats = self.stats[obj]
+
         stats.quantum_expected_classical_queries += (
             queries_classical * base_stats.quantum_expected_classical_queries
         )
@@ -189,19 +194,12 @@ class _BenchmarkManager:
         assert False, f"should not create object of class {cls}"
 
     @staticmethod
-    def is_tracking() -> bool:
-        return len(_BenchmarkManager._stack) > 0
-
-    @staticmethod
     def current_frame() -> BenchmarkFrame:
         return _BenchmarkManager._stack[-1]
 
     @staticmethod
     def is_benchmarking() -> bool:
-        return (
-            _BenchmarkManager.is_tracking()
-            and not _BenchmarkManager.current_frame()._track_only_actual
-        )
+        return len(_BenchmarkManager._stack) > 0
 
     @staticmethod
     def combine_subroutine_frames(frames: list[BenchmarkFrame]) -> BenchmarkFrame:
@@ -314,7 +312,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
     @wraps(func)
     def wrapped_func(*args, **kwargs):
-        if _BenchmarkManager.is_tracking():
+        if _BenchmarkManager.is_benchmarking():
             hashable: Hashable
             if is_bound_method:
                 self = args[0]
@@ -326,12 +324,7 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
 
             frame = _BenchmarkManager.current_frame()
             stats = frame.stats[hashable]
-
-            # record the query
-            stats.classical_actual_queries += 1
-            if not frame._track_only_actual:
-                stats.classical_expected_queries += 1
-                stats.quantum_expected_classical_queries += 1
+            stats.record_query()
 
         return func(*args, **kwargs)
 
@@ -345,21 +338,8 @@ def oracle(func: Callable[_P, _R]) -> Callable[_P, _R]:
     return wrapped_func
 
 
-@contextmanager
-def _already_benchmarked():
-    prev_flag = False
-    try:
-        if _BenchmarkManager.is_tracking():
-            prev_flag = _BenchmarkManager.current_frame()._track_only_actual
-            _BenchmarkManager.current_frame()._track_only_actual = True
-        yield
-    finally:
-        if _BenchmarkManager.is_tracking():
-            _BenchmarkManager.current_frame()._track_only_actual = prev_flag
-
-
 def default_tracker():
-    if not _BenchmarkManager.is_tracking():
+    if not _BenchmarkManager.is_benchmarking():
         raise BenchmarkError("not in query tracking mode!")
     return _BenchmarkManager.current_frame()
 
@@ -404,16 +384,13 @@ class BlockEncoding(QObject):
         for obj, q_queries in self.uses:
             if isinstance(obj, BlockEncoding):
                 for sub_obj, stats in obj.costs.items():
-                    sub_q = (
-                        stats.quantum_expected_quantum_queries
-                        + stats.quantum_expected_classical_queries
-                    )
-
                     merge_into_with_sum_inplace(
                         cost_table,
                         {
                             sub_obj: QueryStats(
-                                quantum_expected_quantum_queries=q_queries * sub_q
+                                quantum_expected_quantum_queries=(
+                                    q_queries * stats.quantum_expected_queries
+                                )
                             )
                         },
                     )
