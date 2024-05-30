@@ -57,7 +57,7 @@ class PlottingStrategy(ABC):
 
     @abstractmethod
     def compute_aggregates(
-        self, data: pd.DataFrame, *, quantum_factor: float
+        self, data: pd.DataFrame, *, quantum_factor: float = 1
     ) -> pd.DataFrame:
         """
         Compute any additional data columns needed for plotting
@@ -108,7 +108,7 @@ class PlottingStrategy(ABC):
         if not self.get_column_names_to_plot():
             raise ValueError("no columns given to plot")
 
-        data = self.compute_aggregates(data, quantum_factor=2)
+        data = self.compute_aggregates(data)
 
         seen_labels = []  # keep track to ensure proper legends
 
