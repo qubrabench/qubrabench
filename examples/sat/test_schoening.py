@@ -8,8 +8,8 @@ from schoening import (
     schoening_solve__bruteforce_over_starting_assigment,
 )
 
-from qubrabench.benchmark import QueryStats, track_queries
 from qubrabench import NOT_COMPUTED
+from qubrabench.benchmark import QueryStats, track_queries
 
 
 @pytest.fixture

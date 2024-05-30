@@ -191,10 +191,12 @@ class BenchmarkFrame:
             + expected_quantum_queries * base_stats.quantum_incoherent_queries
         )
         stats.quantum_worst_case_classical_queries += (
-            worst_case_classical_queries * base_stats.quantum_incoherent_queries
+            worst_case_classical_queries
+            * base_stats.quantum_worst_case_classical_queries
         )
         stats.quantum_worst_case_quantum_queries += (
-            worst_case_quantum_queries * base_stats.quantum_incoherent_queries
+            worst_case_classical_queries * base_stats.quantum_worst_case_quantum_queries
+            + worst_case_quantum_queries * base_stats.quantum_incoherent_queries
         )
 
 

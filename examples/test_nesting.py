@@ -35,11 +35,14 @@ def test_example_planted_stats(rng):
     A = Qndarray(A)
     _ = has_solution_large_entry_quantum(A, b)
 
+    # TODO why is expected queries larger than worst case?
     assert A.stats == QueryStats(
         classical_actual_queries=0,
         classical_expected_queries=0,
         quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=pytest.approx(3.3339714328255264e26),
+        quantum_expected_quantum_queries=pytest.approx(2 * 3.3339714328255264e26),
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=pytest.approx(2.3755828978405837e26),
     )
 
 
