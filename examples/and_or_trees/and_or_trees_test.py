@@ -47,6 +47,8 @@ def test_random_balanced_read_once_formula(rng):
         classical_expected_queries=3,
         quantum_expected_classical_queries=approx(2.127659574468085),
         quantum_expected_quantum_queries=approx(0),
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=approx(514.7075138668615),
     )
 
 
