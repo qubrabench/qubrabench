@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from typing import TypeAlias, TypeVar, Union
 
 
@@ -28,3 +29,30 @@ def merge_into_with_sum_inplace(a: dict, b: dict):
             a[k] = v
         else:
             a[k] += v
+
+
+@dataclass
+class NotComputed:
+    """Represents a value that is not calculated, and gobbles up any computation involving it."""
+
+    def __add__(self, other):
+        return self
+
+    def __radd__(self, other):
+        return self
+
+    def __iadd__(self, other):
+        return self
+
+    def __mul__(self, other):
+        return self
+
+    def __rmul__(self, other):
+        return self
+
+    def __imul__(self, other):
+        return self
+
+
+NOT_COMPUTED: NotComputed = NotComputed()
+"""NotComputed constant to use for default value arguments"""
