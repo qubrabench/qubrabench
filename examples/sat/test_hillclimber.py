@@ -29,9 +29,11 @@ def test_maxsat_values_100(rng) -> None:
         "n": 100,
         "classical_control_method_calls": pytest.approx(36.2),
         "classical_actual_queries": pytest.approx(407.2),
-        "classical_expected_queries": pytest.approx(407.76382374948906),
+        "classical_expected_queries": pytest.approx(406.76382374948906),
         "quantum_expected_classical_queries": pytest.approx(503.9227178372942),
-        "quantum_expected_quantum_queries": pytest.approx(1413.1251428188323),
+        "quantum_expected_quantum_queries": pytest.approx(2 * 1413.1251428188323),
+        "quantum_worst_case_classical_queries": 0.0,
+        "quantum_worst_case_quantum_queries": pytest.approx(22746.627798239984),
     }
 
 
@@ -62,5 +64,5 @@ def test_maxsat_values_100_steep(rng) -> None:
         "classical_actual_queries": 2200.0,
         "classical_expected_queries": 2200.0,
         "quantum_expected_classical_queries": 0.0,
-        "quantum_expected_quantum_queries": 42160.10452111611,
+        "quantum_expected_quantum_queries": 2 * 42160.10452111611,
     }

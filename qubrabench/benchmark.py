@@ -188,13 +188,13 @@ class BenchmarkFrame:
         )
         stats.quantum_expected_quantum_queries += (
             expected_classical_queries * base_stats.quantum_expected_quantum_queries
-            + expected_quantum_queries * base_stats.quantum_coherent_queries
+            + expected_quantum_queries * base_stats.quantum_incoherent_queries
         )
         stats.quantum_worst_case_classical_queries += (
             worst_case_classical_queries * base_stats.quantum_incoherent_queries
         )
         stats.quantum_worst_case_quantum_queries += (
-            worst_case_quantum_queries * base_stats.quantum_coherent_queries
+            worst_case_quantum_queries * base_stats.quantum_incoherent_queries
         )
 
 
@@ -237,6 +237,10 @@ class _BenchmarkManager:
                 ),
                 quantum_expected_quantum_queries=max(
                     stats.quantum_expected_quantum_queries for stats in sub_frame_stats
+                ),
+                quantum_worst_case_classical_queries=0,
+                quantum_worst_case_quantum_queries=max(
+                    stats.quantum_coherent_queries for stats in sub_frame_stats
                 ),
             )
 
@@ -399,9 +403,10 @@ class BlockEncoding(QObject):
                         cost_table,
                         {
                             sub_obj: QueryStats(
-                                quantum_expected_quantum_queries=(
-                                    q_queries * stats.quantum_coherent_queries
-                                )
+                                quantum_worst_case_classical_queries=0,
+                                quantum_worst_case_quantum_queries=(
+                                    q_queries * stats.quantum_incoherent_queries
+                                ),
                             )
                         },
                     )
@@ -415,7 +420,8 @@ class BlockEncoding(QObject):
                     cost_table,
                     {
                         obj_oracle: QueryStats(
-                            quantum_expected_quantum_queries=q_queries
+                            quantum_worst_case_classical_queries=0,
+                            quantum_worst_case_quantum_queries=q_queries,
                         )
                     },
                 )
@@ -429,7 +435,9 @@ class BlockEncoding(QObject):
                 _BenchmarkManager.current_frame()._add_queries_for_quantum(
                     obj_hash,
                     base_stats=stats,
+                    expected_classical_queries=0,
                     expected_quantum_queries=n_times,
+                    worst_case_classical_queries=0,
                     worst_case_quantum_queries=n_times,
                 )
 

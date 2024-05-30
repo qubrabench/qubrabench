@@ -24,7 +24,9 @@ def test_search_linear_scan():
         classical_actual_queries=51,
         classical_expected_queries=51,
         quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
+        quantum_expected_quantum_queries=2 * 18.991528740664712,
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=497.9317227558481,
     )
 
 
@@ -42,7 +44,9 @@ def test_search_linear_scan_with_qlist():
         classical_actual_queries=51,
         classical_expected_queries=51,
         quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
+        quantum_expected_quantum_queries=2 * 18.991528740664712,
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=497.9317227558481,
     )
 
 
@@ -79,7 +83,9 @@ def test_search_with_shuffle(rng):
         classical_actual_queries=45,
         classical_expected_queries=50.5,
         quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
+        quantum_expected_quantum_queries=2 * 18.991528740664712,
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=497.9317227558481,
     )
 
 
@@ -97,7 +103,9 @@ def test_search_with_shuffle_qlist(rng):
         classical_actual_queries=45,
         classical_expected_queries=50.5,
         quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
+        quantum_expected_quantum_queries=2 * 18.991528740664712,
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=497.9317227558481,
     )
 
 
