@@ -19,7 +19,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
-from ._internals import merge_into_with_sum_inplace
+from ._internals import NOT_COMPUTED, NotComputed, merge_into_with_sum_inplace
 
 __all__ = [
     "QObject",
@@ -49,14 +49,14 @@ class QueryStats:
     """
 
     classical_actual_queries: int = 0
-    classical_expected_queries: float = 0.0
-    quantum_expected_classical_queries: float = 0.0
-    quantum_expected_quantum_queries: float = 0.0
-    quantum_worst_case_classical_queries: float = 0.0
-    quantum_worst_case_quantum_queries: float = 0.0
+    classical_expected_queries: float | NotComputed = 0.0
+    quantum_expected_classical_queries: float | NotComputed = 0.0
+    quantum_expected_quantum_queries: float | NotComputed = 0.0
+    quantum_worst_case_classical_queries: float | NotComputed = 0.0
+    quantum_worst_case_quantum_queries: float | NotComputed = 0.0
 
     @property
-    def quantum_incoherent_queries(self) -> float:
+    def quantum_incoherent_queries(self) -> float | NotComputed:
         """number of queries in a unitary implementing the action, using possible workspace (garbage) registers"""
         return (
             self.quantum_worst_case_classical_queries
@@ -64,7 +64,7 @@ class QueryStats:
         )
 
     @property
-    def quantum_coherent_queries(self) -> float:
+    def quantum_coherent_queries(self) -> float | NotComputed:
         """number of queries in a unitary implementing the action, uncomputing all intermediate registers"""
         return 2 * self.quantum_incoherent_queries
 
@@ -100,7 +100,9 @@ class QueryStats:
             classical_actual_queries=n,
             classical_expected_queries=n,
             quantum_expected_classical_queries=n,
+            quantum_expected_quantum_queries=0,
             quantum_worst_case_classical_queries=n,
+            quantum_worst_case_quantum_queries=0,
         )
 
     def record_query(self, n: int = 1):
@@ -174,10 +176,10 @@ class BenchmarkFrame:
         obj: Hashable,
         *,
         base_stats: QueryStats,
-        expected_classical_queries: float = 0.0,
-        expected_quantum_queries: float = 0.0,
-        worst_case_classical_queries: float = 0.0,
-        worst_case_quantum_queries: float = 0.0,
+        expected_classical_queries: float | NotComputed = NOT_COMPUTED,
+        expected_quantum_queries: float | NotComputed = NOT_COMPUTED,
+        worst_case_classical_queries: float | NotComputed = NOT_COMPUTED,
+        worst_case_quantum_queries: float | NotComputed = NOT_COMPUTED,
     ):
         stats = self.stats[obj]
 
