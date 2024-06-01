@@ -83,6 +83,7 @@ def max(
                 expected_classical_queries=0,
                 expected_quantum_queries=quantum_queries,
                 base_stats=stats,
+                requires_coherent_quantum_subroutine=True,
             )
 
         for sub_frame in sub_frames:

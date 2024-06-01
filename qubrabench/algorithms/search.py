@@ -106,6 +106,7 @@ def search(
                 expected_quantum_queries=quantum_quantum_queries,
                 worst_case_classical_queries=0,
                 worst_case_quantum_queries=quantum_worst_case_queries,
+                requires_coherent_quantum_subroutine=True,
             )
 
         indices = np.arange(N)
@@ -240,6 +241,7 @@ def search_by_sampling(
                 base_stats=stats,
                 expected_classical_queries=quantum_classical_queries,
                 expected_quantum_queries=quantum_quantum_queries,
+                requires_coherent_quantum_subroutine=True,
             )
 
         for sub_frame in sub_frames_till_solution:
