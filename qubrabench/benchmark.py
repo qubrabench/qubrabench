@@ -95,7 +95,17 @@ class QueryStats:
         )
 
     @classmethod
-    def from_true_queries(cls, n: int) -> "QueryStats":
+    def _from_true_queries(cls, n: int) -> "QueryStats":
+        """returns the stats equivalent to a program that runs exactly `n` queries (both in classical and quantum)
+
+        This is equivalent to:
+
+        .. code:: python
+
+            stats = QueryStats()
+            stats.record_query(n)
+        """
+
         return cls(
             classical_actual_queries=n,
             classical_expected_queries=n,

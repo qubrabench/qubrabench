@@ -11,6 +11,6 @@ def test_qlist_iterate(rng):
 
         with track_queries():
             _ = np.sum(xs)
-            assert xs.stats == QueryStats.from_true_queries(N)
+            assert xs.stats == QueryStats._from_true_queries(N)
             _ = np.max(xs)
-            assert xs.stats == QueryStats.from_true_queries(2 * N)
+            assert xs.stats == QueryStats._from_true_queries(2 * N)
