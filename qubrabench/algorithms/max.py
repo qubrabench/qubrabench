@@ -71,6 +71,7 @@ def max(
         frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
 
         quantum_queries = cade_et_al_expected_quantum_queries(N, max_fail_probability)
+        c_q = 2  # number of queries to the standard oracle (that uses workspace registers) to build the phase oracle
 
         current_frame = _BenchmarkManager.current_frame()
         for obj, stats in frame.stats.items():
@@ -80,10 +81,9 @@ def max(
 
             current_frame._add_queries_for_quantum(
                 obj,
-                expected_classical_queries=0,
-                expected_quantum_queries=quantum_queries,
                 base_stats=stats,
-                requires_coherent_quantum_subroutine=True,
+                expected_classical_queries=0,
+                expected_quantum_queries=c_q * quantum_queries,
             )
 
         for sub_frame in sub_frames:

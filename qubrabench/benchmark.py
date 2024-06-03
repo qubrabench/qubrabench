@@ -56,17 +56,12 @@ class QueryStats:
     quantum_worst_case_quantum_queries: float | NotComputed = 0.0
 
     @property
-    def quantum_incoherent_queries(self) -> float | NotComputed:
-        """number of queries in a unitary implementing the action, using possible workspace (garbage) registers"""
+    def quantum_worst_case_total_queries(self) -> float | NotComputed:
+        """total number of queries in a unitary implementing the action, possibly using workspace (garbage) registers"""
         return (
             self.quantum_worst_case_classical_queries
             + self.quantum_worst_case_quantum_queries
         )
-
-    @property
-    def quantum_coherent_queries(self) -> float | NotComputed:
-        """number of queries in a unitary implementing the action, uncomputing all intermediate registers"""
-        return 2 * self.quantum_incoherent_queries
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
         return QueryStats(
@@ -190,22 +185,15 @@ class BenchmarkFrame:
         expected_quantum_queries: float | NotComputed = NOT_COMPUTED,
         worst_case_classical_queries: float | NotComputed = NOT_COMPUTED,
         worst_case_quantum_queries: float | NotComputed = NOT_COMPUTED,
-        requires_coherent_quantum_subroutine: bool = False,
     ):
         stats = self.stats[obj]
-
-        base_quantum_queries = (
-            base_stats.quantum_coherent_queries
-            if requires_coherent_quantum_subroutine
-            else base_stats.quantum_incoherent_queries
-        )
 
         stats.quantum_expected_classical_queries += (
             expected_classical_queries * base_stats.quantum_expected_classical_queries
         )
         stats.quantum_expected_quantum_queries += (
             expected_classical_queries * base_stats.quantum_expected_quantum_queries
-            + expected_quantum_queries * base_quantum_queries
+            + expected_quantum_queries * base_stats.quantum_worst_case_total_queries
         )
         stats.quantum_worst_case_classical_queries += (
             worst_case_classical_queries
@@ -213,7 +201,7 @@ class BenchmarkFrame:
         )
         stats.quantum_worst_case_quantum_queries += (
             worst_case_classical_queries * base_stats.quantum_worst_case_quantum_queries
-            + worst_case_quantum_queries * base_quantum_queries
+            + worst_case_quantum_queries * base_stats.quantum_worst_case_total_queries
         )
 
 
@@ -259,7 +247,7 @@ class _BenchmarkManager:
                 ),
                 quantum_worst_case_classical_queries=0,
                 quantum_worst_case_quantum_queries=max(
-                    stats.quantum_incoherent_queries for stats in sub_frame_stats
+                    stats.quantum_worst_case_total_queries for stats in sub_frame_stats
                 ),
             )
 
@@ -424,7 +412,7 @@ class BlockEncoding(QObject):
                             sub_obj: QueryStats(
                                 quantum_worst_case_classical_queries=0,
                                 quantum_worst_case_quantum_queries=(
-                                    q_queries * stats.quantum_incoherent_queries
+                                    q_queries * stats.quantum_worst_case_total_queries
                                 ),
                             )
                         },

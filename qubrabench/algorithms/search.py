@@ -97,16 +97,16 @@ def search(
         quantum_worst_case_queries = cade_et_al_worst_case_quantum_queries(
             N, max_fail_probability
         )
+        c_q = 2  # number of queries to the standard oracle (that uses workspace registers) to build the phase oracle
 
         for obj, stats in frame.stats.items():
             current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
                 expected_classical_queries=quantum_classical_queries,
-                expected_quantum_queries=quantum_quantum_queries,
+                expected_quantum_queries=c_q * quantum_quantum_queries,
                 worst_case_classical_queries=0,
-                worst_case_quantum_queries=quantum_worst_case_queries,
-                requires_coherent_quantum_subroutine=True,
+                worst_case_quantum_queries=c_q * quantum_worst_case_queries,
             )
 
         indices = np.arange(N)
@@ -230,6 +230,7 @@ def search_by_sampling(
         quantum_quantum_queries = cade_et_al_expected_quantum_queries(
             N, f * N, max_fail_probability, max_classical_queries
         )
+        c_q = 2  # number of queries to the standard oracle (that uses workspace registers) to build the phase oracle
 
         for obj, stats in frame.stats.items():
             current_frame.stats[obj].classical_expected_queries += (
@@ -240,8 +241,7 @@ def search_by_sampling(
                 obj,
                 base_stats=stats,
                 expected_classical_queries=quantum_classical_queries,
-                expected_quantum_queries=quantum_quantum_queries,
-                requires_coherent_quantum_subroutine=True,
+                expected_quantum_queries=c_q * quantum_quantum_queries,
             )
 
         for sub_frame in sub_frames_till_solution:

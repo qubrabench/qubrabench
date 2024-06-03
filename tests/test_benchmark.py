@@ -253,4 +253,4 @@ def test_block_encoding_nested_access():
     V = BlockEncoding(U.matrix, subnormalization_factor=1, precision=0, uses=[(U, n)])
     V.access(n_times=m)
 
-    assert A.stats.quantum_incoherent_queries == n * m
+    assert A.stats.quantum_worst_case_total_queries == n * m
