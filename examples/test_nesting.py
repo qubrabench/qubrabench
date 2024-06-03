@@ -35,7 +35,8 @@ def test_example_planted_stats(rng):
     A = Qndarray(A)
     _ = has_solution_large_entry_quantum(A, b)
 
-    # TODO why is expected queries larger than worst case?
+    # quantum_expected and quantum_worst_case use different algorithms
+    # which one is better depends on the input data (i.e. if there are more than one solutions, the expected case algorighm is usually faster).
     assert A.stats == QueryStats(
         classical_actual_queries=0,
         classical_expected_queries=0,
