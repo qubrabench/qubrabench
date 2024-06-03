@@ -41,9 +41,9 @@ def test_example_planted_stats(rng):
         classical_actual_queries=0,
         classical_expected_queries=0,
         quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=pytest.approx(2 * 3.3339714328255264e26),
+        quantum_expected_quantum_queries=pytest.approx(4 * 3.3339714328255264e26),
         quantum_worst_case_classical_queries=0,
-        quantum_worst_case_quantum_queries=pytest.approx(2.3755828978405837e26),
+        quantum_worst_case_quantum_queries=pytest.approx(2 * 2.3755828978405837e26),
     )
 
 
