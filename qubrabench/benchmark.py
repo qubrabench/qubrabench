@@ -19,7 +19,7 @@ import attrs
 import numpy as np
 import numpy.typing as npt
 
-from ._internals import merge_into_with_sum_inplace
+from ._internals import NOT_COMPUTED, NotComputed, merge_into_with_sum_inplace
 
 __all__ = [
     "QObject",
@@ -49,15 +49,18 @@ class QueryStats:
     """
 
     classical_actual_queries: int = 0
-    classical_expected_queries: float = 0.0
-    quantum_expected_classical_queries: float = 0.0
-    quantum_expected_quantum_queries: float = 0.0
+    classical_expected_queries: float | NotComputed = 0.0
+    quantum_expected_classical_queries: float | NotComputed = 0.0
+    quantum_expected_quantum_queries: float | NotComputed = 0.0
+    quantum_worst_case_classical_queries: float | NotComputed = 0.0
+    quantum_worst_case_quantum_queries: float | NotComputed = 0.0
 
     @property
-    def quantum_expected_queries(self) -> float:
+    def quantum_worst_case_total_queries(self) -> float | NotComputed:
+        """total number of queries in a unitary implementing the action, possibly using workspace (garbage) registers"""
         return (
-            self.quantum_expected_classical_queries
-            + self.quantum_expected_quantum_queries
+            self.quantum_worst_case_classical_queries
+            + self.quantum_worst_case_quantum_queries
         )
 
     def __add__(self, other: "QueryStats") -> "QueryStats":
@@ -76,20 +79,42 @@ class QueryStats:
                 self.quantum_expected_quantum_queries
                 + other.quantum_expected_quantum_queries
             ),
+            quantum_worst_case_classical_queries=(
+                self.quantum_worst_case_classical_queries
+                + other.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=(
+                self.quantum_worst_case_quantum_queries
+                + other.quantum_worst_case_quantum_queries
+            ),
         )
 
     @classmethod
-    def from_true_queries(cls, n: int) -> "QueryStats":
+    def _from_true_queries(cls, n: int) -> "QueryStats":
+        """returns the stats equivalent to a program that runs exactly `n` queries (both in classical and quantum)
+
+        This is equivalent to:
+
+        .. code:: python
+
+            stats = QueryStats()
+            stats.record_query(n)
+        """
+
         return cls(
             classical_actual_queries=n,
             classical_expected_queries=n,
             quantum_expected_classical_queries=n,
+            quantum_expected_quantum_queries=0,
+            quantum_worst_case_classical_queries=n,
+            quantum_worst_case_quantum_queries=0,
         )
 
     def record_query(self, n: int = 1):
         self.classical_actual_queries += n
         self.classical_expected_queries += n
         self.quantum_expected_classical_queries += n
+        self.quantum_worst_case_classical_queries += n
 
 
 class QObject(ABC, Hashable):
@@ -151,39 +176,32 @@ class BenchmarkFrame:
             lambda obj: getattr(obj, "__qualname__", None) == qualname
         )
 
-    def _add_classical_expected_queries(
+    def _add_queries_for_quantum(
         self,
         obj: Hashable,
         *,
         base_stats: QueryStats,
-        queries: float,
-    ):
-        stats = self.stats[obj]
-
-        stats.classical_expected_queries += (
-            queries * base_stats.classical_expected_queries
-        )
-
-    def _add_quantum_expected_queries(
-        self,
-        obj: Hashable,
-        *,
-        base_stats: QueryStats,
-        queries_classical: float = 0,
-        queries_quantum: float = 0,
+        expected_classical_queries: float | NotComputed = NOT_COMPUTED,
+        expected_quantum_queries: float | NotComputed = NOT_COMPUTED,
+        worst_case_classical_queries: float | NotComputed = NOT_COMPUTED,
+        worst_case_quantum_queries: float | NotComputed = NOT_COMPUTED,
     ):
         stats = self.stats[obj]
 
         stats.quantum_expected_classical_queries += (
-            queries_classical * base_stats.quantum_expected_classical_queries
+            expected_classical_queries * base_stats.quantum_expected_classical_queries
         )
         stats.quantum_expected_quantum_queries += (
-            queries_classical * base_stats.quantum_expected_quantum_queries
-            + queries_quantum
-            * (
-                base_stats.quantum_expected_classical_queries
-                + base_stats.quantum_expected_quantum_queries
-            )
+            expected_classical_queries * base_stats.quantum_expected_quantum_queries
+            + expected_quantum_queries * base_stats.quantum_worst_case_total_queries
+        )
+        stats.quantum_worst_case_classical_queries += (
+            worst_case_classical_queries
+            * base_stats.quantum_worst_case_classical_queries
+        )
+        stats.quantum_worst_case_quantum_queries += (
+            worst_case_classical_queries * base_stats.quantum_worst_case_quantum_queries
+            + worst_case_quantum_queries * base_stats.quantum_worst_case_total_queries
         )
 
 
@@ -226,6 +244,10 @@ class _BenchmarkManager:
                 ),
                 quantum_expected_quantum_queries=max(
                     stats.quantum_expected_quantum_queries for stats in sub_frame_stats
+                ),
+                quantum_worst_case_classical_queries=0,
+                quantum_worst_case_quantum_queries=max(
+                    stats.quantum_worst_case_total_queries for stats in sub_frame_stats
                 ),
             )
 
@@ -388,9 +410,10 @@ class BlockEncoding(QObject):
                         cost_table,
                         {
                             sub_obj: QueryStats(
-                                quantum_expected_quantum_queries=(
-                                    q_queries * stats.quantum_expected_queries
-                                )
+                                quantum_worst_case_classical_queries=0,
+                                quantum_worst_case_quantum_queries=(
+                                    q_queries * stats.quantum_worst_case_total_queries
+                                ),
                             )
                         },
                     )
@@ -404,7 +427,8 @@ class BlockEncoding(QObject):
                     cost_table,
                     {
                         obj_oracle: QueryStats(
-                            quantum_expected_quantum_queries=q_queries
+                            quantum_worst_case_classical_queries=0,
+                            quantum_worst_case_quantum_queries=q_queries,
                         )
                     },
                 )
@@ -415,10 +439,13 @@ class BlockEncoding(QObject):
         """Access the block-encoded matrix via the implementing unitary"""
         if _BenchmarkManager.is_benchmarking():
             for obj_hash, stats in self.costs.items():
-                _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+                _BenchmarkManager.current_frame()._add_queries_for_quantum(
                     obj_hash,
                     base_stats=stats,
-                    queries_quantum=n_times,
+                    expected_classical_queries=0,
+                    expected_quantum_queries=n_times,
+                    worst_case_classical_queries=0,
+                    worst_case_quantum_queries=n_times,
                 )
 
     def __hash__(self):

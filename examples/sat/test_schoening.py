@@ -8,6 +8,7 @@ from schoening import (
     schoening_solve__bruteforce_over_starting_assigment,
 )
 
+from qubrabench import NOT_COMPUTED
 from qubrabench.benchmark import QueryStats, track_queries
 
 
@@ -30,6 +31,8 @@ def test_solve(rng, sample_sat_instance) -> None:
             classical_expected_queries=7,
             quantum_expected_classical_queries=pytest.approx(15.22222222222222),
             quantum_expected_quantum_queries=pytest.approx(0),
+            quantum_worst_case_classical_queries=NOT_COMPUTED,
+            quantum_worst_case_quantum_queries=NOT_COMPUTED,
         )
 
         # validate solution
@@ -49,6 +52,8 @@ def test_bruteforce_steps(rng, sample_sat_instance) -> None:
             classical_expected_queries=pytest.approx(11),
             quantum_expected_classical_queries=pytest.approx(24.703703703703702),
             quantum_expected_quantum_queries=pytest.approx(0),
+            quantum_worst_case_classical_queries=NOT_COMPUTED,
+            quantum_worst_case_quantum_queries=NOT_COMPUTED,
         )
 
         # validate solution

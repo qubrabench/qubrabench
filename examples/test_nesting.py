@@ -35,11 +35,15 @@ def test_example_planted_stats(rng):
     A = Qndarray(A)
     _ = has_solution_large_entry_quantum(A, b)
 
+    # quantum_expected and quantum_worst_case use different algorithms
+    # which one is better depends on the input data (i.e. if there are more than one solutions, the expected case algorighm is usually faster).
     assert A.stats == QueryStats(
         classical_actual_queries=0,
-        classical_expected_queries=0,
-        quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=pytest.approx(3.3339714328255264e26),
+        classical_expected_queries=0.0,
+        quantum_expected_classical_queries=0.0,
+        quantum_expected_quantum_queries=pytest.approx(1.3335885731302106e27),
+        quantum_worst_case_classical_queries=0.0,
+        quantum_worst_case_quantum_queries=pytest.approx(4.7511657956811674e26),
     )
 
 

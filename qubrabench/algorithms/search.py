@@ -75,28 +75,38 @@ def search(
                 is_solution.append(solution_found)
 
         frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
+        current_frame = _BenchmarkManager.current_frame()
 
-        classical_queries = (N + 1) / (T + 1)
+        # compute expected cost for the classical random sampling algorithm
+        if classical_is_random_search:
+            for sub_frame, is_sol in zip(sub_frames, is_solution):
+                for obj, stats in sub_frame.stats.items():
+                    current_frame.stats[
+                        obj
+                    ].classical_expected_queries += stats.classical_expected_queries / (
+                        T if is_sol else T + 1
+                    )
+
+        # compute costs for the quantum algorithm
         quantum_classical_queries = cade_et_al_expected_classical_queries(
             N, T, max_classical_queries
         )
         quantum_quantum_queries = cade_et_al_expected_quantum_queries(
             N, T, max_fail_probability, max_classical_queries
         )
+        quantum_worst_case_queries = cade_et_al_worst_case_quantum_queries(
+            N, max_fail_probability
+        )
+        c_q = 2  # number of queries to the standard oracle (that uses workspace registers) to build the phase oracle
 
         for obj, stats in frame.stats.items():
-            if classical_is_random_search:
-                _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                    obj,
-                    base_stats=stats,
-                    queries=classical_queries,
-                )
-
-            _BenchmarkManager.current_frame()._add_quantum_expected_queries(
+            current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
-                queries_classical=quantum_classical_queries,
-                queries_quantum=quantum_quantum_queries,
+                expected_classical_queries=quantum_classical_queries,
+                expected_quantum_queries=c_q * quantum_quantum_queries,
+                worst_case_classical_queries=0,
+                worst_case_quantum_queries=c_q * quantum_worst_case_queries,
             )
 
         indices = np.arange(N)
@@ -106,10 +116,11 @@ def search(
         for i in indices:
             for obj, stats in sub_frames[i].stats.items():
                 if not classical_is_random_search:
-                    _BenchmarkManager.current_frame()._add_classical_expected_queries(
-                        obj, base_stats=stats, queries=1
-                    )
-                _BenchmarkManager.current_frame().stats[
+                    current_frame.stats[
+                        obj
+                    ].classical_expected_queries += stats.classical_expected_queries
+
+                current_frame.stats[
                     obj
                 ].classical_actual_queries += stats.classical_actual_queries
 
@@ -219,19 +230,18 @@ def search_by_sampling(
         quantum_quantum_queries = cade_et_al_expected_quantum_queries(
             N, f * N, max_fail_probability, max_classical_queries
         )
+        c_q = 2  # number of queries to the standard oracle (that uses workspace registers) to build the phase oracle
 
         for obj, stats in frame.stats.items():
-            current_frame._add_classical_expected_queries(
-                obj,
-                base_stats=stats,
-                queries=classical_queries,
+            current_frame.stats[obj].classical_expected_queries += (
+                classical_queries * stats.classical_expected_queries
             )
 
-            current_frame._add_quantum_expected_queries(
+            current_frame._add_queries_for_quantum(
                 obj,
                 base_stats=stats,
-                queries_classical=quantum_classical_queries,
-                queries_quantum=quantum_quantum_queries,
+                expected_classical_queries=quantum_classical_queries,
+                expected_quantum_queries=c_q * quantum_quantum_queries,
             )
 
         for sub_frame in sub_frames_till_solution:
@@ -293,3 +303,17 @@ def cade_et_al_F(N: int, T: int) -> float:
         term: float = N / (2 * np.sqrt((N - T) * T))
         F = 9 / 2 * term + np.ceil(np.log(term) / np.log(6 / 5)) - 3
     return F
+
+
+def cade_et_al_worst_case_quantum_queries(N: int, eps: float) -> float:
+    """Lemma 8: worst case cost given by the QSearch_Zalka variant
+
+    Args:
+        N: size of the search space
+        eps: upper bound on failure probability
+
+    Returns:
+        Worst case query cost of quantum search
+    """
+    eps_term = np.ceil(np.log(1 / eps) / (2 * np.log(4 / 3)))
+    return 5 * eps_term + np.pi * np.sqrt(N * eps_term)

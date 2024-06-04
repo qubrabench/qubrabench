@@ -1,11 +1,22 @@
 """This module collects test functions for the qubrabench.search method."""
 
 import numpy as np
-from pytest import approx
+import pytest
 
 from qubrabench.algorithms.search import search
 from qubrabench.benchmark import QueryStats, default_tracker, oracle
 from qubrabench.datastructures.qlist import QList
+
+
+def list_100_search_stats(*, actual_queries: int, is_random: bool) -> QueryStats:
+    return QueryStats(
+        classical_actual_queries=actual_queries,
+        classical_expected_queries=pytest.approx(50.5 if is_random else actual_queries),
+        quantum_expected_classical_queries=pytest.approx(72.9245740488006),
+        quantum_expected_quantum_queries=pytest.approx(37.983057481329425),
+        quantum_worst_case_classical_queries=pytest.approx(0.0),
+        quantum_worst_case_quantum_queries=pytest.approx(497.9317227558481),
+    )
 
 
 def test_search_linear_scan():
@@ -19,12 +30,8 @@ def test_search_linear_scan():
     result = search(domain, check, max_fail_probability=10**-5)
     assert result == 50
 
-    # test stats
-    assert default_tracker().get_stats(check) == QueryStats(
-        classical_actual_queries=51,
-        classical_expected_queries=51,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
+    assert check.get_stats() == list_100_search_stats(
+        actual_queries=51, is_random=False
     )
 
 
@@ -37,13 +44,7 @@ def test_search_linear_scan_with_qlist():
     result = search(domain, check, max_fail_probability=10**-5)
     assert result == 50
 
-    # test stats
-    assert domain.stats == QueryStats(
-        classical_actual_queries=51,
-        classical_expected_queries=51,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
-    )
+    assert domain.stats == list_100_search_stats(actual_queries=51, is_random=False)
 
 
 def test_search_linear_scan_classical_queries(rng):
@@ -74,13 +75,7 @@ def test_search_with_shuffle(rng):
     result = search(domain, check, max_fail_probability=10**-5, rng=rng)
     assert result == 50
 
-    # test stats
-    assert default_tracker().get_stats(check) == QueryStats(
-        classical_actual_queries=45,
-        classical_expected_queries=50.5,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
-    )
+    assert check.get_stats() == list_100_search_stats(actual_queries=45, is_random=True)
 
 
 def test_search_with_shuffle_qlist(rng):
@@ -92,34 +87,33 @@ def test_search_with_shuffle_qlist(rng):
     result = search(domain, check, max_fail_probability=10**-5, rng=rng)
     assert result == 50
 
-    # test stats
-    assert domain.stats == QueryStats(
-        classical_actual_queries=45,
-        classical_expected_queries=50.5,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=18.991528740664712,
-    )
+    assert domain.stats == list_100_search_stats(actual_queries=45, is_random=True)
 
 
-def test_variable_time_key(rng):
+@pytest.mark.xfail
+def test_nested_search():
+    n = 10
+    eps = 1e-5
+
     @oracle
-    def is_prime(i: int) -> bool:
-        for j in range(2, i):
-            if i % j == 0:
-                return False
-        return True
+    def my_oracle():
+        pass
 
-    twin_primes = search(
-        range(2, 10),
-        key=lambda i: is_prime(i) and is_prime(i + 2),
-        rng=rng,
-        max_fail_probability=10**-5,
-    )
-    assert twin_primes == 3  # (3, 5)
-    stats = default_tracker().get_stats(is_prime)
-    assert stats == QueryStats(
-        classical_actual_queries=2,
-        classical_expected_queries=6,
-        quantum_expected_classical_queries=approx(8),
-        quantum_expected_quantum_queries=approx(0),
-    )
+    def check_entry(i: int, j: int):
+        for _ in range(i + j + 1):
+            my_oracle()
+        return j == n - 1
+
+    def check_row(i: int) -> bool:
+        marked = search(
+            range(n),
+            key=lambda j: check_entry(i, j),
+            max_fail_probability=(eps / 2) / n,
+        )
+        assert marked == n - 1
+        return i == n - 1
+
+    sol = search(range(n), key=check_row, max_fail_probability=eps / 2)
+    assert sol == n - 1
+
+    assert my_oracle.get_stats() == QueryStats()

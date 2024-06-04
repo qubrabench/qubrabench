@@ -64,6 +64,7 @@ def estimate_amplitude(
     n_rounds = np.ceil(
         k * np.pi / (np.sqrt(precision + a * (1 - a)) - np.sqrt(a * (1 - a)))
     )
-    x.access(n_times=n_rounds)
+    c_q = 2  # number of queries to implement the phase oracle
+    x.access(n_times=c_q * n_rounds)
 
     return a

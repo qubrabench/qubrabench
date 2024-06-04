@@ -139,7 +139,7 @@ class SchoeningPlottingStrategy(PlottingStrategy):
     def get_data_group_column_names(self):
         return ["variant"]
 
-    def compute_aggregates(self, data, *, quantum_factor):
+    def compute_aggregates(self, data, *, quantum_factor=1):
         # compute combined query costs of quantum search
         c = data["quantum_expected_classical_queries"]
         q = data["quantum_expected_quantum_queries"]

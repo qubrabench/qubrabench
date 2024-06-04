@@ -142,7 +142,7 @@ class HillClimberPlottingStrategy(PlottingStrategy):
     def get_data_group_column_names(self):
         return ["impl"]
 
-    def compute_aggregates(self, data, *, quantum_factor):
+    def compute_aggregates(self, data, *, quantum_factor=1):
         # compute combined query costs of quantum search
         c = data["quantum_expected_classical_queries"]
         q = data["quantum_expected_quantum_queries"]
@@ -190,7 +190,7 @@ def plot(qubra_data_file, ref_data_file, save: bool):
 
     # could switch strategy here based on src input
     plotter = HillClimberPlottingStrategy()
-    plotter.plot(data, quantum_factor=2, y_lower_lim=300, display=not save)
+    plotter.plot(data, y_lower_lim=300, display=not save)
     if save:
         plt.tight_layout()
         plt.savefig(qubra_data_file.with_suffix(".pdf"), format="pdf")

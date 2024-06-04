@@ -73,7 +73,7 @@ def test_find_column(example_instance):
     k = FindColumn(A, B, c, epsilon=1e-3)
     assert k == 2
 
-    assert A.stats.quantum_expected_quantum_queries == approx(1941601517.518187)
+    assert A.stats.quantum_expected_quantum_queries == approx(3883203035.036374)
 
 
 def test_find_row(example_instance):

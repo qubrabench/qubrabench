@@ -14,14 +14,27 @@ def random_stats(rng: Generator, *, not_benched=False):
     LIM = 10**9
 
     if not_benched:
-        return QueryStats.from_true_queries(rng.integers(LIM))
+        return QueryStats._from_true_queries(rng.integers(LIM))
 
     return QueryStats(
         classical_actual_queries=rng.integers(LIM),
         classical_expected_queries=rng.random() * LIM,
         quantum_expected_classical_queries=rng.random() * LIM,
         quantum_expected_quantum_queries=rng.random() * LIM,
+        quantum_worst_case_classical_queries=rng.random() * LIM,
+        quantum_worst_case_quantum_queries=rng.random() * LIM,
     )
+
+
+def test_from_true_queries__equals__record():
+    n = 10
+
+    a = QueryStats._from_true_queries(n)
+
+    b = QueryStats()
+    b.record_query(n)
+
+    assert a == b
 
 
 @pytest.mark.parametrize("not_benched", [True, False])
@@ -46,7 +59,7 @@ def test_add_stats__not_benched(rng):
         a = random_stats(rng, not_benched=True)
         b = random_stats(rng, not_benched=True)
         queries = a.classical_actual_queries + b.classical_actual_queries
-        assert a + b == QueryStats.from_true_queries(queries)
+        assert a + b == QueryStats._from_true_queries(queries)
 
 
 def test_add_stats__one_benched(rng):
@@ -65,6 +78,10 @@ def test_add_stats__one_benched(rng):
                 a.classical_actual_queries + b.quantum_expected_classical_queries
             ),
             quantum_expected_quantum_queries=b.quantum_expected_quantum_queries,
+            quantum_worst_case_classical_queries=(
+                a.classical_actual_queries + b.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=b.quantum_worst_case_quantum_queries,
         )
 
 
@@ -86,6 +103,14 @@ def test_add_stats__both_benched(rng):
             ),
             quantum_expected_quantum_queries=(
                 a.quantum_expected_quantum_queries + b.quantum_expected_quantum_queries
+            ),
+            quantum_worst_case_classical_queries=(
+                a.quantum_worst_case_classical_queries
+                + b.quantum_worst_case_classical_queries
+            ),
+            quantum_worst_case_quantum_queries=(
+                a.quantum_worst_case_quantum_queries
+                + b.quantum_worst_case_quantum_queries
             ),
         )
 
@@ -228,4 +253,4 @@ def test_block_encoding_nested_access():
     V = BlockEncoding(U.matrix, subnormalization_factor=1, precision=0, uses=[(U, n)])
     V.access(n_times=m)
 
-    assert A.stats.quantum_expected_quantum_queries == n * m
+    assert A.stats.quantum_worst_case_total_queries == n * m

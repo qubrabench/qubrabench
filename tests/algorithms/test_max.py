@@ -4,6 +4,7 @@ import re
 
 import pytest
 
+from qubrabench._internals import NOT_COMPUTED
 from qubrabench.algorithms.max import max
 from qubrabench.benchmark import QueryStats, default_tracker, oracle
 
@@ -41,5 +42,7 @@ def test_max_stats():
         classical_actual_queries=100,
         classical_expected_queries=100,
         quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=pytest.approx(1405.3368),
+        quantum_expected_quantum_queries=pytest.approx(2810.673634741074),
+        quantum_worst_case_classical_queries=NOT_COMPUTED,
+        quantum_worst_case_quantum_queries=NOT_COMPUTED,
     )

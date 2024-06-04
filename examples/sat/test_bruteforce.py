@@ -29,6 +29,8 @@ def test_solve(rng) -> None:
             classical_expected_queries=3,
             quantum_expected_classical_queries=pytest.approx(4),
             quantum_expected_quantum_queries=pytest.approx(0),
+            quantum_worst_case_classical_queries=pytest.approx(0),
+            quantum_worst_case_quantum_queries=pytest.approx(291.4393894717541),
         )
 
         # validate solution

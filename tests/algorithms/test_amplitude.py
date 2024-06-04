@@ -23,5 +23,7 @@ def test_estimate_amplitude(rng):
         classical_actual_queries=0,
         classical_expected_queries=0,
         quantum_expected_classical_queries=0,
-        quantum_expected_quantum_queries=138232,
+        quantum_expected_quantum_queries=276464,
+        quantum_worst_case_classical_queries=0,
+        quantum_worst_case_quantum_queries=276464,
     )
