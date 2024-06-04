@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>qubrabench package &#8212; qubrabench 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="qubrabench.algorithms package" href="qubrabench.algorithms.html" />
+    <link rel="prev" title="qubrabench" href="modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="qubrabench-package">
+<h1>qubrabench package<a class="headerlink" href="#qubrabench-package" title="Permalink to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="qubrabench.algorithms.html">qubrabench.algorithms package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.amplitude">qubrabench.algorithms.amplitude module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.amplitude.estimate_amplitude"><code class="docutils literal notranslate"><span class="pre">estimate_amplitude()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.linalg">qubrabench.algorithms.linalg module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.linalg.qlsa"><code class="docutils literal notranslate"><span class="pre">qlsa()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.linalg.solve"><code class="docutils literal notranslate"><span class="pre">solve()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.max">qubrabench.algorithms.max module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.max.max"><code class="docutils literal notranslate"><span class="pre">max()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.search">qubrabench.algorithms.search module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.SamplingDomain"><code class="docutils literal notranslate"><span class="pre">SamplingDomain</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.SamplingDomain.get_probability_of_sampling_solution"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_probability_of_sampling_solution()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.SamplingDomain.get_random_sample"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_random_sample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.SamplingDomain.get_size"><code class="docutils literal notranslate"><span class="pre">SamplingDomain.get_size()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html#qubrabench.algorithms.search.search_by_sampling"><code class="docutils literal notranslate"><span class="pre">search_by_sampling()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qubrabench.datastructures.html">qubrabench.datastructures package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.datastructures.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures.qlist">qubrabench.datastructures.qlist module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qlist.QList"><code class="docutils literal notranslate"><span class="pre">QList</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures.qndarray">qubrabench.datastructures.qndarray module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray"><code class="docutils literal notranslate"><span class="pre">Qndarray</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.copy"><code class="docutils literal notranslate"><span class="pre">Qndarray.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.get_raw_data"><code class="docutils literal notranslate"><span class="pre">Qndarray.get_raw_data()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.item"><code class="docutils literal notranslate"><span class="pre">Qndarray.item()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.ndim"><code class="docutils literal notranslate"><span class="pre">Qndarray.ndim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.shape"><code class="docutils literal notranslate"><span class="pre">Qndarray.shape</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray.size"><code class="docutils literal notranslate"><span class="pre">Qndarray.size</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.array"><code class="docutils literal notranslate"><span class="pre">array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.block_encode_matrix"><code class="docutils literal notranslate"><span class="pre">block_encode_matrix()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.state_preparation_unitary"><code class="docutils literal notranslate"><span class="pre">state_preparation_unitary()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="qubrabench.utils.html">qubrabench.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.utils.html#module-qubrabench.utils.plotting">qubrabench.utils.plotting module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.BasicPlottingStrategy"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.BasicPlottingStrategy.get_data_group_column_names"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy.get_data_group_column_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.BasicPlottingStrategy.get_plot_group_column_names"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy.get_plot_group_column_names()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.color_for_data_group"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.color_for_data_group()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.colors"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.colors</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.compute_aggregates"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.compute_aggregates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.get_column_names_to_plot"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_column_names_to_plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.get_data_group_column_names"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_data_group_column_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.get_plot_group_column_names"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_plot_group_column_names()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.make_plot_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.make_plot_label()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.make_plot_title"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.make_plot_title()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.plot"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.serialize_value_tuple"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.serialize_value_tuple()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.x_axis_column"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.x_axis_column()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.x_axis_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.x_axis_label()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#qubrabench.utils.plotting.PlottingStrategy.y_axis_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.y_axis_label()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.utils.html#module-qubrabench.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-qubrabench.benchmark">
+<span id="qubrabench-benchmark-module"></span><h2>qubrabench.benchmark module<a class="headerlink" href="#module-qubrabench.benchmark" title="Permalink to this heading">¶</a></h2>
+<dl class="py exception">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BenchmarkError">
+<em class="property"><span class="pre">exception</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">BenchmarkError</span></span><a class="headerlink" href="#qubrabench.benchmark.BenchmarkError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Exception</span></code></p>
+<p>Base class for raising benchmarking errors</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">BlockEncoding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">matrix</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subnormalization_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uses</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Hashable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">_Nothing.NOTHING</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qubrabench.benchmark.QObject" title="qubrabench.benchmark.QObject"><code class="xref py py-class docutils literal notranslate"><span class="pre">QObject</span></code></a></p>
+<p>Unitary that block-encodes an approximation of a (subnormalized version of a) matrix.</p>
+<p>Given a matrix $A$, subnormalization factor $alpha$ and precision $epsilon$,
+this object represents a unitary program $U$ (possibly using ancilla) satisfying</p>
+<div class="math notranslate nohighlight">
+\[\| A - \alpha (\langle 0 | \otimes I) U (|0\rangle \otimes I) \|_2 \le \epsilon\]</div>
+<p>This can also be visualized as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}U \approx \begin{pmatrix} A/\alpha &amp; \cdot \\ \cdot &amp; \cdot \end{pmatrix}\end{split}\]</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.access">
+<span class="sig-name descname"><span class="pre">access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_times</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Access the block-encoded matrix via the implementing unitary</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.costs">
+<span class="sig-name descname"><span class="pre">costs</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">Hashable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#qubrabench.benchmark.QueryStats" title="qubrabench.benchmark.QueryStats"><span class="pre">qubrabench.benchmark.QueryStats</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.costs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.matrix">
+<span class="sig-name descname"><span class="pre">matrix</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">ndarray</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">complex128</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>The block-encoded matrix A</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.precision">
+<span class="sig-name descname"><span class="pre">precision</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.precision" title="Permalink to this definition">¶</a></dt>
+<dd><p>The spectral norm of the difference between the expected and actual encoded matrices.</p>
+<p>If the top-left block of the unitary is $B$, then the precision is given by $| A - alpha B |_2$.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.subnormalization_factor">
+<span class="sig-name descname"><span class="pre">subnormalization_factor</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span></em><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.subnormalization_factor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Factor $alpha$ s.t. $A / alpha$ is block-encoded</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.BlockEncoding.uses">
+<span class="sig-name descname"><span class="pre">uses</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Hashable</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#qubrabench.benchmark.BlockEncoding.uses" title="Permalink to this definition">¶</a></dt>
+<dd><p>BlockEncodings or data-structures used to implement the block-encoding unitary</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QObject">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">QObject</span></span><a class="headerlink" href="#qubrabench.benchmark.QObject" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code>, <code class="xref py py-class docutils literal notranslate"><span class="pre">Hashable</span></code></p>
+<p>A quantum data-structure object whose queries are tracked.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QObject.stats">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">stats</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference internal" href="#qubrabench.benchmark.QueryStats" title="qubrabench.benchmark.QueryStats"><span class="pre">QueryStats</span></a></em><a class="headerlink" href="#qubrabench.benchmark.QObject.stats" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">QueryStats</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">classical_actual_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">classical_expected_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_expected_classical_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_expected_quantum_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_worst_case_classical_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_worst_case_quantum_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.benchmark.QueryStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Dataclass providing fields for different quantum and classical query counts.
+This is the main data model of the framework, holding actual and statistically calculated values.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.classical_actual_queries">
+<span class="sig-name descname"><span class="pre">classical_actual_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">int</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.classical_actual_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.classical_expected_queries">
+<span class="sig-name descname"><span class="pre">classical_expected_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.classical_expected_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.quantum_expected_classical_queries">
+<span class="sig-name descname"><span class="pre">quantum_expected_classical_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.quantum_expected_classical_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.quantum_expected_quantum_queries">
+<span class="sig-name descname"><span class="pre">quantum_expected_quantum_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.quantum_expected_quantum_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.quantum_worst_case_classical_queries">
+<span class="sig-name descname"><span class="pre">quantum_worst_case_classical_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_classical_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.quantum_worst_case_quantum_queries">
+<span class="sig-name descname"><span class="pre">quantum_worst_case_quantum_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0.0</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_quantum_queries" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.quantum_worst_case_total_queries">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">quantum_worst_case_total_queries</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">NotComputed</span></em><a class="headerlink" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_total_queries" title="Permalink to this definition">¶</a></dt>
+<dd><p>total number of queries in a unitary implementing the action, possibly using workspace (garbage) registers</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.benchmark.QueryStats.record_query">
+<span class="sig-name descname"><span class="pre">record_query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.benchmark.QueryStats.record_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.benchmark.default_tracker">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">default_tracker</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.benchmark.default_tracker" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.benchmark.oracle">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">oracle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.benchmark.oracle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to track queries for functions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@oracle</span>
+<span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">with</span> <span class="n">track_queries</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+    <span class="o">...</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">some_func</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This can also be run with bound instance methods</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_class_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_static_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="k">with</span> <span class="n">track_queries</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+    <span class="o">...</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_method</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_class_method</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_static_method</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.benchmark.quantum_subroutine">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">quantum_subroutine</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.benchmark.quantum_subroutine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to mark a function as a quantum subroutine.</p>
+<p>A quantum subroutine must return a BlockEncoding as output.</p>
+<p>The wrapper ensures that all oracle calls are accounted for in the costs of the block-encoding,
+instead of throwing them to higher level tracker.
+This way, we can ensure that the costs when using the block-encoding are correct.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.benchmark.track_queries">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.benchmark.</span></span><span class="sig-name descname"><span class="pre">track_queries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">BenchmarkFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.benchmark.track_queries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Track queries counts through the execution.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl>
+<dt>with track_queries() as tracker:</dt><dd><p># do some computation</p>
+<p>print(tracker.get_stats(some_quantum_oracle))
+print(tracker.get_stats(some_object_with_a_quantum_oracle_method))</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</section>
+<section id="module-qubrabench">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-qubrabench" title="Permalink to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.array">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="qubrabench.datastructures.html#qubrabench.datastructures.qndarray.Qndarray" title="qubrabench.datastructures.qndarray.Qndarray"><span class="pre">Qndarray</span></a></span></span><a class="headerlink" href="#qubrabench.array" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.estimate_amplitude">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">estimate_amplitude</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding" title="qubrabench.benchmark.BlockEncoding"><span class="pre">BlockEncoding</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">good_indices</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">_SupportsArray</span><span class="p"><span class="pre">[</span></span><span class="pre">dtype</span><span class="p"><span class="pre">[</span></span><span class="pre">Any</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">complex</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">_NestedSequence</span><span class="p"><span class="pre">[</span></span><span class="pre">bool</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">int</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">float</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">complex</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">bytes</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">precision</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="headerlink" href="#qubrabench.estimate_amplitude" title="Permalink to this definition">¶</a></dt>
+<dd><p>Given a block-encoding of a state $ketpsi$ and a good index or sequence of good indices,
+estimate the probability of measuring (in the standard basis) one of the good indices.</p>
+<p>Algorithm analysis is described in Ref. [1], Theorem 12 (Amplitude Estimation).</p>
+<p>When $ket{x} = sum_i alpha_i ket{i}$, then this method produces an estimate of $a$ s.t.</p>
+<div class="math notranslate nohighlight">
+\[a = \sum_{i \in \text{good}} \abs{alpha_i}^2\]</div>
+<p>If the input block-encoding does not perfectly prepare the state, but with some probability,
+this is factored into the subroutine in the quantum part (i.e. “under-the-square-root”)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – block-encoded access to vector x, such as a unitary that prepares $ket{x}$ with some success probability</p></li>
+<li><p><strong>good_indices</strong> – index or sequence of indices for which to estimate the total squared amplitude</p></li>
+<li><p><strong>precision</strong> – upper bound on the difference between the estimate and true value</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the probability of failure of the quantum algorithm</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<dl class="simple">
+<dt>[1] <em>Quantum Amplitude Amplification and Estimation</em></dt><dd><p>Brassard, Hoyer, Mosca, Tapp. 2000.
+<a class="reference external" href="https://doi.org/10.48550/arXiv.quant-ph/0005055">https://doi.org/10.48550/arXiv.quant-ph/0005055</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.max">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">max</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">iterable:</span> <span class="pre">~typing.Iterable[~qubrabench.algorithms.max.E],</span> <span class="pre">*,</span> <span class="pre">max_fail_probability:</span> <span class="pre">float,</span> <span class="pre">default:</span> <span class="pre">~qubrabench.algorithms.max.E</span> <span class="pre">|</span> <span class="pre">~qubrabench._internals.AbsentParameter</span> <span class="pre">=</span> <span class="pre">&lt;qubrabench._internals.AbsentParameter</span> <span class="pre">object&gt;,</span> <span class="pre">key:</span> <span class="pre">~typing.Callable[[~qubrabench.algorithms.max.E],</span> <span class="pre">~typing.Any]</span> <span class="pre">|</span> <span class="pre">None</span> <span class="pre">=</span> <span class="pre">None</span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span></span></span><a class="headerlink" href="#qubrabench.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the largest element in a list.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – iterable to find the maximum in</p></li>
+<li><p><strong>default</strong> – default value to return if iterable is empty.</p></li>
+<li><p><strong>key</strong> – function that maps iterable elements to values that are comparable. By default, use the iterable elements.</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the failure probability of the quantum algorithm.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – Raised when iterable is an empty sequence and no default is provided.</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the desired maximum element</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.oracle">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">oracle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">_P</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">_R</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.oracle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Wrapper to track queries for functions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@oracle</span>
+<span class="k">def</span> <span class="nf">some_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="o">...</span>
+
+
+<span class="k">with</span> <span class="n">track_queries</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+    <span class="o">...</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">some_func</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>This can also be run with bound instance methods</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyClass</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_method</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_class_method</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="nd">@oracle</span>
+    <span class="k">def</span> <span class="nf">some_static_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="o">...</span>
+
+<span class="k">with</span> <span class="n">track_queries</span><span class="p">()</span> <span class="k">as</span> <span class="n">tracker</span><span class="p">:</span>
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+    <span class="o">...</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_method</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_class_method</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">tracker</span><span class="o">.</span><span class="n">get_stats</span><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">some_static_method</span><span class="p">))</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.search">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">search</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">iterable</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Iterable</span><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">key</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="pre">E</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">bool</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_fail_probability</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rng</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Generator</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_classical_queries</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">130</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">E</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="headerlink" href="#qubrabench.search" title="Permalink to this definition">¶</a></dt>
+<dd><p>Search a list for an element satisfying the given predicate.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">max_fail_probability</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<p>By default performs a linear scan on the iterable and returns the first element satisfying the <cite>key</cite>.
+If the optional random generator <cite>rng</cite> is provided, instead shuffles the input iterable before scanning for a solution.</p>
+<div class="doctest highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">search</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="n">rng</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">42</span><span class="p">),</span> <span class="n">max_fail_probability</span><span class="o">=</span><span class="mi">1</span><span class="o">/</span><span class="mi">3</span><span class="p">)</span>
+<span class="go">4</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>iterable</strong> – iterable to be searched over</p></li>
+<li><p><strong>key</strong> – function to test if an element satisfies the predicate</p></li>
+<li><p><strong>max_fail_probability</strong> – upper bound on the failure probability of the quantum algorithm</p></li>
+<li><p><strong>rng</strong> – random generator - if provided shuffle the input before scanning</p></li>
+<li><p><strong>max_classical_queries</strong> – maximum number of classical queries before entering the quantum part of the algorithm</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An element that satisfies the predicate, or None if no such argument can be found.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="qubrabench.track_queries">
+<span class="sig-prename descclassname"><span class="pre">qubrabench.</span></span><span class="sig-name descname"><span class="pre">track_queries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Iterator</span><span class="p"><span class="pre">[</span></span><span class="pre">BenchmarkFrame</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.track_queries" title="Permalink to this definition">¶</a></dt>
+<dd><p>Track queries counts through the execution.</p>
+<p>Usage:</p>
+<blockquote>
+<div><dl>
+<dt>with track_queries() as tracker:</dt><dd><p># do some computation</p>
+<p>print(tracker.get_stats(some_quantum_oracle))
+print(tracker.get_stats(some_object_with_a_quantum_oracle_method))</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo" />
+    
+    <h1 class="logo logo-name">qubrabench</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A framework to benchmark the advantage of quantum algorithms.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=qubrabench&repo=qubrabench&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">qubrabench package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-qubrabench.benchmark">qubrabench.benchmark module</a><ul>
+<li><a class="reference internal" href="#qubrabench.benchmark.BenchmarkError"><code class="docutils literal notranslate"><span class="pre">BenchmarkError</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding"><code class="docutils literal notranslate"><span class="pre">BlockEncoding</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.access"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.access()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.costs"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.costs</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.matrix"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.matrix</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.precision"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.precision</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.subnormalization_factor"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.subnormalization_factor</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.BlockEncoding.uses"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.uses</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QObject"><code class="docutils literal notranslate"><span class="pre">QObject</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.benchmark.QObject.stats"><code class="docutils literal notranslate"><span class="pre">QObject.stats</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats"><code class="docutils literal notranslate"><span class="pre">QueryStats</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.classical_actual_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.classical_actual_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.classical_expected_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.classical_expected_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.quantum_expected_classical_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_expected_classical_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.quantum_expected_quantum_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_expected_quantum_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_classical_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_classical_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_quantum_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_quantum_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.quantum_worst_case_total_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_total_queries</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.QueryStats.record_query"><code class="docutils literal notranslate"><span class="pre">QueryStats.record_query()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qubrabench.benchmark.default_tracker"><code class="docutils literal notranslate"><span class="pre">default_tracker()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.oracle"><code class="docutils literal notranslate"><span class="pre">oracle()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.quantum_subroutine"><code class="docutils literal notranslate"><span class="pre">quantum_subroutine()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.benchmark.track_queries"><code class="docutils literal notranslate"><span class="pre">track_queries()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench">Module contents</a><ul>
+<li><a class="reference internal" href="#qubrabench.array"><code class="docutils literal notranslate"><span class="pre">array()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.estimate_amplitude"><code class="docutils literal notranslate"><span class="pre">estimate_amplitude()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.max"><code class="docutils literal notranslate"><span class="pre">max()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.oracle"><code class="docutils literal notranslate"><span class="pre">oracle()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.track_queries"><code class="docutils literal notranslate"><span class="pre">track_queries()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">qubrabench</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">qubrabench package</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/">GitHub</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/issues">Issue Tracker</a></li>
+    
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, QuBRA Benchmarking Project.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/qubrabench.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/qubrabench/qubrabench" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>qubrabench &#8212; qubrabench 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="qubrabench package" href="qubrabench.html" />
+    <link rel="prev" title="QuBRA Benchmarking Framework" href="index.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="qubrabench">
+<h1>qubrabench<a class="headerlink" href="#qubrabench" title="Permalink to this heading">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="qubrabench.html">qubrabench package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.algorithms.html">qubrabench.algorithms package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.amplitude">qubrabench.algorithms.amplitude module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.linalg">qubrabench.algorithms.linalg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.max">qubrabench.algorithms.max module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms.search">qubrabench.algorithms.search module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.algorithms.html#module-qubrabench.algorithms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.datastructures.html">qubrabench.datastructures package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures.qlist">qubrabench.datastructures.qlist module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures.qndarray">qubrabench.datastructures.qndarray module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.datastructures.html#module-qubrabench.datastructures">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.utils.html">qubrabench.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#module-qubrabench.utils.plotting">qubrabench.utils.plotting module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.utils.html#module-qubrabench.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.html#module-qubrabench.benchmark">qubrabench.benchmark module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BenchmarkError"><code class="docutils literal notranslate"><span class="pre">BenchmarkError</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding"><code class="docutils literal notranslate"><span class="pre">BlockEncoding</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.access"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.access()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.costs"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.costs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.matrix"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.matrix</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.precision"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.precision</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.subnormalization_factor"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.subnormalization_factor</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.BlockEncoding.uses"><code class="docutils literal notranslate"><span class="pre">BlockEncoding.uses</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QObject"><code class="docutils literal notranslate"><span class="pre">QObject</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QObject.stats"><code class="docutils literal notranslate"><span class="pre">QObject.stats</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats"><code class="docutils literal notranslate"><span class="pre">QueryStats</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.classical_actual_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.classical_actual_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.classical_expected_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.classical_expected_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.quantum_expected_classical_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_expected_classical_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.quantum_expected_quantum_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_expected_quantum_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.quantum_worst_case_classical_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_classical_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.quantum_worst_case_quantum_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_quantum_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.quantum_worst_case_total_queries"><code class="docutils literal notranslate"><span class="pre">QueryStats.quantum_worst_case_total_queries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.QueryStats.record_query"><code class="docutils literal notranslate"><span class="pre">QueryStats.record_query()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.default_tracker"><code class="docutils literal notranslate"><span class="pre">default_tracker()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.oracle"><code class="docutils literal notranslate"><span class="pre">oracle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.quantum_subroutine"><code class="docutils literal notranslate"><span class="pre">quantum_subroutine()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.benchmark.track_queries"><code class="docutils literal notranslate"><span class="pre">track_queries()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.html#module-qubrabench">Module contents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.array"><code class="docutils literal notranslate"><span class="pre">array()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.estimate_amplitude"><code class="docutils literal notranslate"><span class="pre">estimate_amplitude()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.max"><code class="docutils literal notranslate"><span class="pre">max()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.oracle"><code class="docutils literal notranslate"><span class="pre">oracle()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.search"><code class="docutils literal notranslate"><span class="pre">search()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="qubrabench.html#qubrabench.track_queries"><code class="docutils literal notranslate"><span class="pre">track_queries()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo" />
+    
+    <h1 class="logo logo-name">qubrabench</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A framework to benchmark the advantage of quantum algorithms.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=qubrabench&repo=qubrabench&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">qubrabench</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="qubrabench.html">qubrabench package</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/">GitHub</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/issues">Issue Tracker</a></li>
+    
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, QuBRA Benchmarking Project.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/modules.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/qubrabench/qubrabench" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,21 @@
+qubrabench.utils package
+========================
+
+Submodules
+----------
+
+qubrabench.utils.plotting module
+--------------------------------
+
+.. automodule:: qubrabench.utils.plotting
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: qubrabench.utils
+   :members:
+   :undoc-members:
+   :show-inheritance:
