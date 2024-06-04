@@ -8,6 +8,17 @@ from qubrabench.benchmark import QueryStats, default_tracker, oracle
 from qubrabench.datastructures.qlist import QList
 
 
+def list_100_search_stats(*, actual_queries: int, is_random: bool) -> QueryStats:
+    return QueryStats(
+        classical_actual_queries=actual_queries,
+        classical_expected_queries=pytest.approx(50.5 if is_random else actual_queries),
+        quantum_expected_classical_queries=pytest.approx(72.9245740488006),
+        quantum_expected_quantum_queries=pytest.approx(37.983057481329425),
+        quantum_worst_case_classical_queries=pytest.approx(0.0),
+        quantum_worst_case_quantum_queries=pytest.approx(497.9317227558481),
+    )
+
+
 def test_search_linear_scan():
     """Test linear search through a list"""
     domain = range(0, 100)
@@ -19,14 +30,8 @@ def test_search_linear_scan():
     result = search(domain, check, max_fail_probability=10**-5)
     assert result == 50
 
-    # test stats
-    assert default_tracker().get_stats(check) == QueryStats(
-        classical_actual_queries=51,
-        classical_expected_queries=51,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=2 * 18.991528740664712,
-        quantum_worst_case_classical_queries=0,
-        quantum_worst_case_quantum_queries=497.9317227558481,
+    assert check.get_stats() == list_100_search_stats(
+        actual_queries=51, is_random=False
     )
 
 
@@ -39,15 +44,7 @@ def test_search_linear_scan_with_qlist():
     result = search(domain, check, max_fail_probability=10**-5)
     assert result == 50
 
-    # test stats
-    assert domain.stats == QueryStats(
-        classical_actual_queries=51,
-        classical_expected_queries=51,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=2 * 18.991528740664712,
-        quantum_worst_case_classical_queries=0,
-        quantum_worst_case_quantum_queries=497.9317227558481,
-    )
+    assert domain.stats == list_100_search_stats(actual_queries=51, is_random=False)
 
 
 def test_search_linear_scan_classical_queries(rng):
@@ -78,15 +75,7 @@ def test_search_with_shuffle(rng):
     result = search(domain, check, max_fail_probability=10**-5, rng=rng)
     assert result == 50
 
-    # test stats
-    assert default_tracker().get_stats(check) == QueryStats(
-        classical_actual_queries=45,
-        classical_expected_queries=50.5,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=2 * 18.991528740664712,
-        quantum_worst_case_classical_queries=0,
-        quantum_worst_case_quantum_queries=497.9317227558481,
-    )
+    assert check.get_stats() == list_100_search_stats(actual_queries=45, is_random=True)
 
 
 def test_search_with_shuffle_qlist(rng):
@@ -98,15 +87,7 @@ def test_search_with_shuffle_qlist(rng):
     result = search(domain, check, max_fail_probability=10**-5, rng=rng)
     assert result == 50
 
-    # test stats
-    assert domain.stats == QueryStats(
-        classical_actual_queries=45,
-        classical_expected_queries=50.5,
-        quantum_expected_classical_queries=72.9245740488006,
-        quantum_expected_quantum_queries=2 * 18.991528740664712,
-        quantum_worst_case_classical_queries=0,
-        quantum_worst_case_quantum_queries=497.9317227558481,
-    )
+    assert domain.stats == list_100_search_stats(actual_queries=45, is_random=True)
 
 
 @pytest.mark.xfail
