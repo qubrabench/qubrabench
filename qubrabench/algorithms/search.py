@@ -58,21 +58,24 @@ def search(
         it: Iterator[E] = iter(iterable)
         iterable_copy: list[E] = []
         while True:
-            with track_queries() as sub_frame:
-                try:
-                    x = next(it)
-                except StopIteration:
-                    break
-                N += 1
+            sub_frame = BenchmarkFrame()
+            _BenchmarkManager._stack.append(sub_frame)
+            try:
+                x = next(it)
+            except StopIteration:
+                _BenchmarkManager._stack.pop()
+                break
+            N += 1
 
-                solution_found = False
-                if key(x):
-                    T += 1
-                    solution_found = True
+            solution_found = False
+            if key(x):
+                T += 1
+                solution_found = True
 
-                iterable_copy.append(x)
-                sub_frames.append(sub_frame)
-                is_solution.append(solution_found)
+            iterable_copy.append(x)
+            sub_frames.append(sub_frame)
+            is_solution.append(solution_found)
+            _BenchmarkManager._stack.pop()
 
         frame = _BenchmarkManager.combine_subroutine_frames(sub_frames)
         current_frame = _BenchmarkManager.current_frame()
