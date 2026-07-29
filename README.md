@@ -1,3 +1,5 @@
+The future development of qubrabench is happening in [traq](https://github.com/qi-rub/traq).
+
 # QuBRA Benchmarking Framework [![CI](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml/badge.svg?branch=main)](https://github.com/qubrabench/qubrabench/actions/workflows/ci.yaml)
 
 _qubrabench_ is a Python library that aims to enable domain experts to estimate quantum speedups provided by future quantum computers for realistic use cases and data sets, in advance of large-scale quantum computers being available.
