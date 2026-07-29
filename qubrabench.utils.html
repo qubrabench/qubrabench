@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>qubrabench.utils package &#8212; qubrabench 0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="_static/alabaster.css" />
+    <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Development Guide" href="develop.html" />
+    <link rel="prev" title="qubrabench.datastructures package" href="qubrabench.datastructures.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+
+  
+  
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="qubrabench-utils-package">
+<h1>qubrabench.utils package<a class="headerlink" href="#qubrabench-utils-package" title="Permalink to this heading">¶</a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading">¶</a></h2>
+</section>
+<section id="module-qubrabench.utils.plotting">
+<span id="qubrabench-utils-plotting-module"></span><h2>qubrabench.utils.plotting module<a class="headerlink" href="#module-qubrabench.utils.plotting" title="Permalink to this heading">¶</a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.BasicPlottingStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">BasicPlottingStrategy</span></span><a class="headerlink" href="#qubrabench.utils.plotting.BasicPlottingStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy" title="qubrabench.utils.plotting.PlottingStrategy"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlottingStrategy</span></code></a>, <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.BasicPlottingStrategy.get_data_group_column_names">
+<span class="sig-name descname"><span class="pre">get_data_group_column_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.BasicPlottingStrategy.get_data_group_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a data line for each unique value in the specified columns.
+Useful if the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.</p>
+<p>Example: [“impl”] - a line will be generated for each unique <cite>impl</cite> label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.BasicPlottingStrategy.get_plot_group_column_names">
+<span class="sig-name descname"><span class="pre">get_plot_group_column_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.BasicPlottingStrategy.get_plot_group_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a plot for each unique tuple of values for the specified columns.
+Example: [“k”, “n”] - a plot will be generated for each unique tuple value (k, n).
+Example: [] - generate a single plot with the entire data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of column names to group by.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">qubrabench.utils.plotting.</span></span><span class="sig-name descname"><span class="pre">PlottingStrategy</span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Generic plotting strategy to visualize benchmarking data.</p>
+<p>Assumes data is given as a pandas dataframe.
+See the abstract methods below for configuration options.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.color_for_data_group">
+<span class="sig-name descname"><span class="pre">color_for_data_group</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_group</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.color_for_data_group" title="Permalink to this definition">¶</a></dt>
+<dd><p>data_group is a tuple of values in columns <code class="docutils literal notranslate"><span class="pre">self.get_data_group_column_names()</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a color for a given key, and generates a new unique color if it does not exist.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.colors">
+<span class="sig-name descname"><span class="pre">colors</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></em><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.colors" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.compute_aggregates">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">compute_aggregates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.compute_aggregates" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute any additional data columns needed for plotting</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a pandas DataFrame with the input benchmark data</p></li>
+<li><p><strong>quantum_factor</strong> – the conversion cost factor for quantum queries (w.r.t. classical queries)</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.get_column_names_to_plot">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_column_names_to_plot</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.get_column_names_to_plot" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Dictionary of columns to display in the plot.</dt><dd><p>Key: is the column name in the dataframe
+Value: Column display name, Marker to use in the plot</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>{“c”: (“Classical”, “o”), “q”: (“Quantum”, “x”)}</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.get_data_group_column_names">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_data_group_column_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.get_data_group_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a data line for each unique value in the specified columns.
+Useful if the data was generated with different tags based on implementation source, parameter choice etc., that one wants to compare against in a single plot.</p>
+<p>Example: [“impl”] - a line will be generated for each unique <cite>impl</cite> label.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.get_plot_group_column_names">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_plot_group_column_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.get_plot_group_column_names" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate a plot for each unique tuple of values for the specified columns.
+Example: [“k”, “n”] - a plot will be generated for each unique tuple value (k, n).
+Example: [] - generate a single plot with the entire data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of column names to group by.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.make_plot_label">
+<span class="sig-name descname"><span class="pre">make_plot_label</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.make_plot_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the label for each line from the list of values in columns <cite>self.get_data_group_column_names()</cite></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.make_plot_title">
+<span class="sig-name descname"><span class="pre">make_plot_title</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plot_params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.make_plot_title" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate the heading of each plot from the list of values in columns <code class="docutils literal notranslate"><span class="pre">self.get_plot_group_column_names()</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">quantum_factor</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_lower_lim</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_log_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_log_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">show_grid</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">display</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot benchmarking data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a pandas DataFrame containing all the benchmark data.</p></li>
+<li><p><strong>quantum_factor</strong> – conversion factor for the cost of a quantum query (w.r.t. classical queries).</p></li>
+<li><p><strong>y_lower_lim</strong> – lower limit on the Y-axis (useful if the data starts at a large value)</p></li>
+<li><p><strong>x_log_scale</strong> – plot X-axis on log-scale</p></li>
+<li><p><strong>y_log_scale</strong> – plot Y-axis on log-scale</p></li>
+<li><p><strong>show_grid</strong> – show axis grids</p></li>
+<li><p><strong>display</strong> – display the plot at the end, defaults to True</p></li>
+</ul>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – if no columns are given to plot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.serialize_value_tuple">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">serialize_value_tuple</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">columns</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">values</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.serialize_value_tuple" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serialize a set of column values from a given table row to display.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>columns</strong> – column header names</p></li>
+<li><p><strong>values</strong> – column values in the row of interest</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.x_axis_column">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x_axis_column</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.x_axis_column" title="Permalink to this definition">¶</a></dt>
+<dd><p>Data column to plot along the X-axis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.x_axis_label">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">x_axis_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.x_axis_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label to display for the X-axis</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="qubrabench.utils.plotting.PlottingStrategy.y_axis_label">
+<em class="property"><span class="pre">abstract</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">y_axis_label</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="headerlink" href="#qubrabench.utils.plotting.PlottingStrategy.y_axis_label" title="Permalink to this definition">¶</a></dt>
+<dd><p>Label to display for the Y-axis</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-qubrabench.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-qubrabench.utils" title="Permalink to this heading">¶</a></h2>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<p class="logo">
+  <a href="index.html">
+    <img class="logo" src="_static/logo.png" alt="Logo" />
+    
+    <h1 class="logo logo-name">qubrabench</h1>
+    
+  </a>
+</p>
+
+
+
+<p class="blurb">A framework to benchmark the advantage of quantum algorithms.</p>
+
+
+
+
+<p>
+<iframe src="https://ghbtns.com/github-btn.html?user=qubrabench&repo=qubrabench&type=star&count=true&size=large&v=2"
+  allowtransparency="true" frameborder="0" scrolling="0" width="200px" height="35px"></iframe>
+</p>
+
+
+
+
+
+
+  <div>
+    <h3><a href="index.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">qubrabench.utils package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-qubrabench.utils.plotting">qubrabench.utils.plotting module</a><ul>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.BasicPlottingStrategy"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.BasicPlottingStrategy.get_data_group_column_names"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy.get_data_group_column_names()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.BasicPlottingStrategy.get_plot_group_column_names"><code class="docutils literal notranslate"><span class="pre">BasicPlottingStrategy.get_plot_group_column_names()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy</span></code></a><ul>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.color_for_data_group"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.color_for_data_group()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.colors"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.colors</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.compute_aggregates"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.compute_aggregates()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.get_column_names_to_plot"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_column_names_to_plot()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.get_data_group_column_names"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_data_group_column_names()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.get_plot_group_column_names"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.get_plot_group_column_names()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.make_plot_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.make_plot_label()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.make_plot_title"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.make_plot_title()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.plot"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.plot()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.serialize_value_tuple"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.serialize_value_tuple()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.x_axis_column"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.x_axis_column()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.x_axis_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.x_axis_label()</span></code></a></li>
+<li><a class="reference internal" href="#qubrabench.utils.plotting.PlottingStrategy.y_axis_label"><code class="docutils literal notranslate"><span class="pre">PlottingStrategy.y_axis_label()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-qubrabench.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  </div><h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">qubrabench</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="qubrabench.html">qubrabench package</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="develop.html">Development Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="license.html">License</a></li>
+</ul>
+
+
+<hr />
+<ul>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/">GitHub</a></li>
+    
+    <li class="toctree-l1"><a href="https://github.com/qubrabench/qubrabench/issues">Issue Tracker</a></li>
+    
+</ul>
+
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &#169;2023, QuBRA Benchmarking Project.
+      
+      |
+      Powered by <a href="https://www.sphinx-doc.org/">Sphinx 7.0.1</a>
+      &amp; <a href="https://alabaster.readthedocs.io">Alabaster 0.7.16</a>
+      
+      |
+      <a href="_sources/qubrabench.utils.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+    <a href="https://github.com/qubrabench/qubrabench" class="github">
+        <img style="position: absolute; top: 0; right: 0; border: 0;" src="_static/forkme_right_darkblue_121621.png" alt="Fork me on GitHub"  class="github"/>
+    </a>
+    
+
+    
+  </body>
+</html>

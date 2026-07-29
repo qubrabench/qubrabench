@@ -1,0 +1,45 @@
+qubrabench.algorithms package
+=============================
+
+Submodules
+----------
+
+qubrabench.algorithms.amplitude module
+--------------------------------------
+
+.. automodule:: qubrabench.algorithms.amplitude
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+qubrabench.algorithms.linalg module
+-----------------------------------
+
+.. automodule:: qubrabench.algorithms.linalg
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+qubrabench.algorithms.max module
+--------------------------------
+
+.. automodule:: qubrabench.algorithms.max
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+qubrabench.algorithms.search module
+-----------------------------------
+
+.. automodule:: qubrabench.algorithms.search
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: qubrabench.algorithms
+   :members:
+   :undoc-members:
+   :show-inheritance:
