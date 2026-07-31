@@ -12,6 +12,7 @@ import scipy
 from numpy import ndarray
 
 import qubrabench as qb
+from qubrabench.benchmark import _BenchmarkManager
 
 
 def has_solution_large_entry(A: ndarray, b: ndarray) -> bool:
@@ -101,11 +102,11 @@ def run(
         A = generate_random_matrix_of_condition_number(N, condition_number, rng=rng)
         b = rng.random(N)
 
-        with qb.track_queries():
-            A = qb.array(A)
-            b = qb.array(b)
-            _ = has_solution_large_entry_quantum(A, b, max_fail_prob=error)
+        A = qb.array(A)
+        b = qb.array(b)
+        _ = has_solution_large_entry_quantum(A, b, max_fail_prob=error)
 
+        if _BenchmarkManager.is_tracking():
             history.append(
                 {
                     "N": N,
@@ -115,7 +116,7 @@ def run(
                 }
             )
 
-    df = pd.DataFrame(
-        [list(row.values()) for row in history], columns=list(history[0].keys())
-    )
-    return df
+    if len(history) > 0:
+        return pd.DataFrame(
+            [list(row.values()) for row in history], columns=list(history[0].keys())
+        )
